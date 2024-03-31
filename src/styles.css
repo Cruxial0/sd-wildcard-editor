@@ -21,6 +21,8 @@
   --filter-highlight: brightness(0) saturate(100%) invert(73%) sepia(26%) saturate(1227%) hue-rotate(137deg) brightness(89%) contrast(93%); 
   --foreground-color: #d1d1d1;
   --filter-foreground: brightness(0) saturate(100%) invert(92%) sepia(0%) saturate(1%) hue-rotate(252deg) brightness(92%) contrast(92%);
+
+  --context-menu-height: 10rem;
 }
 
 .base_container {
@@ -107,6 +109,27 @@
 .selected-tab{
   border-color: #24c8db;
 }
+
+.resize-ns{
+  height: 1rem;
+  width: 100%;
+  z-index: 99;
+  margin-right: 10px;
+  margin-left: 10px;
+}
+.resize-ns:hover{
+  cursor: ns-resize;
+}
+
+.disableSelection{
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  outline: 0;
+  }
 
 @media (prefers-color-scheme: dark) {
   :root {
