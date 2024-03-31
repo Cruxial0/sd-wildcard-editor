@@ -20,9 +20,11 @@ console.log(document);
       </div>
     </div>
     <div class="row" style="flex-grow: 1; left: 0;">
-      <div id="nav-bar" class="column color" style="width: 4em;">
+      <div id="function-bar" class="column color" style="width: 4em;">
+
       </div>
-      <div id="function-bar" class="column color  outline-r" style="width: 20em; z-index: 2;">
+      <div id="nav-bar" class="column color outline-r" style="width: 20em; z-index: 2;">
+        <div class="resize-ew disableSelection" style="margin-left: auto;"></div>
       </div>
       <div class="column" style="flex-grow: 1;">
         <div class="row" style="flex-grow: 1;">

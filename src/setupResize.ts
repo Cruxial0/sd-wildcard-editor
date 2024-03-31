@@ -1,38 +1,61 @@
 import 'vue-resizable'
 
-const contextMenuSizeHeightVar = '--context-menu-size';
-const BORDER_SIZE = 4;
-let m_pos;
+let m_pos_x;
+let m_pos_y;
+let active: HTMLElement;
 
-let contextMenuResize: HTMLElement;
-let contextMenu;
+function resize_x(e){
+    const dx = e.x - m_pos_x;
+    m_pos_x = e.x;
 
-function resize_x(element, e){
-  const dx = m_pos - e.x;
-  m_pos = e.x;
-  element.style.width = (parseInt(getComputedStyle(element, '').width) + dx) + "px";
+    active.style.width = (parseInt(getComputedStyle(active, '').width) + dx) + "px";
 }
 
 function resize_y(e){
-    const dy = m_pos - e.y;
-    m_pos = e.y;
+    const dy = m_pos_y - e.y;
+    m_pos_y = e.y;
+
+    active.style.height = (parseInt(getComputedStyle(active, '').height) + dy) + "px";
+}
+
+function setupElement(element: HTMLElement, direction: string)
+{
+    console.log("setting up element: " + element.className);
     
-    console.log(contextMenu);
-    contextMenu.style.height = (parseInt(getComputedStyle(contextMenu, '').height) + dy) + "px";
+    if (direction != 'x' && direction != 'y')
+        console.error("Invalid resize direction: " + direction);
+
+    element.addEventListener('mousedown', function (e)
+    {
+        active = element.parentNode as HTMLElement;
+        console.log(active.id);
+        
+        document.addEventListener("mousemove", direction == 'x' ? resize_x : resize_y, false);
+    });
+
+    
+}
+
+function setupList(elems: HTMLCollectionOf<Element>, direction: string)
+{
+    for (let i = 0; i < elems.length; i++)
+    {
+        setupElement(elems[i] as HTMLElement, direction);
+    }
 }
 
 export function setupResize()
 {
-    contextMenuResize = document.getElementsByClassName('resize-ns')[0]! as HTMLElement;
-    contextMenu = document.getElementById('context-menu');
-    contextMenu.addEventListener('mousedown', function (e)
-    {
-        document.addEventListener("mousemove", resize_y, false);
-    });
+    var nsElems = document.getElementsByClassName('resize-ns');
+    var ewElems = document.getElementsByClassName('resize-ew');
+
+    setupList(nsElems, 'y');
+    setupList(ewElems, 'x');
 
     document.addEventListener('mouseup', function()
     {
         console.log("remove");
+        document.removeEventListener('mousemove', resize_x, false);
         document.removeEventListener('mousemove', resize_y, false);
     });
 }
