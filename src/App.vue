@@ -9,6 +9,14 @@ console.log(document);
 <template>
   <div class="base_container">
     <div id="title-bar" data-tauri-drag-region class="titlebar row outline-b color" style="height: 2em; z-index: 3;">
+      <div class="row" style="margin-right: auto; align-items: center;">
+        <img src="/tauri.svg" style="padding: 7px; height: 70%;"/>
+        <button class="context-button">File</button>
+        <button class="context-button">Edit</button>
+        <button class="context-button">Selection</button>
+        <button class="context-button">View</button>
+      </div>
+      
       <div class="titlebar-button" id="titlebar-minimize">
         <img src="https://api.iconify.design/mdi:window-minimize.svg" alt="minimize" class="filter-white" />
       </div>
@@ -18,6 +26,7 @@ console.log(document);
       <div class="titlebar-button" id="titlebar-close">
         <img src="https://api.iconify.design/mdi:close.svg" alt="close" class="filter-white" />
       </div>
+
     </div>
     <div class="row" style="flex-grow: 1; left: 0;">
       <div id="function-bar" class="column color" style="width: 4em;">

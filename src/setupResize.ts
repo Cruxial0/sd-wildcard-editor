@@ -1,7 +1,5 @@
-import 'vue-resizable'
-
-let m_pos_x;
-let m_pos_y;
+let m_pos_x: number;
+let m_pos_y: number;
 let active: HTMLElement;
 
 function resize_x(e){
@@ -23,17 +21,19 @@ function setupElement(element: HTMLElement, direction: string)
     console.log("setting up element: " + element.className);
     
     if (direction != 'x' && direction != 'y')
+    {
         console.error("Invalid resize direction: " + direction);
-
+        return;
+    }
+        
     element.addEventListener('mousedown', function (e)
     {
         active = element.parentNode as HTMLElement;
-        console.log(active.id);
+        m_pos_x = e.x;
+        m_pos_y = e.y;
         
         document.addEventListener("mousemove", direction == 'x' ? resize_x : resize_y, false);
     });
-
-    
 }
 
 function setupList(elems: HTMLCollectionOf<Element>, direction: string)
@@ -58,11 +58,4 @@ export function setupResize()
         document.removeEventListener('mousemove', resize_x, false);
         document.removeEventListener('mousemove', resize_y, false);
     });
-}
-
-function update_variable(variable: string, value: string)
-{
-    document.documentElement.style.setProperty(variable, value);
-    console.log(document.documentElement.style.getPropertyValue(variable));
-    
 }
