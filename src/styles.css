@@ -1,0 +1,129 @@
+:root {
+  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+
+  color: #0f0f0f;
+  background-color: #f6f6f6;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+  overflow: hidden;
+
+  --border-color: #101014;
+  --border-size: 2px;
+  --comp-color: #16161e;
+  --highlight-color: #24c8db;
+  --filter-highlight: brightness(0) saturate(100%) invert(73%) sepia(26%) saturate(1227%) hue-rotate(137deg) brightness(89%) contrast(93%); 
+  --foreground-color: #d1d1d1;
+  --filter-foreground: brightness(0) saturate(100%) invert(92%) sepia(0%) saturate(1%) hue-rotate(252deg) brightness(92%) contrast(92%);
+}
+
+.base_container {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+}
+
+.row{
+  display: flex; 
+  flex-direction: row;
+}
+
+.column{
+  display: flex; 
+  flex-direction: column;
+}
+
+.color{
+  background-color: var(--comp-color);
+}
+
+.outline-t{
+  border-top: var(--border-size) solid;
+  margin-top: calc(0px - var(--border-size));
+  border-color: var(--border-color);
+  z-index: 1;
+}
+
+.outline-b{
+  border-bottom: var(--border-size) solid;
+  margin-bottom: calc(0px - var(--border-size));
+  border-color: var(--border-color);
+  z-index: 1;
+}
+
+.outline-l{
+  border-left: var(--border-size) solid;
+  margin-left: calc(0px - var(--border-size));
+  border-color: var(--border-color);
+  z-index: 1;
+}
+
+.outline-r{
+  border-right: var(--border-size) solid;
+  margin-right: calc(0px - var(--border-size));
+  border-color: var(--border-color);
+  z-index: 1;
+}
+
+.tab-outline{
+  border-bottom: 1px solid;
+  margin-bottom: -1px;
+  padding-left:2px; 
+  padding-right: 2px;
+  border-color: gray;
+}
+
+.titlebar {
+  user-select: none;
+  justify-content: flex-end;
+}
+.titlebar-button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 30px;
+}
+
+.titlebar-button:hover img{
+  filter: var(--filter-highlight);
+}
+
+.filter-white{
+  filter: brightness(0) saturate(100%) invert(92%) sepia(0%) saturate(1%) hue-rotate(252deg) brightness(92%) contrast(92%);
+}
+
+.selected-tab{
+  border-color: #24c8db;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color: #f6f6f6;
+    background-color: #1a1b26;
+  }
+
+  a:hover {
+    color: #24c8db;
+  }
+
+  input,
+  button {
+    color: #ffffff;
+    background-color: #0f0f0f98;
+  }
+  button:active {
+    background-color: #0f0f0f69;
+  }
+}
