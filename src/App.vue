@@ -72,6 +72,7 @@ import { appWindow } from '@tauri-apps/api/window'
 
 
 import { setupResize } from './setupResize'
+import { initializeDefaultSelectionListeners } from './selectionListeners'
 import FileIcon from './components/Icons/FileIcon.vue'
 import SearchIcon from './components/Icons/SearchIcon.vue'
 import ThemeIcon from './components/Icons/ThemeIcon.vue'
@@ -101,6 +102,7 @@ export default {
 async function setup()
 {
   setupResize();
+  initializeDefaultSelectionListeners();
   document.getElementById('titlebar-minimize')?.addEventListener('click', () => appWindow.minimize());
   document.getElementById('titlebar-maximize')?.addEventListener('click', () => appWindow.toggleMaximize());
   document.getElementById('titlebar-close')?.addEventListener('click', () => appWindow.close());

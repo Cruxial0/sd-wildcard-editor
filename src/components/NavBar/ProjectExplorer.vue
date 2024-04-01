@@ -1,10 +1,3 @@
-<script setup lang="ts">
-import FileIndicator from './FileIndicator.vue'
-import { populateTextEditor } from '../../textEditor.ts';
-import { ref, createApp } from "vue";
-import { invoke } from "@tauri-apps/api/tauri";
-</script>
-
 <template>
     <div>
         <a style="margin-top: 10px; margin-left: 15px; font-size: 10px;">EXPLORER</a>
@@ -17,37 +10,11 @@ import { invoke } from "@tauri-apps/api/tauri";
 </template>
 
 <script lang="ts">
+import { buildProjectExplorer } from '../../projectExplorer'
 export default {
     async mounted()
     {
-        await setup();
-    }
-}
-
-async function setup()
-{
-    const files = ref();
-    files.value = await invoke('load_wildcards');
-    var hierarchy = document.getElementById('file-hierarchy')!;
-    var item = document.getElementById('text-editor-0')!;
-
-    for (let i = 0; i < files.value.length; i++)
-    {
-        const tempDiv = document.createElement('div');
-        const instance = createApp(FileIndicator, { name: files.value[i].name }).mount(tempDiv);
-        instance.$el.addEventListener("mousedown", async function ()
-        {
-            var wildcardName = instance.$data.file.replace(/\.[^/.]+$/, "");
-            const wildcard = ref();
-            wildcard.value = await invoke("load_wildcard", { name: wildcardName });
-
-            populateTextEditor(item, wildcard.value);
-
-            var selected = document.querySelector('.file-entry.selected-entry');
-            if (selected) selected.classList.remove('selected-entry');
-            instance.$el.classList.add('selected-entry');
-        });
-        hierarchy.appendChild(instance.$el);
+        await buildProjectExplorer();
     }
 }
 </script>

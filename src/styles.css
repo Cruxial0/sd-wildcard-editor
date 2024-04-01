@@ -130,7 +130,6 @@
 .file-entry.selected-entry{
   background-color: var(--comp-color-alt);
   color: var(--text-color-hover);
-  stroke: var(--text-color-hover);
 }
 
 .file-entry:hover{
@@ -141,6 +140,10 @@
 .file-icon svg{
   stroke-width: 2px;
   stroke: var(--text-color);
+}
+
+.file-entry.selected-entry svg{
+  stroke: var(--text-color-hover);
 }
 
 .file-entry:hover svg{

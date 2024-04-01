@@ -49,10 +49,10 @@ fn load_wildcard(name: String) -> Wildcard {
         Some(vec!["txt"]),
         Some(name),
     );
-    let content = fs::read_to_string(&path.first().unwrap()).expect("Could not read file.");
+    let content = fs::read_to_string(&path.first().unwrap()).expect("Could not read file.").lines().map(|x| x.to_string()).collect();
     Wildcard::new(
         path.first().unwrap().to_str().unwrap().split('\\').last().unwrap(),
-        content.split_whitespace().map(|v| v.to_string()).collect(),
+        content
     )
 }
 

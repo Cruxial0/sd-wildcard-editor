@@ -66,28 +66,4 @@ export function setupResize()
         document.removeEventListener('mousemove', resize_x, false);
         document.removeEventListener('mousemove', resize_y, false);
     });
-
-    var funcButtons = document.getElementsByClassName('function-button');
-
-    for (let i = 0; i < funcButtons.length; i++)
-    {
-        funcButtons[i].addEventListener("mousedown", function ()
-        {
-            var selected = document.querySelector('.function-button.selected');
-            if (selected) selected.classList.remove('selected');
-            funcButtons[i].classList.add('selected');
-        });
-    }
-
-    var tabs = document.getElementsByClassName('viewport-tab');
-
-    for (let j = 0; j < tabs.length; j++)
-    {
-        tabs[j].addEventListener("mousedown", function ()
-        {
-            var selected = document.querySelector('.viewport-tab.selected-tab');
-            if (selected) selected.classList.remove('selected-tab');
-            tabs[j].classList.add('selected-tab');
-        });
-    }
 }
