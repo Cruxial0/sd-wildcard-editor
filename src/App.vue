@@ -35,8 +35,14 @@
           <SettingsIcon class="function-button" />
         </div>
       </div>
-      <div id="nav-bar" class="nav-bar column color outline-r" style="width: 20em; z-index: 2;">
+      <div id="nav-bar" class="nav-bar row color outline-r"
+        style="width: 20em; z-index: 2; flex-direction: row-reverse;">
         <div class="resize-ew disableSelection" style="margin-left: auto;"></div>
+        <div id="nav-bar-content" class="nav-bar-content column outline-b">
+          <Suspense>
+            <ProjectExplorer style="margin-top: 5px;" />
+          </Suspense>
+        </div>
       </div>
       <div class="column" style="flex-grow: 1;">
         <div class="row" style="flex-grow: 1;">
@@ -46,9 +52,6 @@
               <ViewportTab title="Tab 2" />
             </div>
             <div id="viewport-content" style="flex-grow: 1;">
-              <button @click="loadWildcard">
-                click
-              </button>
               <TextEditor id="text-editor-0" />
             </div>
           </div>
@@ -65,10 +68,8 @@
   </div>
 </template>
 <script lang="ts">
-import { ref } from "vue";
 import { appWindow } from '@tauri-apps/api/window'
-import { invoke } from "@tauri-apps/api/tauri";
-import { populateTextEditor } from './textEditor';
+
 
 import { setupResize } from './setupResize'
 import FileIcon from './components/Icons/FileIcon.vue'
@@ -77,6 +78,7 @@ import ThemeIcon from './components/Icons/ThemeIcon.vue'
 import SettingsIcon from './components/Icons/SettingsIcon.vue'
 import TextEditor from './components/Viewport/TextEditor.vue'
 import ViewportTab from './components/Viewport/ViewportTab.vue'
+import ProjectExplorer from './components/NavBar/ProjectExplorer.vue'
 
 export default {
 
@@ -87,7 +89,8 @@ export default {
     ThemeIcon,
     SettingsIcon,
     TextEditor,
-    ViewportTab
+    ViewportTab,
+    ProjectExplorer
   },
   async mounted()
   {
@@ -101,16 +104,6 @@ async function setup()
   document.getElementById('titlebar-minimize')?.addEventListener('click', () => appWindow.minimize());
   document.getElementById('titlebar-maximize')?.addEventListener('click', () => appWindow.toggleMaximize());
   document.getElementById('titlebar-close')?.addEventListener('click', () => appWindow.close());
-}
-
-async function loadWildcard()
-{
-  var item = document.getElementById('text-editor-0')!;
-  const text = ref();
-  text.value = await invoke('load_wildcard');
-  console.log(text.value);
-
-  populateTextEditor(item, text.value);
 }
 
 </script>

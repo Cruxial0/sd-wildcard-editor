@@ -18,6 +18,7 @@
   --border-color: #101014;
   --border-size: 2px;
   --comp-color: #16161e;
+  --comp-color-alt: #22222e;
   --text-color: #a0a0a0;
   --text-color-hover: #ffffff;
   --button-hover: #353535;
@@ -117,6 +118,33 @@
   min-width: 180px;
 }
 
+.file-entry{
+  display: flex;
+  padding: 3px 5px 3px 15px;
+  height: 15px;
+  width: 88%;
+  margin-left: 10px;
+  align-items: center;
+}
+
+.file-entry:hover{
+  background-color: var(--comp-color-alt);
+  color: var(--text-color-hover);
+}
+
+.file-icon svg{
+  stroke-width: 2px;
+  stroke: var(--text-color);
+}
+
+.file-entry:hover svg{
+  stroke: var(--text-color-hover);
+}
+
+.nav-bar-content{
+  height: calc(100vh - var(--title-bar-height)); width: 100%;
+}
+
 .function-bar{
   width: var(--function-bar-width);
   align-items: center;
@@ -124,7 +152,7 @@
 }
 
 .function-button{
-  width: 85%;
+  width: 65%;
   height: auto;
   display: inline-flex;
   justify-content: center;

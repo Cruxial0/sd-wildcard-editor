@@ -2230,6 +2230,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-build",
+ "walkdir",
 ]
 
 [[package]]

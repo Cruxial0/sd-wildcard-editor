@@ -1,6 +1,6 @@
 <template>
     <div id="line-container"
-        style="padding: 5px; overflow-y: hidden; display:inline-flex; flex-direction: column; width: calc(100% - 10px); height: calc(100vh - var(--context-menu-height) - var(--title-bar-height) - var(--viewport-header-height))">
+        style="padding: 5px; overflow-y: auto; display:inline-flex; flex-direction: column; width: calc(100% - 10px); height: calc(100vh - var(--context-menu-height) - var(--title-bar-height) - var(--viewport-header-height))">
         <div id="line-0" class="line">
             <div id="index" class="index">
                 1

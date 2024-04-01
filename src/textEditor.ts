@@ -2,7 +2,6 @@ export function populateTextEditor(textEditor: HTMLElement, data)
 {
     var lineContainer = textEditor;
     lineContainer.innerHTML = "";
-    console.log(lineContainer);
     
     for (let i = 0; i < data.content.length; i++)
     {
