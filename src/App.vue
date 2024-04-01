@@ -5,8 +5,8 @@
 </script>
 
 <template>
-  <div class="base_container">
-    <div id="title-bar" data-tauri-drag-region class="titlebar row outline-b color" style="height: 2em; z-index: 3;">
+  <div class="base_container" style="max-width: 100%; max-height: 100%;">
+    <div id="title-bar" data-tauri-drag-region class="titlebar row outline-b color">
       <div class="row" style="margin-right: auto; align-items: center;">
         <img src="/tauri.svg" style="padding: 7px; height: 70%;" />
         <button class="context-button">File</button>
@@ -41,27 +41,19 @@
       <div class="column" style="flex-grow: 1;">
         <div class="row" style="flex-grow: 1;">
           <div id="viewport" class="column" style="flex-grow: 1;">
-            <div id="viewport-header" class="row color outline-b" style="height: 2.4em;">
-              <div class="row outline-r" style="width: 6rem;">
-                <div class="row tab-outline selected-tab " style="flex-grow: 1;">
-
-                </div>
-              </div>
-              <div class="row outline-r" style="width: 6rem;">
-                <div class="row tab-outline" style="flex-grow: 1;">
-
-                </div>
-              </div>
+            <div id="viewport-header" class="viewport-header row color outline-b">
+              <ViewportTab title="Wildcard.txt" />
+              <ViewportTab title="Tab 2" />
             </div>
-            <div id="viewport-content">
+            <div id="viewport-content" style="flex-grow: 1;">
               <button @click="loadWildcard">
-              click
+                click
               </button>
-              <div id="text-editor-0"/>
+              <TextEditor id="text-editor-0" />
             </div>
           </div>
         </div>
-        <div id="context-menu" class="row color outline-t" style="height: var(--context-menu-height);">
+        <div id="context-menu" class="context-menu row color outline-t" style="height: var(--context-menu-height);">
           <div class="resize-ns disableSelection">
 
           </div>
@@ -76,6 +68,7 @@
 import { ref } from "vue";
 import { appWindow } from '@tauri-apps/api/window'
 import { invoke } from "@tauri-apps/api/tauri";
+import { populateTextEditor } from './textEditor';
 
 import { setupResize } from './setupResize'
 import FileIcon from './components/Icons/FileIcon.vue'
@@ -83,6 +76,7 @@ import SearchIcon from './components/Icons/SearchIcon.vue'
 import ThemeIcon from './components/Icons/ThemeIcon.vue'
 import SettingsIcon from './components/Icons/SettingsIcon.vue'
 import TextEditor from './components/Viewport/TextEditor.vue'
+import ViewportTab from './components/Viewport/ViewportTab.vue'
 
 export default {
 
@@ -92,7 +86,8 @@ export default {
     SearchIcon,
     ThemeIcon,
     SettingsIcon,
-    TextEditor
+    TextEditor,
+    ViewportTab
   },
   async mounted()
   {
@@ -111,11 +106,11 @@ async function setup()
 async function loadWildcard()
 {
   var item = document.getElementById('text-editor-0')!;
-  const text = ref("");
+  const text = ref();
   text.value = await invoke('load_wildcard');
-  console.log(item);
-  
-  item.innerHTML = text.value;
+  console.log(text.value);
+
+  populateTextEditor(item, text.value);
 }
 
 </script>

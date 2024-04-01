@@ -3,6 +3,30 @@
 
 use std::{fs, path::{Path, PathBuf}};
 
+struct Wildcard{
+    name: String,
+    content: Vec<String>
+}
+
+impl Wildcard {
+    fn new(name: &str, content: Vec<String>) -> Wildcard {
+        Wildcard { name: String::from(name), content: content }
+    }
+}
+
+impl serde::Serialize for Wildcard {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer {
+        use serde::ser::SerializeStruct;
+        
+        let mut state = serializer.serialize_struct("Wildcard", 2)?;
+        state.serialize_field("name", &self.name.to_string())?;
+        state.serialize_field("content", &self.content)?;
+        state.end()
+    }
+}
+
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -10,10 +34,11 @@ fn greet(name: &str) -> String {
 }
 
 #[tauri::command]
-fn load_wildcard() -> String {
+fn load_wildcard() -> Wildcard {
     let root = get_public_directory();
     let path = Path::new(root.as_str()).join("wildcard.txt");
-    fs::read_to_string(path).expect("Could not read file.")
+    let content = fs::read_to_string(&path).expect("Could not read file.");
+    Wildcard::new(path.to_str().unwrap().split('\\').last().unwrap(), content.split_whitespace().map(|v| v.to_string()).collect())
 }
 
 fn get_public_directory() -> String{

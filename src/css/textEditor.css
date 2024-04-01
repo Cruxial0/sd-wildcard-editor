@@ -1,0 +1,22 @@
+.index{
+    width: 20px;
+    border-right: 1px solid;
+    border-color: var(--highlight-color);
+    margin-right: 5px;
+}
+
+.content {
+    margin-left: 5px;
+}
+
+.line{
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    text-wrap: nowrap;
+}
+
+.selected-line{
+    background-color: var(--button-hover);
+    color: var(--text-color-hover);
+}

@@ -1,19 +1,27 @@
+const variable = "--context-menu-height";
 let m_pos_x: number;
 let m_pos_y: number;
 let active: HTMLElement;
 
+function update_variable(variable: string, value: string)
+{
+    document.documentElement.style.setProperty(variable, value);
+}
+
 function resize_x(e){
     const dx = e.x - m_pos_x;
     m_pos_x = e.x;
-
-    active.style.width = (parseInt(getComputedStyle(active, '').width) + dx) + "px";
+    
+    active.style.width = (parseInt(getComputedStyle(active, '').width) + dx) + "px";;
 }
 
 function resize_y(e){
     const dy = m_pos_y - e.y;
     m_pos_y = e.y;
 
-    active.style.height = (parseInt(getComputedStyle(active, '').height) + dy) + "px";
+    var val = (parseInt(getComputedStyle(active, '').height) + dy) + "px";
+    active.style.height = val;
+    update_variable(variable, val);
 }
 
 function setupElement(element: HTMLElement, direction: string)
@@ -63,11 +71,23 @@ export function setupResize()
 
     for (let i = 0; i < funcButtons.length; i++)
     {
-        funcButtons[i].addEventListener("mousedown", (funcBtn) =>
+        funcButtons[i].addEventListener("mousedown", function ()
         {
             var selected = document.querySelector('.function-button.selected');
             if (selected) selected.classList.remove('selected');
             funcButtons[i].classList.add('selected');
-        })
+        });
+    }
+
+    var tabs = document.getElementsByClassName('viewport-tab');
+
+    for (let j = 0; j < tabs.length; j++)
+    {
+        tabs[j].addEventListener("mousedown", function ()
+        {
+            var selected = document.querySelector('.viewport-tab.selected-tab');
+            if (selected) selected.classList.remove('selected-tab');
+            tabs[j].classList.add('selected-tab');
+        });
     }
 }
