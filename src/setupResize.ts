@@ -58,4 +58,16 @@ export function setupResize()
         document.removeEventListener('mousemove', resize_x, false);
         document.removeEventListener('mousemove', resize_y, false);
     });
+
+    var funcButtons = document.getElementsByClassName('function-button');
+
+    for (let i = 0; i < funcButtons.length; i++)
+    {
+        funcButtons[i].addEventListener("mousedown", (funcBtn) =>
+        {
+            var selected = document.querySelector('.function-button.selected');
+            if (selected) selected.classList.remove('selected');
+            funcButtons[i].classList.add('selected');
+        })
+    }
 }

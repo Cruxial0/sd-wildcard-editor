@@ -1,22 +1,20 @@
 <script setup lang="ts">
 // This starter template is using Vue 3 <script setup> SFCs
 // Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
-import { appWindow } from '@tauri-apps/api/window'
 
-console.log(document);
 </script>
 
 <template>
   <div class="base_container">
     <div id="title-bar" data-tauri-drag-region class="titlebar row outline-b color" style="height: 2em; z-index: 3;">
       <div class="row" style="margin-right: auto; align-items: center;">
-        <img src="/tauri.svg" style="padding: 7px; height: 70%;"/>
+        <img src="/tauri.svg" style="padding: 7px; height: 70%;" />
         <button class="context-button">File</button>
         <button class="context-button">Edit</button>
         <button class="context-button">Selection</button>
         <button class="context-button">View</button>
       </div>
-      
+
       <div class="titlebar-button" id="titlebar-minimize">
         <img src="https://api.iconify.design/mdi:window-minimize.svg" alt="minimize" class="filter-white" />
       </div>
@@ -29,10 +27,15 @@ console.log(document);
 
     </div>
     <div class="row" style="flex-grow: 1; left: 0;">
-      <div id="function-bar" class="column color" style="width: 4em;">
-
+      <div id="function-bar" class="function-bar column color">
+        <FileIcon class="function-button selected" />
+        <SearchIcon class="function-button" />
+        <div style="margin-top: auto;">
+          <ThemeIcon class="function-button" />
+          <SettingsIcon class="function-button" />
+        </div>
       </div>
-      <div id="nav-bar" class="column color outline-r" style="width: 20em; z-index: 2;">
+      <div id="nav-bar" class="nav-bar column color outline-r" style="width: 20em; z-index: 2;">
         <div class="resize-ew disableSelection" style="margin-left: auto;"></div>
       </div>
       <div class="column" style="flex-grow: 1;">
@@ -50,6 +53,12 @@ console.log(document);
                 </div>
               </div>
             </div>
+            <div id="viewport-content">
+              <button @click="loadWildcard">
+              click
+              </button>
+              <div id="text-editor-0"/>
+            </div>
           </div>
         </div>
         <div id="context-menu" class="row color outline-t" style="height: var(--context-menu-height);">
@@ -64,11 +73,27 @@ console.log(document);
   </div>
 </template>
 <script lang="ts">
+import { ref } from "vue";
+import { appWindow } from '@tauri-apps/api/window'
+import { invoke } from "@tauri-apps/api/tauri";
+
 import { setupResize } from './setupResize'
+import FileIcon from './components/Icons/FileIcon.vue'
+import SearchIcon from './components/Icons/SearchIcon.vue'
+import ThemeIcon from './components/Icons/ThemeIcon.vue'
+import SettingsIcon from './components/Icons/SettingsIcon.vue'
+import TextEditor from './components/Viewport/TextEditor.vue'
 
 export default {
 
   name: "MainWindow",
+  components: {
+    FileIcon,
+    SearchIcon,
+    ThemeIcon,
+    SettingsIcon,
+    TextEditor
+  },
   async mounted()
   {
     await setup();
@@ -82,4 +107,15 @@ async function setup()
   document.getElementById('titlebar-maximize')?.addEventListener('click', () => appWindow.toggleMaximize());
   document.getElementById('titlebar-close')?.addEventListener('click', () => appWindow.close());
 }
+
+async function loadWildcard()
+{
+  var item = document.getElementById('text-editor-0')!;
+  const text = ref("");
+  text.value = await invoke('load_wildcard');
+  console.log(item);
+  
+  item.innerHTML = text.value;
+}
+
 </script>
