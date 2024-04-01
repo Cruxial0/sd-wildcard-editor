@@ -1,22 +1,8 @@
 <script setup lang="ts">
-import FileIcon from '../Icons/FileIcon.vue';
 import FileIndicator from './FileIndicator.vue'
 import { populateTextEditor } from '../../textEditor.ts';
 import { ref, createApp } from "vue";
 import { invoke } from "@tauri-apps/api/tauri";
-
-
-
-async function click()
-{
-    
-    const text = ref();
-
-    text.value = await invoke('load_wildcard', { name: "wildcard" });
-    console.log(text.value);
-    
-}
-
 </script>
 
 <template>
@@ -54,10 +40,12 @@ async function setup()
             var wildcardName = instance.$data.file.replace(/\.[^/.]+$/, "");
             const wildcard = ref();
             wildcard.value = await invoke("load_wildcard", { name: wildcardName });
-            
+
             populateTextEditor(item, wildcard.value);
 
-
+            var selected = document.querySelector('.file-entry.selected-entry');
+            if (selected) selected.classList.remove('selected-entry');
+            instance.$el.classList.add('selected-entry');
         });
         hierarchy.appendChild(instance.$el);
     }

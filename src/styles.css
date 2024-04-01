@@ -127,6 +127,12 @@
   align-items: center;
 }
 
+.file-entry.selected-entry{
+  background-color: var(--comp-color-alt);
+  color: var(--text-color-hover);
+  stroke: var(--text-color-hover);
+}
+
 .file-entry:hover{
   background-color: var(--comp-color-alt);
   color: var(--text-color-hover);
