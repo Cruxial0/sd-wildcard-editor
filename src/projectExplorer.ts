@@ -1,21 +1,22 @@
 import { invoke } from "@tauri-apps/api/tauri";
-import { App, createApp, ref } from "vue";
+import { createApp, ref } from "vue";
 import FileIndicator from './components/NavBar/FileIndicator.vue';
-import { populateTextEditor } from './textEditor.ts';
 import { FileType, WildcardFile } from "./fileType.ts";
+import { WildcardDocument } from "./wildcardDocument.ts";
 
 let item;
 
 function addFileClickHandler(instance)
 {
-    
     instance.$el.addEventListener("mousedown", async function ()
     {
         var wildcardName = instance.$data.file.replace(/\.[^/.]+$/, "");
         const wildcard = ref();
         wildcard.value = await invoke("load_wildcard", { name: wildcardName });
 
-        populateTextEditor(item, wildcard.value);
+        var doc = new WildcardDocument(wildcard.value.content);
+        item.innerHTML = '';
+        item.appendChild(doc.render());
 
         var selected = document.querySelector('.file-entry.selected-entry');
         if (selected) selected.classList.remove('selected-entry');

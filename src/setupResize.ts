@@ -1,4 +1,5 @@
-const variable = "--context-menu-height";
+const cm_variable = "--context-menu-height";
+const nb_variable = "--nav-bar-width";
 let m_pos_x: number;
 let m_pos_y: number;
 let active: HTMLElement;
@@ -12,7 +13,8 @@ function resize_x(e){
     const dx = e.x - m_pos_x;
     m_pos_x = e.x;
     
-    active.style.width = (parseInt(getComputedStyle(active, '').width) + dx) + "px";;
+    var val = (parseInt(getComputedStyle(active, '').width) + dx) + "px";
+    update_variable(nb_variable, val);
 }
 
 function resize_y(e){
@@ -20,8 +22,7 @@ function resize_y(e){
     m_pos_y = e.y;
 
     var val = (parseInt(getComputedStyle(active, '').height) + dy) + "px";
-    active.style.height = val;
-    update_variable(variable, val);
+    update_variable(cm_variable, val);
 }
 
 function setupElement(element: HTMLElement, direction: string)
@@ -62,7 +63,6 @@ export function setupResize()
 
     document.addEventListener('mouseup', function()
     {
-        console.log("remove");
         document.removeEventListener('mousemove', resize_x, false);
         document.removeEventListener('mousemove', resize_y, false);
     });

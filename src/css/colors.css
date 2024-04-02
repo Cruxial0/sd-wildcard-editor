@@ -1,0 +1,44 @@
+:root {
+    --background-color: #1a1b26;
+    --border-color: #101014;
+    --border-size: 1px;
+    --comp-color: #16161e;
+    --comp-color-alt: #22222e;
+    --text-color: #a0a0a0;
+    --text-color-hover: #ffffff;
+    --button-hover: #353535;
+    --highlight-color: #FCB362;
+    --highlight-color-alt: #D87A6B;
+    --foreground-color: #d1d1d1;
+
+    --gtk1: #ff0000;
+
+    --filter-highlight: brightness(0) saturate(100%) invert(73%) sepia(26%) saturate(1227%) hue-rotate(137deg) brightness(89%) contrast(93%); 
+    --filter-foreground: brightness(0) saturate(100%) invert(92%) sepia(0%) saturate(1%) hue-rotate(252deg) brightness(92%) contrast(92%);
+}
+
+/* Syntax Highlighting similar to VSCode */
+.gtk1{
+    color: var(--gtk1);
+}
+.gtk2{
+    color: var(--gtk2);
+}
+.gtk3{
+    color: var(--gtk3);
+}
+.gtk4{
+    color: var(--gtk4);
+}
+.gtk5{
+    color: var(--gtk6);
+}
+.gtk7{
+    color: var(--gtk7);
+}
+.gtk8{
+    color: var(--gtk8);
+}
+.gtk9{
+    color: var(--gtk9);
+}

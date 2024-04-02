@@ -1,6 +1,5 @@
 import { createApp } from "vue";
-import "./styles.css";
-import "./css/textEditor.css"
+import "./main.css";
 import App from "./App.vue";
 
 createApp(App).mount("#app");

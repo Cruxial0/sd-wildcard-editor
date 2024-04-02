@@ -14,22 +14,9 @@
   -webkit-text-size-adjust: 100%;
   overflow: hidden;
 
-  --background-color: #1a1b26;
-  --border-color: #101014;
-  --border-size: 2px;
-  --comp-color: #16161e;
-  --comp-color-alt: #22222e;
-  --text-color: #a0a0a0;
-  --text-color-hover: #ffffff;
-  --button-hover: #353535;
-  --highlight-color: #24c8db;
-  --highlight-color-alt: #1da7b6;
-  --filter-highlight: brightness(0) saturate(100%) invert(73%) sepia(26%) saturate(1227%) hue-rotate(137deg) brightness(89%) contrast(93%); 
-  --foreground-color: #d1d1d1;
-  --filter-foreground: brightness(0) saturate(100%) invert(92%) sepia(0%) saturate(1%) hue-rotate(252deg) brightness(92%) contrast(92%);
-
   --context-menu-height: 10rem;
   --function-bar-width: 3em;
+  --nav-bar-width: 10em;
   --title-bar-height: 2em;
   --viewport-header-height: 2.4em;
 }
@@ -85,6 +72,11 @@
   margin-right: calc(0px - var(--border-size));
   border-color: var(--border-color);
   z-index: 1;
+}
+
+.viewport-container{
+  width: calc(100vw - var(--nav-bar-width) - var(--function-bar-width)); 
+  height: calc(100vh - var(--context-menu-height) - var(--title-bar-height) - var(--viewport-header-height));
 }
 
 .tab-outline{
@@ -156,8 +148,9 @@
 
 .function-bar{
   width: var(--function-bar-width);
+  min-width: var(--function-bar-width);
   align-items: center;
-  max-height: calc(100vh - var(--title-bar-height));
+  height: calc(100vh - var(--title-bar-height));
 }
 
 .function-button{
@@ -213,7 +206,11 @@
 }
 
 .selected-tab{
-  border-color: #24c8db;
+  border-color: var(--highlight-color-alt);
+}
+
+.selected-tab:hover{
+  border-color: var(--highlight-color);
 }
 
 .context-menu{
@@ -274,6 +271,10 @@ button{
   border-width: 0px;
   background-color: var(--comp-color);
   color: var(--text-color);
+}
+
+[contenteditable]{
+  outline: 0px solid transparent;
 }
 
 @media (prefers-color-scheme: dark) {

@@ -1,19 +1,58 @@
+:root{
+    --editor-padding-left: 5px;
+}
+
 .index{
-    width: 20px;
+    width: 40px;
+    min-width: 40px;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
     border-right: 1px solid;
     border-color: var(--highlight-color);
-    margin-right: 5px;
+}
+
+.index:hover{
+    color: var(--text-color-hover);
+}
+
+.text-editor{
+    overflow-y: auto; 
+    overflow-x: auto;
+    display:flex; 
+    flex-direction: column;
+    height: 100%;
+}
+
+.editor{
+    overflow-y: auto; 
+    overflow-x: auto;
+    display:flex; 
+    flex-direction: column;
+    height: 100%;
 }
 
 .content {
+    display: flex;
     margin-left: 5px;
 }
 
 .line{
     display: flex;
     flex-direction: row;
-    width: 100%;
+    flex-grow: 1;
+    width: calc(100% - var(--editor-padding-left));
     text-wrap: nowrap;
+    overflow-x: visible;
+    padding-left: 5px;
+}
+
+.line span{
+    display: flexbox;
+}
+
+.line:hover{
+    cursor: text;
 }
 
 .selected-line{

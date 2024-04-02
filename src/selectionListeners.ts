@@ -1,3 +1,14 @@
+export function addSelectionListenerWithCallback(element, baseClass, selectedClass, callback: (prev: HTMLElement | null, next: HTMLElement) => void)
+{
+    element.addEventListener("mousedown", function ()
+    {
+        var selected = document.querySelector('.' + baseClass + '.' + selectedClass);
+        if (selected) selected.classList.remove(selectedClass);
+        element.classList.add(selectedClass);
+        callback(selected as HTMLElement, element);
+    });
+}
+
 export function addSelectionListener(element, baseClass, selectedClass)
 {
     element.addEventListener("mousedown", function ()

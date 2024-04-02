@@ -5,7 +5,7 @@
 </script>
 
 <template>
-  <div class="base_container" style="max-width: 100%; max-height: 100%;">
+  <div class="base_container" style="max-width: 100vw; max-height: 100vh;">
     <div id="title-bar" data-tauri-drag-region class="titlebar row outline-b color">
       <div class="row" style="margin-right: auto; align-items: center;">
         <img src="/tauri.svg" style="padding: 7px; height: 70%;" />
@@ -36,7 +36,7 @@
         </div>
       </div>
       <div id="nav-bar" class="nav-bar row color outline-r"
-        style="width: 20em; z-index: 2; flex-direction: row-reverse;">
+        style="width: var(--nav-bar-width); z-index: 2; flex-direction: row-reverse;">
         <div class="resize-ew disableSelection" style="margin-left: auto;"></div>
         <div id="nav-bar-content" class="nav-bar-content column outline-b">
           <Suspense>
@@ -51,7 +51,7 @@
               <ViewportTab title="Wildcard.txt" />
               <ViewportTab title="Tab 2" />
             </div>
-            <div id="viewport-content" style="flex-grow: 1;">
+            <div id="viewport-content" class="viewport-container">
               <TextEditor id="text-editor-0" />
             </div>
           </div>
