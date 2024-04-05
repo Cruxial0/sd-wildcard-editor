@@ -2,7 +2,9 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { createApp, ref } from "vue";
 import FileIndicator from './components/NavBar/FileIndicator.vue';
 import { FileType, WildcardFile } from "./fileType.ts";
-import { WildcardDocument } from "./wildcardDocument.ts";
+import { WildcardDocument } from "./ts/document/wildcardDocument.ts";
+import { DocumentIndex } from "./ts/document/documentData.ts";
+import { DocumentItem } from "./ts/document/documentItem.ts";
 
 let item;
 
@@ -17,6 +19,7 @@ function addFileClickHandler(instance)
         var doc = new WildcardDocument(wildcard.value.content);
         item.innerHTML = '';
         item.appendChild(doc.render());
+        (doc.index(new DocumentIndex(4, 2, null)) as DocumentItem).get().classList.add("gtk1");
 
         var selected = document.querySelector('.file-entry.selected-entry');
         if (selected) selected.classList.remove('selected-entry');
@@ -42,7 +45,7 @@ function createFileInstance(componentProperties)
 export async function buildProjectExplorer()
 {
     // Set destination item
-    item = document.getElementById('text-editor-0')!;
+    item = document.getElementById('text-editor-0')?.querySelector('.line-container')!;
 
     const files = ref();
     files.value = await invoke('load_wildcards');

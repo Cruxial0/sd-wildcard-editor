@@ -35,8 +35,7 @@
           <SettingsIcon class="function-button" />
         </div>
       </div>
-      <div id="nav-bar" class="nav-bar row color outline-r"
-        style="width: var(--nav-bar-width); z-index: 2; flex-direction: row-reverse;">
+      <div id="nav-bar" class="nav-bar row color outline-r">
         <div class="resize-ew disableSelection" style="margin-left: auto;"></div>
         <div id="nav-bar-content" class="nav-bar-content column outline-b">
           <Suspense>

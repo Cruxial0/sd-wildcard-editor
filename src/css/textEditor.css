@@ -1,10 +1,14 @@
 :root{
     --editor-padding-left: 5px;
+    --editor-context-height: 18px;
+    --line-height: 22px;
+    --editor-width: calc(100vw - var(--nav-bar-width) - var(--function-bar-width));
 }
 
 .index{
     width: 40px;
     min-width: 40px;
+    max-height: var(--line-height);
     justify-content: center;
     align-items: center;
     text-align: center;
@@ -17,19 +21,29 @@
 }
 
 .text-editor{
-    overflow-y: auto; 
-    overflow-x: auto;
-    display:flex; 
-    flex-direction: column;
-    height: 100%;
+    width: var(--editor-width);
+}
+
+.editor-context{
+    display: flex;
+    height: var(--editor-context-height);
+    width: 97%; /* idk why this works */
+    align-items: center;
+    color: var(--text-color-hover);
+    flex-direction: row-reverse;
+    font-size: 12px;
+}
+
+.line-container{
+    height: calc(100vh - var(--context-menu-height) - var(--title-bar-height) - var(--viewport-header-height) - var(--editor-context-height));
+    width: var(--editor-width);
 }
 
 .editor{
     overflow-y: auto; 
     overflow-x: auto;
-    display:flex; 
+    display: flex; 
     flex-direction: column;
-    height: 100%;
 }
 
 .content {
@@ -42,13 +56,10 @@
     flex-direction: row;
     flex-grow: 1;
     width: calc(100% - var(--editor-padding-left));
+    max-height: var(--line-height);
     text-wrap: nowrap;
     overflow-x: visible;
     padding-left: 5px;
-}
-
-.line span{
-    display: flexbox;
 }
 
 .line:hover{

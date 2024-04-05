@@ -9,6 +9,7 @@
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
+  
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
@@ -108,6 +109,10 @@
 
 .nav-bar{
   min-width: 180px;
+  width: var(--nav-bar-width);
+  height: calc(100vh - var(--title-bar-height));
+  z-index: 2;
+  flex-direction: row-reverse;
 }
 
 .file-entry{
