@@ -31,11 +31,10 @@ export class WildcardDocument
         {
             console.log("Can't create a linebreak from an incomplete DocumentIndex object. " + idx.toString());
             return;
-        };
-
-        var span = this.index(idx.toSpan()) as DocumentSpan;
-        var text = span.popTextFromIndex(idx.char!, DOMDirection.FORWARD);
+        }
         
+        var text = (this.index(idx.toLine()) as DocumentLine).breakText(idx);
+
         this.shiftLineIndicesDirectionally(1, idx.line! + 1, DOMDirection.FORWARD);
 
         var line = new DocumentLine(idx.line! + 1, this);

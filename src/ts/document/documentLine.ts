@@ -84,9 +84,22 @@ export class DocumentLine extends DocumentItem
     
     public breakText(idx: DocumentIndex): string
     {
-        if (idx.char == null || idx.span == null) return ""
-        return ""
-            
+        if (idx.char == null || idx.span == null) return "";
+
+        console.log(this.spans);
+        console.log(this.spans[idx.span]);
+        
+        var text = this.spans[idx.span].popTextFromIndex(idx.char, DOMDirection.FORWARD);
+        var targets: DocumentSpan[] = this.spans.splice(idx.span + 1, (this.spans.length - 1) - idx.span + 1);
+        targets.forEach((x) =>
+        {
+            var val = x.getTextFromIndex(0, DOMDirection.FORWARD)[0];
+            text += val;
+            this.content.removeChild(x.get());
+        });
+        console.log(text);
+        
+        return text;
     }
 
     public appendText(text: string)
