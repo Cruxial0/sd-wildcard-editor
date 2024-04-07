@@ -88,10 +88,15 @@ export class WildcardDocument
     private addTag(idx: DocumentIndex)
     {
         var line = this.index(idx.toLine()) as DocumentLine;
-        line.appendText(', ');
+        (line.index(idx.toSpan()) as DocumentSpan).insertText(', ', idx.char!);
         line.updateSelf();
-        line.get().appendChild(document.createElement('span'));
-        var idx = this.prevIndex.plus([0, 2, 0]);
+        if (idx.char! == line.getLast().getText().length)
+        {
+            var span = document.createElement('span');
+            line.get().children[0].appendChild(span);
+        }
+        
+        var idx = this.prevIndex.plus([0, 2, 1]);
         idx.char = 0;
         this.setIndex(idx, true, "KeyComma");
     }
@@ -102,10 +107,10 @@ export class WildcardDocument
         
         if (idx.span! != this.prevIndex.span! || idx.line! != this.prevIndex.line!)
         {
-            console.log("IDX:" + this.prevIndex);
-            if (this.prevIndex.span != null)
+            
+            if (this.prevIndex.char != null && this.prevIndex.line != null)
             {
-                console.log("IDX:" + this.prevIndex);
+                if(idx.line != this.prevIndex.line) (this.index(this.prevIndex.toLine()) as DocumentLine).updateSelf();
                 
                 var span = (this.index(this.prevIndex.toSpan()) as DocumentSpan).get();
                 if(span.classList.contains('selected-span')) span.classList.remove('selected-span');
@@ -339,10 +344,10 @@ export class WildcardDocument
             var data = ((e as InputEvent).data);         
             if (!data) return;
             var span = (this.index(this.prevIndex.toSpan()) as DocumentSpan);
-            this.prevIndex.char! += data.length;
-            (span.getParent() as DocumentLine).updateSelf();
+            var idx = this.prevIndex.copy();
+            idx.char! += data.length;
             span.updateVisualText();
-            this.setIndex(this.prevIndex, true, "userInput");
+            this.setIndex(idx, true, "userInput");
             
         });
 
