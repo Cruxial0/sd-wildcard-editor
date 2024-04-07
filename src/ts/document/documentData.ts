@@ -52,13 +52,15 @@ export class DocumentIndex
         return newIdx;
     }
 
+    public copy(): DocumentIndex
+    {
+        return new DocumentIndex(this.line, this.span, this.char);
+    }
+
     private handleSubtraction(part1, part2): number
     {    
         if (part1 == null) part1 == 0;
         if (part2 == null) part2 == 0;
-
-        console.log(part1 + " - " + part2 + " = " + (part1 - part2));
-        
         return part1 - part2;
     }
 
@@ -66,7 +68,6 @@ export class DocumentIndex
     {
         if (part1 == null) part1 == 0;
         if (part2 == null) part2 == 0;
-
         return part1 + part2;
     }
 

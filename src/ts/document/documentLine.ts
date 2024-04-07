@@ -116,11 +116,21 @@ export class DocumentLine extends DocumentItem
         return this.spans[this.spans.length - 1];
     }
 
+    public getFirst(): DocumentSpan
+    {
+        return this.spans[0];
+    }
+
+    public count(): number
+    {
+        return this.spans.length;
+    }
+
     public updateSelf()
     {
         var sections = this.self.querySelectorAll('span');
         var text = "";
-        sections.forEach((x) => text += x.innerHTML);
+        sections.forEach((x) => text += formatOutput(x.innerHTML));
         this.content.innerHTML = '';
         this.spans = [];
         this.insertCSV(text);

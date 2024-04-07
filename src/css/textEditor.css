@@ -72,6 +72,16 @@
     border-bottom: 1px solid;
 }
 
+.selected-span{
+    background-color: var(--button-hover);
+    border-radius: 5px;
+    padding: 0px calc(3px + var(--comp-padding-r)) 0px calc(3px + var(--comp-padding-l));
+}
+
+.selected-line .selected-span {
+    background-color: var(--comp-color-alt-hover) !important;
+}
+
 .editor{
     display: flex; 
     width: 100%;

@@ -85,10 +85,37 @@ export class WildcardDocument
         this.setIndex(newIndex, true, this.deleteLine.name);
     }
 
+    private addTag(idx: DocumentIndex)
+    {
+        var line = this.index(idx.toLine()) as DocumentLine;
+        line.appendText(', ');
+        line.updateSelf();
+        line.get().appendChild(document.createElement('span'));
+        var idx = this.prevIndex.plus([0, 2, 0]);
+        idx.char = 0;
+        this.setIndex(idx, true, "KeyComma");
+    }
+
     public setIndex(idx: DocumentIndex, setCursor: boolean, caller)
     {
+        console.log("AAA:" + (idx.span! == this.prevIndex.span!) + " (" + idx.span! + ", " + this.prevIndex.span! + ")");
+        
+        if (idx.span! != this.prevIndex.span! || idx.line! != this.prevIndex.line!)
+        {
+            console.log("IDX:" + this.prevIndex);
+            if (this.prevIndex.span != null)
+            {
+                console.log("IDX:" + this.prevIndex);
+                
+                var span = (this.index(this.prevIndex.toSpan()) as DocumentSpan).get();
+                if(span.classList.contains('selected-span')) span.classList.remove('selected-span');
+            }
+                
+            (this.index(idx.toSpan()) as DocumentSpan).get().classList.add('selected-span');
+        }
+
         this.prevIndex = idx;
-        //console.log(caller + "->" + idx.minus(new DocumentIndex(1, 1, 1)));
+        console.log(caller + "->" + idx.minus(new DocumentIndex(1, 1, 1)));
         
         document.querySelector('#coordinate-label')!.innerHTML = idx.toString();
 
@@ -159,7 +186,28 @@ export class WildcardDocument
 
     private arrowKeyHorizontal(direction: DOMDirection)
     {
-        
+        var modifier = direction == DOMDirection.BACK ? -1 : 1;
+        var idx = this.prevIndex.copy();
+        var currSpan = this.index(idx.toSpan()) as DocumentSpan;
+        var charLen = currSpan.getText().length;
+        var spanLen = (currSpan.getParent() as DocumentLine).count();
+
+        if ((idx.char! + modifier <= 0 || idx.char! + modifier > charLen) && (idx.span! + modifier >= 0 && idx.span! + modifier < spanLen))
+        {
+            idx.span! = idx.span! + modifier;
+            var newSpan = (this.index(idx.toSpan()) as DocumentSpan);
+            idx.char = direction == DOMDirection.BACK ? newSpan.getText().length : 0;
+        }
+        else if ((idx.char! + modifier < 0 || idx.char! + modifier > charLen) && (idx.span! + modifier <= 0 || idx.span! + modifier >= spanLen) && (idx.line! + modifier >= 0 && idx.line! + modifier <= this.lines.length - 1))
+        {
+            idx.line! = idx.line! + modifier;
+            var newLine = (this.index(idx.toLine()) as DocumentLine);
+            idx.span = direction == DOMDirection.BACK ? newLine.getLast().getIndex() : 0;
+            idx.char = direction == DOMDirection.BACK ? newLine.getLast().getText().length : 0;
+        }
+        else if (idx.char! + modifier >= 0 && idx.char! + modifier <= charLen) idx.char! = idx.char! + modifier;
+
+        this.setIndex(idx, true, this.arrowKeyHorizontal.name);
     }
 
     private arrowKeyVertical(direction: DOMDirection)
@@ -167,13 +215,14 @@ export class WildcardDocument
         var modifier = direction == DOMDirection.BACK ? -1 : 1;
 
         var index = new DocumentIndex(null, null, null);
-        if (direction == DOMDirection.BACK) index.line = (this.prevIndex.line! + modifier >= 0) ? this.prevIndex.line! + modifier : 0;
-        else index.line = (this.prevIndex.line! + modifier < this.lines.length) ? this.prevIndex.line! + modifier : this.lines.length - 1;
+        var prev = this.prevIndex.copy();
+        if (direction == DOMDirection.BACK) index.line = (prev.line! + modifier >= 0) ? prev.line! + modifier : 0;
+        else index.line = (prev.line! + modifier < this.lines.length) ? prev.line! + modifier : this.lines.length - 1;
         
         var line = this.lines[index.line];
 
         var placeAtEnd = false;
-        if (line.get().childNodes.length > this.prevIndex.span!) index.span = this.prevIndex.span;
+        if (line.get().childNodes.length > prev.span!) index.span = prev.span;
         else
         {
             index.span = line.get().childNodes.length - 1;
@@ -182,7 +231,7 @@ export class WildcardDocument
         
         var span = this.index(index) as DocumentSpan;
         
-        if (span.get().innerHTML.length > this.prevIndex.char! && !placeAtEnd) index.char = this.prevIndex.char!;
+        if (span.get().innerHTML.length > prev.char! && !placeAtEnd) index.char = prev.char!;
         else index.char = span.get().innerHTML.length;
         
         this.setIndex(index, true, this.arrowKeyVertical.name);
@@ -227,16 +276,18 @@ export class WildcardDocument
         this.element.addEventListener("keypress", (e) =>
         {
             console.log("PRESS:" + e.code);
-            
+            var span = this.index(this.prevIndex.toSpan()) as DocumentSpan;
+
             switch (e.code)
             {
                 case 'Space':
-                    e.preventDefault();
-                    console.log("hiii");
-                    
-                    var span = this.index(this.prevIndex.toSpan()) as DocumentSpan;
+                    e.preventDefault();              
                     span.insertText('&nbsp;', this.prevIndex.char!);
                     this.setIndex(this.prevIndex.plus([0, 0, 1]), true, "KeySpace");
+                    break;
+                case 'Comma':
+                    e.preventDefault();
+                    this.addTag(this.prevIndex);
                     break;
             }
         })
@@ -260,8 +311,9 @@ export class WildcardDocument
                         jumpSpan = true;
                         return;
                     }
-                    this.prevIndex.char! -= 1;
-                    this.setIndex(this.prevIndex, false, "Key_Backspace (default)");
+                    var idx = this.prevIndex;
+                    idx.char! -= 1;
+                    this.setIndex(idx, false, "Key_Backspace (default)");
                     break;
                 case 'ArrowUp':
                     e.preventDefault();
@@ -271,13 +323,14 @@ export class WildcardDocument
                     e.preventDefault();
                     this.arrowKeyVertical(DOMDirection.FORWARD);
                     break;
-                case 'ArrowRight':
-                    e.preventDefault();
-                    break;
                 case 'ArrowLeft':
                     e.preventDefault();
+                    this.arrowKeyHorizontal(DOMDirection.BACK);
                     break;
-                    
+                case 'ArrowRight':
+                    e.preventDefault();
+                    this.arrowKeyHorizontal(DOMDirection.FORWARD);
+                    break; 
                     
             }
         });
@@ -285,16 +338,19 @@ export class WildcardDocument
         this.editor.addEventListener("input", (e) => {
             var data = ((e as InputEvent).data);         
             if (!data) return;
+            var span = (this.index(this.prevIndex.toSpan()) as DocumentSpan);
             this.prevIndex.char! += data.length;
+            (span.getParent() as DocumentLine).updateSelf();
+            span.updateVisualText();
             this.setIndex(this.prevIndex, true, "userInput");
-            (this.index(this.prevIndex.toSpan()) as DocumentSpan).updateVisualText();
+            
         });
 
         this.element.addEventListener("click", (e) => {
             console.log("DOCUMENT TARGET: " + e.target);
         });
 
-        this.editor.addEventListener("scroll", (e) =>
+        this.editor.addEventListener("scroll", () =>
         {
             this.margin.style.overflowY = "scroll";
             this.margin.scrollTop = this.editor.scrollTop;
