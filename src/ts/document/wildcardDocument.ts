@@ -45,6 +45,9 @@ export class WildcardDocument
         this.margin.insertBefore(line.getIndexElement(), this.margin.childNodes[idx.line! + 1]);
         this.editor.insertBefore(line.get(), this.editor.childNodes[idx.line! + 1]);
         line.select();
+        this.setIndex(new DocumentIndex(line.getIndex(), 0, 0), true, this.lineBreak.name);
+        line.updateText();
+        (this.index(idx.toLine()) as DocumentLine).getLast().updateVisualText();
     }
 
     public deleteLine(idx: DocumentIndex)
@@ -56,39 +59,46 @@ export class WildcardDocument
         };
         
         if (idx.line! - 1 < 0) return;
-        var text = this.lines[idx.line!].getTextAfterIndex(idx);
+        var text = this.lines[idx.line!].getText();
         var offset = offsetFromText(text);
-        console.log(text)
-        console.log("offset: " + offset.minus(new DocumentIndex(1, 1, 1)));
+        if (offset.span! > 0) offset.char = 0;
+        
+        console.log("LINE TEXT: " + text);
+        //console.log("offset: " + offset.minus(new DocumentIndex(1, 1, 1)));
 
         var newLine = this.lines[idx.line! - 1];
         newLine.appendText(text);
-        this.editor.removeChild(this.lines[idx.line!].get());
-        this.margin.removeChild(this.lines[idx.line!].getIndexElement())
-        this.lines.splice(idx.line!, 1);
+        
         this.shiftLineIndicesDirectionally(-1, idx.line!, DOMDirection.FORWARD);
 
         var lastSpan = newLine.getLast();
-        console.log(lastSpan.get().innerHTML);
-        var newIndex = new DocumentIndex(this.prevIndex.line! - 1, lastSpan.getIndex(), lastSpan.get().innerHTML.length - 1).minus(offset);
-        console.log("newIdx: " + newIndex.minus(new DocumentIndex(1, 1, 1)));
+        console.log("oldIdx: " + new DocumentIndex(newLine.getIndex(), lastSpan.getIndex(), lastSpan.getText().length));
+        console.log(offset);
         
-        this.setIndex(newIndex, this.deleteLine.name);
-        this.setCursorAtIndex(newIndex);
+        var newIndex = new DocumentIndex(this.prevIndex.line! - 1, lastSpan.getIndex(), lastSpan.getText().length).minus(offset);
+        if (newIndex.char! < 0) newIndex.char = 0;
+        //console.log("newIdx: " + newIndex.minus(new DocumentIndex(1, 1, 1)));
+        
+        this.editor.removeChild(this.lines[idx.line!].get());
+        this.margin.removeChild(this.lines[idx.line!].getIndexElement());
+        this.lines.splice(idx.line!, 1);
+
+        this.setIndex(newIndex, true, this.deleteLine.name);
     }
 
-    public setIndex(idx: DocumentIndex, caller)
+    public setIndex(idx: DocumentIndex, setCursor: boolean, caller)
     {
         this.prevIndex = idx;
-        console.log(caller + "->" + idx.minus(new DocumentIndex(1, 1, 1)));
+        //console.log(caller + "->" + idx.minus(new DocumentIndex(1, 1, 1)));
         
         document.querySelector('#coordinate-label')!.innerHTML = idx.toString();
 
         var sel = window.getSelection()!.getRangeAt(0);
-        if (idx.char! != sel.endOffset! - 1)
+        if (idx.char! != sel.endOffset!)
         {
-            console.log("INDEX MISMATCH: " + idx.char + " (expected: " + (sel.endOffset! - 1) + ")");
+            console.log("INDEX MISMATCH: " + idx.char + " (expected: " + (sel.endOffset!) + ")");
         }
+        if (setCursor) this.setCursorAtIndex(idx);
     }
 
     private shiftLineIndicesDirectionally(change:number, idx: number, direction: DOMDirection)
@@ -114,14 +124,13 @@ export class WildcardDocument
     private format()
     {
         this.element.className = "row";
-        this.margin.className = "column disableSelection";
+        this.margin.className = "indexMargin column disableSelection";
         this.editor.className = "editor";
 
         this.element.style.height = "100%";
 
         this.editor.setAttribute('contenteditable', 'true');
         this.editor.setAttribute('spellcheck', 'false');
-        this.editor.style.width = "100%";
 
         this.element.appendChild(this.margin);
         this.element.appendChild(this.editor);
@@ -131,8 +140,14 @@ export class WildcardDocument
     {
         var range = document.createRange();
         var node = (this.index(idx.toSpan()) as DocumentItem);
+        console.log(node);
 
-        range.setStart(node.get().firstChild!, idx.char!);
+        if (!node.get().firstChild)
+        {
+            node.get().innerHTML = ' ';
+        }
+
+        range.setStart(node.get().firstChild ? node.get().firstChild! : node.get()!, idx.char!);
         var sel = window.getSelection();
         range.collapse(true);
         sel?.removeAllRanges();
@@ -171,12 +186,12 @@ export class WildcardDocument
         if (span.get().innerHTML.length > this.prevIndex.char! && !placeAtEnd) index.char = this.prevIndex.char!;
         else index.char = span.get().innerHTML.length;
         
-        this.setIndex(index, this.arrowKeyVertical);
-        this.setCursorAtIndex(index);
+        this.setIndex(index, true, this.arrowKeyVertical.name);
     }
 
     private setupKeybinds()
     {
+        var jumpSpan = false;
         this.element.addEventListener("keyup", (e) =>
         {
             console.log(e.code);
@@ -186,9 +201,7 @@ export class WildcardDocument
                 case 'Enter':
                     e.preventDefault();
                     break;
-                case 'Space':
-                    e.preventDefault();
-                    break;
+            
                 case 'KeyC':
                     if (!e.ctrlKey) break;
                     e.preventDefault();
@@ -198,14 +211,36 @@ export class WildcardDocument
                 case 'ArrowDown': break;
                 case 'ArrowRight': break;
                 case 'ArrowLeft': break;
-                case 'Backspace': break;
-                
-                default:
-                    this.prevIndex.char! += 1;
-                    this.setIndex(this.prevIndex, "documentIncrement");
+                case 'Backspace':
+                    (this.index(this.prevIndex.toSpan()) as DocumentSpan).updateVisualText();
+                    if (jumpSpan)
+                    {
+                        var adjacentSpan = this.index(this.prevIndex.minus([0, 1, 0]).toSpan()) as DocumentSpan;
+                        var newIndex = adjacentSpan.getFullIndex();
+                        newIndex.char = adjacentSpan.getText().length;
+                        this.setIndex(newIndex, true, "Key_Backspace (char == 0)");
+                        jumpSpan = false;
+                    }
                     break;
             }
         });
+
+        this.element.addEventListener("keypress", (e) =>
+        {
+            console.log("PRESS:" + e.code);
+            
+            switch (e.code)
+            {
+                case 'Space':
+                    e.preventDefault();
+                    console.log("hiii");
+                    
+                    var span = this.index(this.prevIndex.toSpan()) as DocumentSpan;
+                    span.insertText('&nbsp;', this.prevIndex.char!);
+                    this.setIndex(this.prevIndex.plus([0, 0, 1]), true, "KeySpace");
+                    break;
+            }
+        })
 
         this.element.addEventListener("keydown", (e) =>
         {
@@ -221,16 +256,13 @@ export class WildcardDocument
                         e.preventDefault();
                         this.deleteLine(this.prevIndex);
                         return;
-                    } else if (this.prevIndex.char == 0)
+                    } else if (this.prevIndex.char == 1 && this.prevIndex.span != 0)
                     {
-                        var adjacentSpan = this.index(new DocumentIndex(this.prevIndex.line, this.prevIndex.span! - 1, null)) as DocumentSpan;
-                        var newIndex = new DocumentIndex(this.prevIndex.line, adjacentSpan.getIndex(), adjacentSpan.get().innerHTML.length - 1);
-                        this.setIndex(newIndex, "Key_Backspace (char == 0)");
-                        this.setCursorAtIndex(this.prevIndex);
+                        jumpSpan = true;
                         return;
                     }
                     this.prevIndex.char! -= 1;
-                    this.setIndex(this.prevIndex, "Key_Backspace (default)");
+                    this.setIndex(this.prevIndex, false, "Key_Backspace (default)");
                     break;
                 case 'ArrowUp':
                     e.preventDefault();
@@ -246,18 +278,28 @@ export class WildcardDocument
                 case 'ArrowLeft':
                     e.preventDefault();
                     break;
+                    
+                    
             }
         });
 
-        this.element.addEventListener("input", (e) => {
-            var data = ((e as InputEvent).data);
+        this.editor.addEventListener("input", (e) => {
+            var data = ((e as InputEvent).data);         
             if (!data) return;
-            this.prevIndex.char! += data.length - 1;
-            this.setIndex(this.prevIndex, "userInput");
+            this.prevIndex.char! += data.length;
+            this.setIndex(this.prevIndex, true, "userInput");
+            (this.index(this.prevIndex.toSpan()) as DocumentSpan).updateVisualText();
         });
 
         this.element.addEventListener("click", (e) => {
             console.log("DOCUMENT TARGET: " + e.target);
+        });
+
+        this.editor.addEventListener("scroll", (e) =>
+        {
+            this.margin.style.overflowY = "scroll";
+            this.margin.scrollTop = this.editor.scrollTop;
+            this.margin.style.overflowY = "hidden";
         });
     }
 

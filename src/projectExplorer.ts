@@ -3,8 +3,6 @@ import { createApp, ref } from "vue";
 import FileIndicator from './components/NavBar/FileIndicator.vue';
 import { FileType, WildcardFile } from "./fileType.ts";
 import { WildcardDocument } from "./ts/document/wildcardDocument.ts";
-import { DocumentIndex } from "./ts/document/documentData.ts";
-import { DocumentItem } from "./ts/document/documentItem.ts";
 
 let item;
 
@@ -19,7 +17,6 @@ function addFileClickHandler(instance)
         var doc = new WildcardDocument(wildcard.value.content);
         item.innerHTML = '';
         item.appendChild(doc.render());
-        (doc.index(new DocumentIndex(4, 2, null)) as DocumentItem).get().classList.add("gtk1");
 
         var selected = document.querySelector('.file-entry.selected-entry');
         if (selected) selected.classList.remove('selected-entry');

@@ -1,4 +1,4 @@
-export var SPLIT_REGEX = /(,)/g;
+export var SPLIT_REGEX = /(, )/g;
 
 export class DocumentIndex
 {
@@ -28,29 +28,37 @@ export class DocumentIndex
         return new DocumentIndex(this.line, this.span, null);
     }
 
-    public minus(idx: DocumentIndex): DocumentIndex
+    
+    public minus(idx: DocumentIndex): DocumentIndex;
+    public minus(idx: [number, number, number]): DocumentIndex;
+    public minus(idx: DocumentIndex | [number, number, number]): DocumentIndex
     {
+        console.log((idx as DocumentIndex).span!);
         var newIdx = new DocumentIndex(null, null, null);
-        newIdx.line = this.handleSubtraction(this.line, idx.line);
-        newIdx.span = this.handleSubtraction(this.span, idx.span);
-        newIdx.char = this.handleSubtraction(this.char, idx.char);
+        newIdx.line = this.handleSubtraction(this.line, idx instanceof DocumentIndex ? idx.line! : idx[0]);
+        newIdx.span = this.handleSubtraction(this.span, idx instanceof DocumentIndex ? idx.span! : idx[1]);
+        newIdx.char = this.handleSubtraction(this.char, idx instanceof DocumentIndex ? idx.char! : idx[2]);
         return newIdx;
     }
 
+    public plus(idx: [number, number, number]): DocumentIndex;
     public plus(idx: DocumentIndex): DocumentIndex
+    public plus(idx: DocumentIndex | [number, number, number]): DocumentIndex
     {
         var newIdx = new DocumentIndex(null, null, null);
-        newIdx.line = this.handleAddition(this.line, idx.line);
-        newIdx.span = this.handleAddition(this.span, idx.span);
-        newIdx.char = this.handleAddition(this.char, idx.char);
+        newIdx.line = this.handleAddition(this.line, idx instanceof DocumentIndex ? idx.line! : idx[0]);
+        newIdx.span = this.handleAddition(this.span, idx instanceof DocumentIndex ? idx.span! : idx[1]);
+        newIdx.char = this.handleAddition(this.char, idx instanceof DocumentIndex ? idx.char! : idx[2]);
         return newIdx;
     }
 
     private handleSubtraction(part1, part2): number
-    {
+    {    
         if (part1 == null) part1 == 0;
         if (part2 == null) part2 == 0;
 
+        console.log(part1 + " - " + part2 + " = " + (part1 - part2));
+        
         return part1 - part2;
     }
 
@@ -89,7 +97,7 @@ export function formatInput(input: string): string
 export function formatOutput(output: string): string
 {
     var input = "";
-    input = output.replace(/&nbsp;/g, ' ');
+    input = output.replace(/&nbsp;/g, ' ').replace(/<br>/g, '');
     return input;
 }
 
@@ -97,5 +105,7 @@ export function offsetFromText(text: string): DocumentIndex
 {
     var spans = formatOutput(text).split(SPLIT_REGEX);
     var chars = spans.splice(spans.length - 1, 1)[0];
-    return new DocumentIndex(0, spans.length, chars.length - 1);
+    console.log(chars);
+    
+    return new DocumentIndex(0, spans.length, chars.length);
 }

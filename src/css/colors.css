@@ -4,6 +4,7 @@
     --border-size: 1px;
     --comp-color: #16161e;
     --comp-color-alt: #22222e;
+    --comp-color-alt-hover: #1b1b24;
     --text-color: #a0a0a0;
     --text-color-hover: #ffffff;
     --button-hover: #353535;
@@ -41,4 +42,21 @@
 }
 .gtk9{
     color: var(--gtk9);
+}
+.warning{
+    display: inline-block;
+    position: relative;
+}
+
+.warning:after {
+    content: "~~~~~~~~~~~~";
+    font-size: 0.6em;
+    font-weight: 700;
+    font-family: Times New Roman, Serif;
+    color: red;
+    width: 100%;
+    position: absolute;
+    top: 1em;
+    left: -1px;
+    overflow: hidden;
 }

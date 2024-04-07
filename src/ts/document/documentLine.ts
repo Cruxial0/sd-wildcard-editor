@@ -20,6 +20,8 @@ export class DocumentLine extends DocumentItem
         });
 
         this.spans.forEach((y) => this.content.appendChild(y.get()));
+        console.log("Line initialized (ID: " + this.idx + "): " + this.spans.length + " children created");
+        
     }
 
     public index(idx: DocumentIndex): string | DocumentItem | null {
@@ -79,6 +81,13 @@ export class DocumentLine extends DocumentItem
 
         return text;
     }
+    
+    public breakText(idx: DocumentIndex): string
+    {
+        if (idx.char == null || idx.span == null) return ""
+        return ""
+            
+    }
 
     public appendText(text: string)
     {
@@ -104,6 +113,13 @@ export class DocumentLine extends DocumentItem
         this.insertCSV(text);
     }
 
+    public updateText()
+    {
+        var text = "";
+        this.spans.forEach((x) => { text += x.getText(); });
+        this.visualText = text;
+    }
+
     private format()
     {
         this.self.id = "line-" + this.idx;
@@ -122,9 +138,9 @@ export class DocumentLine extends DocumentItem
                 if (selection > 0)
                 {
                     span = this.spans[this.spans.length - 1];
-                    (this.parent as WildcardDocument).setIndex(new DocumentIndex(this.idx, span.getIndex(), formatOutput(span.get().innerHTML).length - 1), "lineClick");
+                    (this.parent as WildcardDocument).setIndex(new DocumentIndex(this.idx, span.getIndex(), formatOutput(span.get().innerHTML).length), false, "lineClick");
                 }
-                if (selection == 0) (this.parent as WildcardDocument).setIndex(new DocumentIndex(this.idx, 0, 0), "lineClick");
+                if (selection == 0) (this.parent as WildcardDocument).setIndex(new DocumentIndex(this.idx, 0, 0), false, "lineClick");
             }
             else
             {
@@ -141,5 +157,6 @@ export class DocumentLine extends DocumentItem
         this.content = document.createElement('div');
         this.margin = this.generateIndexElement();
         this.format();
+        this.updateText();
     }
 }

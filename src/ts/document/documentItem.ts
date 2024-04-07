@@ -1,4 +1,4 @@
-import { DocumentIndex } from "./documentData";
+import { DOMDirection, DocumentIndex } from "./documentData";
 import { WildcardDocument } from "./wildcardDocument";
 
 export class DocumentItem
@@ -7,6 +7,7 @@ export class DocumentItem
     protected parent : DocumentItem | WildcardDocument;
     protected idx: number = 0;
     protected self: HTMLElement;
+    protected visualText: string = "";
 
     public get(): HTMLElement { return this.self }
     public update(): void { return }
@@ -40,6 +41,23 @@ export class DocumentItem
     {
         return this.idx;
     } 
+
+    public getText(): string
+    {
+        return this.visualText;
+    }
+
+    public getTextFromIndex(idx: number, direction: DOMDirection): [part: string, remainder: string]
+    {
+        var output: [string, string] = ["", ""]
+        output[0] = this.visualText.substring(
+            direction == DOMDirection.FORWARD ? idx : 0,
+            direction == DOMDirection.FORWARD ? this.visualText.length : idx);
+        output[1] = this.visualText.substring(
+            direction == DOMDirection.BACK ? idx : 0,
+            direction == DOMDirection.BACK ? this.visualText.length : idx);
+        return output;
+    }
 
     protected getCursorPosition(): number | null
     {
