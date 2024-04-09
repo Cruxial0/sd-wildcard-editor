@@ -77,10 +77,10 @@ export class DocumentIndex
     }
 }
 
-class DocumentStyle
-{
-    public lineHeight = '18px';
-}
+// class DocumentStyle
+// {
+//     public lineHeight = '18px';
+// }
 
 export enum DOMDirection
 {
