@@ -11,6 +11,9 @@ A system allowing users to set up semi-automated templates. Useful for character
 - [ ] Rich and intuitive interface<br>
 To help the user streamline their process with max efficiency.
 
+- [ ] Tag Catagorization<br>
+The ability to catagorize tags. Will improve automation.
+
 ### Extras
 - [ ] RNG Wildcards<br>
 Allow users to adjust the odds of each entry in a wildcard appearing by adjusting sliders in the interface.
