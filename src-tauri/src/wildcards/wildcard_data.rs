@@ -1,4 +1,4 @@
-use std::{fs, path::PathBuf};
+use std::{fmt::format, fs, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 
@@ -66,14 +66,17 @@ impl CompositoryWildcard {
 impl WildcardFunctionality for SimpleWildcard {
     fn write(&self) {
         let text = self.data.content.join("\n");
-        let mut path = self
-            .data
-            .abs_path
+        let mut path = self.data.abs_path
             .to_str()
             .expect("Could not unwrap path")
             .to_owned();
-        path.push_str("_new");
-        fs::write(path, text).expect("unable to write path");
+        let parts: Vec<String> = path.split(".").map(|x| x.to_owned()).collect();
+        let mut part1: String = String::new();
+        let _ = &parts[0..parts.len() - 1].iter().for_each(|x| if x != "" {part1 += x});
+        part1 = part1.replace("\\\\", "\\..\\");
+        let output_path = format!("{0}{1}{2}", part1, "_new.", parts.last().unwrap());
+
+        fs::write(output_path, text).expect("unable to write path");
     }
 
     fn get_data(&self) -> &WildcardData {

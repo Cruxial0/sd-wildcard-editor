@@ -1,5 +1,5 @@
 use std::{
-    borrow::BorrowMut, fs, path::{Path, PathBuf}
+    fs, path::{Path, PathBuf}
 };
 
 use super::wildcard_data::{CompositoryWildcard, SimpleWildcard, Wildcard, WildcardFunctionality};
@@ -19,13 +19,9 @@ pub fn load_wildcard(name: String) -> SimpleWildcard {
         .map(|x| x.to_string())
         .collect();
     SimpleWildcard::new(
-        path.first()
-            .unwrap()
-            .to_str()
-            .unwrap()
-            .split('\\')
-            .last()
-            .unwrap(),
+        path.first().unwrap().to_str()
+            .unwrap().split('\\')
+            .last().unwrap(),
         content,
         path.first().unwrap().to_owned(),
     )
@@ -66,6 +62,7 @@ fn load_wildcards_from_paths(paths: Vec<PathBuf>) -> Vec<Wildcard> {
             content.split_whitespace().map(|v| v.to_string()).collect(),
             (&path).to_owned(),
         );
+        println!("{:?}", path);
         wildcards.push(Wildcard::Simple(wildcard));
     }
     wildcards

@@ -1,3 +1,5 @@
+import { invoke } from "@tauri-apps/api";
+import { Wildcard } from "../data/wildcard";
 import { DOMDirection, DocumentIndex, offsetFromText } from "./documentData";
 import { DocumentItem } from "./documentItem";
 import { DocumentLine } from "./documentLine";
@@ -5,6 +7,7 @@ import { DocumentSpan } from "./documentSpan";
 
 export class WildcardDocument
 {
+    private wildcard: Wildcard;
     private element: HTMLElement;
     private margin: HTMLDivElement;
     private editor: HTMLDivElement;
@@ -377,20 +380,49 @@ export class WildcardDocument
         });
     }
 
-    constructor(text: string[])
+    private getLines(): string[]
     {
+        var lines: string[] = []
+        this.lines.forEach((x) =>
+        {
+            x.updateText();
+            lines.push(x.getText());
+        });
+        console.log(lines);
+        
+        return lines;
+    }
+
+    private addButtonHandlers()
+    { 
+        var writeBtn = document.querySelector("#writeBtn") as HTMLDivElement;
+        console.log(writeBtn);
+        
+        writeBtn.onmousedown = () =>
+        {
+            console.log("wrote text");
+            this.wildcard.data.content = this.getLines();
+            invoke('write_wildcard', { wildcard: this.wildcard });
+        }
+    }
+
+    constructor(wildcard: Wildcard)
+    {
+        this.wildcard = wildcard;
         this.element = document.createElement('div');
         this.margin = document.createElement('div');
         this.editor = document.createElement('div');
         this.prevIndex = new DocumentIndex(null, null, null);
-        for (let i = 0; i < text.length; i++)
+        for (let i = 0; i < wildcard.data.content.length; i++)
         {
             var line = new DocumentLine(i, this);
-            line.insertCSV(text[i]);
+            line.insertCSV(wildcard.data.content[i]);
             this.lines.push(line);
         }
         this.format();
+        this.addButtonHandlers();
         this.setupKeybinds();
+        
     }
 }
 

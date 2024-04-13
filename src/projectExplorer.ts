@@ -3,8 +3,6 @@ import { createApp, ref } from "vue";
 import FileIndicator from './components/NavBar/FileIndicator.vue';
 import { FileType, WildcardFile } from "./fileType.ts";
 import { WildcardDocument } from "./ts/document/wildcardDocument.ts";
-import { DocumentIndex } from "./ts/document/documentData.ts";
-import { DocumentSpan } from "./ts/document/documentSpan.ts";
 import { Wildcard } from "./ts/data/wildcard.ts";
 
 let item;
@@ -15,9 +13,9 @@ function addFileClickHandler(instance)
     {
         var wildcardName = instance.$data.file.replace(/\.[^/.]+$/, "");
         const wildcard = ref<Wildcard>();
-        wildcard.value = await invoke("load_wildcard", { name: wildcardName }) as Wildcard;
+        wildcard.value = await invoke("load_wildcard", { name: wildcardName });
 
-        var doc = new WildcardDocument(wildcard.value.data.content);
+        var doc = new WildcardDocument(wildcard.value!);
         item.innerHTML = '';
         item.appendChild(doc.render());
 
@@ -44,7 +42,7 @@ function createFileInstance(componentProperties)
 
 function createSingleWildcard(wildcard: Wildcard)
 {
-    const instance = createFileInstance({ name: wildcard.data.name, files: null });
+    const instance = createFileInstance({ name: wildcard.data.name });
     addIconToElement(FileType.WILDCARD_STD, instance.$el);
     addFileClickHandler(instance);
     return instance;
@@ -54,7 +52,7 @@ function createCompWildcard(compWildcard)
 {
     const subject = createFileInstance({ name: compWildcard.data.name });
     subject.$el.querySelector("#file-entry").classList.add("gtk1");
-    addIconToElement(FileType.WILDCARD_COMBO, subject.$el);
+    addIconToElement(FileType.DIRECTORY, subject.$el);
     
     for (let i = 0; i < compWildcard.children.length; i++)
     {

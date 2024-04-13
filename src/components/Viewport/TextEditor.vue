@@ -35,6 +35,7 @@
             </div>
         </div>
         <div id="editor-context" class="editor-context color outline-t">
+            <div id="writeBtn" class="context-button">Write</div>
             <span id="coordinate-label" style="margin-right: 5px;">(3, 2, 1)</span>
         </div>
     </div>
