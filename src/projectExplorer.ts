@@ -3,6 +3,8 @@ import { createApp, ref } from "vue";
 import FileIndicator from './components/NavBar/FileIndicator.vue';
 import { FileType, WildcardFile } from "./fileType.ts";
 import { WildcardDocument } from "./ts/document/wildcardDocument.ts";
+import { DocumentIndex } from "./ts/document/documentData.ts";
+import { DocumentSpan } from "./ts/document/documentSpan.ts";
 
 let item;
 
@@ -13,6 +15,8 @@ function addFileClickHandler(instance)
         var wildcardName = instance.$data.file.replace(/\.[^/.]+$/, "");
         const wildcard = ref();
         wildcard.value = await invoke("load_wildcard", { name: wildcardName });
+        console.log(wildcard.value);
+        
 
         var doc = new WildcardDocument(wildcard.value.content);
         item.innerHTML = '';

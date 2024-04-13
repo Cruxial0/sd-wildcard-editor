@@ -20,7 +20,7 @@ export class DocumentLine extends DocumentItem
         });
 
         this.spans.forEach((y) => this.content.appendChild(y.get()));
-        console.log("Line initialized (ID: " + this.idx + "): " + this.spans.length + " children created");
+        // console.log("Line initialized (ID: " + this.idx + "): " + this.spans.length + " children created");
         
     }
 

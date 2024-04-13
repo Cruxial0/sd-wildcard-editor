@@ -143,6 +143,20 @@ export class WildcardDocument
 
     private renderLines()
     {
+        let options = {
+            root: document.querySelector(".line"),
+            rootMargin: "0px",
+            threshold: 1.0
+        }
+        let observer = new IntersectionObserver((e) =>
+        {
+            e.forEach((entry) =>
+            {
+                console.log(entry.target);
+                
+            })
+        }, options)
+        observer.observe(this.editor);
         for (let i = 0; i < this.lines.length; i++) this.renderLine(i);
     }
 

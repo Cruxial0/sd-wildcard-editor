@@ -86,7 +86,8 @@
     display: flex; 
     width: 100%;
     flex-direction: column;
-    min-height: 100%;
+    flex-grow: 0;
+    height: auto;
     overflow-x: auto;
     overflow-y: scroll;
 }
