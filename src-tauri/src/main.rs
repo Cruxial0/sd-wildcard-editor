@@ -9,7 +9,9 @@ fn main() {
     tauri::Builder::default()
             .invoke_handler(tauri::generate_handler![
             loader::load_wildcard,
-            loader::load_wildcards
+            loader::load_wildcards,
+            loader::write_wildcard,
+            loader::load_comp_wildcard
 
         ])
             .run(tauri::generate_context!())

@@ -1,11 +1,14 @@
 use std::{fs, path::PathBuf};
 
-pub trait Wildcard {
+use serde::{Deserialize, Serialize};
+
+pub trait WildcardFunctionality {
     fn write(&self);
     fn get_data(&self) -> &WildcardData;
     fn set_content(&mut self, content: Vec<String>);
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct WildcardData {
     pub name: String,
     pub content: Vec<String>,
@@ -26,8 +29,21 @@ impl WildcardData {
     }
 }
 
+#[derive(Serialize, Deserialize)]
+pub enum Wildcard {
+    Simple(SimpleWildcard),
+    Compository(CompositoryWildcard)
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct SimpleWildcard {
     data: WildcardData,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct CompositoryWildcard {
+    data: WildcardData,
+    children: Vec<Wildcard>
 }
 
 impl SimpleWildcard {
@@ -38,7 +54,16 @@ impl SimpleWildcard {
     }
 }
 
-impl Wildcard for SimpleWildcard {
+impl CompositoryWildcard {
+    pub fn new(name: &str, children: Vec<Wildcard>) -> CompositoryWildcard{
+        CompositoryWildcard {
+            data: WildcardData::new(name, Vec::new(), PathBuf::new()),
+            children: children
+        }
+    }
+}
+
+impl WildcardFunctionality for SimpleWildcard {
     fn write(&self) {
         let text = self.data.content.join("\n");
         let mut path = self
@@ -60,16 +85,16 @@ impl Wildcard for SimpleWildcard {
     }
 }
 
-impl serde::Serialize for SimpleWildcard {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        use serde::ser::SerializeStruct;
+// impl serde::Serialize for SimpleWildcard {
+//     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+//     where
+//         S: serde::Serializer,
+//     {
+//         use serde::ser::SerializeStruct;
 
-        let mut state = serializer.serialize_struct("Wildcard", 2)?;
-        state.serialize_field("name", &self.data.name.to_string())?;
-        state.serialize_field("content", &self.data.content)?;
-        state.end()
-    }
-}
+//         let mut state = serializer.serialize_struct("Wildcard", 2)?;
+//         state.serialize_field("name", &self.data.name.to_string())?;
+//         state.serialize_field("content", &self.data.content)?;
+//         state.end()
+//     }
+// }

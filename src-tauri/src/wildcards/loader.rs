@@ -1,6 +1,8 @@
-use std::{fs, path::{Path, PathBuf}};
+use std::{
+    borrow::BorrowMut, fs, path::{Path, PathBuf}
+};
 
-use super::wildcard_data::{SimpleWildcard, Wildcard};
+use super::wildcard_data::{CompositoryWildcard, SimpleWildcard, Wildcard, WildcardFunctionality};
 
 #[tauri::command]
 pub fn load_wildcard(name: String) -> SimpleWildcard {
@@ -11,16 +13,28 @@ pub fn load_wildcard(name: String) -> SimpleWildcard {
         Some(vec!["txt"]),
         Some(name),
     );
-    let content = fs::read_to_string(&path.first().unwrap()).expect("Could not read file.").lines().map(|x| x.to_string()).collect();
+    let content = fs::read_to_string(&path.first().unwrap())
+        .expect("Could not read file.")
+        .lines()
+        .map(|x| x.to_string())
+        .collect();
     SimpleWildcard::new(
-        path.first().unwrap().to_str().unwrap().split('\\').last().unwrap(),
+        path.first()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .split('\\')
+            .last()
+            .unwrap(),
         content,
-        path.first().unwrap().to_owned()
+        path.first().unwrap().to_owned(),
     )
 }
 
+
+
 #[tauri::command]
-pub fn load_wildcards() -> Vec<SimpleWildcard> {
+pub fn load_wildcards() -> Vec<Wildcard> {
     let root = get_public_directory();
     let path = Path::new(root.as_str()).join("wildcards");
     load_wildcards_from_paths(walk_directory(
@@ -30,20 +44,29 @@ pub fn load_wildcards() -> Vec<SimpleWildcard> {
     ))
 }
 
-pub fn write_wildcard(wildcard: SimpleWildcard){
+#[tauri::command]
+pub fn load_comp_wildcard() -> CompositoryWildcard{
+    let mut wildcards = load_wildcards();
+    let wildcard = Wildcard::Compository(CompositoryWildcard::new("Test", vec![Wildcard::Simple(SimpleWildcard::new("Test", vec![String::from("a"), String::from("b")], PathBuf::new()))]));
+    wildcards.push(wildcard);
+    CompositoryWildcard::new("CompositoryWildcard", wildcards)
+}
+
+#[tauri::command]
+pub fn write_wildcard(wildcard: SimpleWildcard) {
     wildcard.write();
 }
 
-fn load_wildcards_from_paths(paths: Vec<PathBuf>) -> Vec<SimpleWildcard> {
-    let mut wildcards: Vec<SimpleWildcard> = vec![];
+fn load_wildcards_from_paths(paths: Vec<PathBuf>) -> Vec<Wildcard> {
+    let mut wildcards: Vec<Wildcard> = vec![];
     for path in paths {
         let content = fs::read_to_string(&path).expect("Could not read file.");
         let wildcard = SimpleWildcard::new(
             path.to_str().unwrap().split('\\').last().unwrap(),
             content.split_whitespace().map(|v| v.to_string()).collect(),
-            (&path).to_owned()
+            (&path).to_owned(),
         );
-        wildcards.push(wildcard);
+        wildcards.push(Wildcard::Simple(wildcard));
     }
     wildcards
 }

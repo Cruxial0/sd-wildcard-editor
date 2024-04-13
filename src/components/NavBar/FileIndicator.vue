@@ -3,14 +3,19 @@ export default {
     props: ['name'],
     data: (instance) =>
     {
-        return {file: instance.name }
+        return { file: instance.name }
     }
 }
 </script>
 
 <template>
-    <div id="file-entry" class="file-entry row">
-        <!--<FileIcon class="file-icon" style="height: 100%; margin-bottom: 5px;" />-->
-        <a style="margin-left: 5px; font-size: 10px;">{{ name }}</a>
+    <div>
+        <div id="file-entry" class="file-entry row">
+            <!--<FileIcon class="file-icon" style="height: 100%; margin-bottom: 5px;" />-->
+            <a style="margin-left: 5px; font-size: 10px;">{{ name }}</a>
+        </div>
+        <div id="children" class="column" style="padding-left: 15px;">
+
+        </div>
     </div>
 </template>
