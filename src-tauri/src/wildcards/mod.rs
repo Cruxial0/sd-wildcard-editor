@@ -1,2 +1,2 @@
-pub mod wildcard;
+pub mod wildcard_data;
 pub mod loader;

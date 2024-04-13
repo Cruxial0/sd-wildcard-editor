@@ -1,9 +1,9 @@
 use std::{fs, path::{Path, PathBuf}};
 
-use super::wildcard::{SimpleWildcard, Wildcard};
+use super::wildcard_data::{SimpleWildcard, Wildcard};
 
 #[tauri::command]
-pub unsafe fn load_wildcard(name: String) -> SimpleWildcard {
+pub fn load_wildcard(name: String) -> SimpleWildcard {
     let root = get_public_directory();
     let base_path = Path::new(root.as_str()).join("wildcards");
     let path = walk_directory(
