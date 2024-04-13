@@ -70,10 +70,9 @@ impl WildcardFunctionality for SimpleWildcard {
             .to_str()
             .expect("Could not unwrap path")
             .to_owned();
-        let parts: Vec<String> = path.split(".").map(|x| x.to_owned()).collect();
+        let parts: Vec<String> = fs::canonicalize(path).unwrap().to_str().unwrap().split(".").map(|x| x.to_owned()).collect();
         let mut part1: String = String::new();
         let _ = &parts[0..parts.len() - 1].iter().for_each(|x| if x != "" {part1 += x});
-        part1 = part1.replace("\\\\", "\\..\\");
         let output_path = format!("{0}{1}{2}", part1, "_new.", parts.last().unwrap());
 
         fs::write(output_path, text).expect("unable to write path");
