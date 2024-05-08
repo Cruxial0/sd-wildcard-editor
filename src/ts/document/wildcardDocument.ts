@@ -4,6 +4,7 @@ import { DOMDirection, DocumentIndex, offsetFromText } from "./documentData";
 import { DocumentItem } from "./documentItem";
 import { DocumentLine } from "./documentLine";
 import { DocumentSpan } from "./documentSpan";
+import { ref } from "vue";
 
 export class WildcardDocument
 {
@@ -397,12 +398,15 @@ export class WildcardDocument
     { 
         var writeBtn = document.querySelector("#writeBtn") as HTMLDivElement;
         console.log(writeBtn);
+        const data = ref();
         
         writeBtn.onmousedown = () =>
         {
             console.log("wrote text");
             this.wildcard.data.content = this.getLines();
-            invoke('write_wildcard', { wildcard: this.wildcard });
+            //invoke('write_wildcard', { wildcard: this.wildcard });
+            console.log("loading from db");
+            data.value = invoke('load_wildcard_db').then((x) => console.log(x));
         }
     }
 

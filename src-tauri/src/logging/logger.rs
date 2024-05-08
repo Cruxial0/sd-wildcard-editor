@@ -16,7 +16,7 @@ pub enum LogSeverity {
 
 /// Prints a result to the rust console
 fn internal_log(content: String, date_time: String, source: String, is_error: bool){
-    println!("[{}] {} | {}", format_datetime_backend(date_time), format_source_backend(source, is_error), format_content_backend(content, is_error));
+    println!("[{}] {} | {}", format_datetime_backend(date_time, is_error), format_source_backend(source, is_error), format_content_backend(content, is_error));
 }
 
 /// Prints a result to the frontend console

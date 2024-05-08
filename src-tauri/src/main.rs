@@ -21,7 +21,8 @@ fn main() {
             loader::load_wildcard,
             loader::load_wildcards,
             loader::write_wildcard,
-            loader::load_comp_wildcard
+            loader::load_comp_wildcard,
+            loader::load_wildcard_db
         ])
         .setup(|app| {
             let handle = app.handle();

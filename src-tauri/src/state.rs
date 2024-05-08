@@ -8,13 +8,13 @@ pub struct AppState {
 }
 
 pub trait ServiceAccess {
-    fn db<F, TResult>(&self, operation: F) -> TResult where F: FnOnce(&Connection) -> TResult;
+    fn db<'a, F, TResult>(&self, operation: F) -> TResult where F: FnOnce(&Connection) -> TResult;
 
-    fn db_mut<F, TResult>(&self, operation: F) -> TResult where F: FnOnce(&mut Connection) -> TResult;
+    fn db_mut<'a, F, TResult>(&self, operation: F) -> TResult where F: FnOnce(&mut Connection) -> TResult;
 }
 
 impl ServiceAccess for AppHandle {
-    fn db<F, TResult>(&self, operation: F) -> TResult where F: FnOnce(&Connection) -> TResult {
+    fn db<'a, F, TResult>(&self, operation: F) -> TResult where F: FnOnce(&Connection) -> TResult {
         let app_state: State<AppState> = self.state();
         let db_connection_guard = app_state.db.lock().unwrap();
         let db = db_connection_guard.as_ref().unwrap();
@@ -22,7 +22,7 @@ impl ServiceAccess for AppHandle {
         operation(db)
     }
 
-    fn db_mut<F, TResult>(&self, operation: F) -> TResult where F: FnOnce(&mut Connection) -> TResult {
+    fn db_mut<'a, F, TResult>(&self, operation: F) -> TResult where F: FnOnce(&mut Connection) -> TResult {
         let app_state: State<AppState> = self.state();
         let mut db_connection_guard = app_state.db.lock().unwrap();
         let db = db_connection_guard.as_mut().unwrap();

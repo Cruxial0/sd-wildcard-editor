@@ -1,10 +1,6 @@
 use colored::Color;
 
-//[DATETIME] {SOURCE} | {CONTENT}
-pub const LOG_FORMAT: &str = "[{}] {} | {}";
-
 pub const DATETIME_FORMAT: &str = "%H:%M:%S";
-pub const DATETIME_INDENT: usize = 16;
 pub const DATETIME_COLOR: Color = Color::BrightBlack;
 
 pub const SOURCE_INDENT: usize = 16;

@@ -7,7 +7,7 @@ impl DatabaseMutation for MutationEnvironmentDevelopment {
     fn get_batch_command(&self) -> String {
         "
         CREATE TABLE IF NOT EXISTS Projects (
-            ID INTEGER PRIMARY KEY AUTOINCREMENT, 
+            ID INTEGER PRIMARY KEY, 
             Name VARCHAR(255) NOT NULL, 
             Description VARCHAR(255), 
             Wildcards TEXT, 
@@ -15,7 +15,7 @@ impl DatabaseMutation for MutationEnvironmentDevelopment {
         );
     
         CREATE TABLE IF NOT EXISTS Wildcards (
-            ID INTEGER PRIMARY KEY AUTOINCREMENT,
+            ID INTEGER PRIMARY KEY,
             Name VARCHAR(255), 
             Path VARCHAR(255), 
             Lines TEXT

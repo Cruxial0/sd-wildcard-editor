@@ -1,8 +1,11 @@
-use std::{fmt::format, fs, path::PathBuf};
+use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
+use tauri::AppHandle;
+
+use crate::{logging::logger, state::ServiceAccess};
 
 pub trait WildcardFunctionality {
-    fn write(&self);
+    fn write(&self, app: AppHandle);
     fn get_data(&self) -> &WildcardData;
     fn set_content(&mut self, content: Vec<String>);
 }
@@ -63,23 +66,16 @@ impl CompositoryWildcard {
 }
 
 impl WildcardFunctionality for SimpleWildcard {
-    fn write(&self) {
-        let text = self.data.content.join("\n");
-        let path = self.data.abs_path
-            .to_str().expect("Could not unwrap path").to_owned();
-        let parts: Vec<String> = fs::canonicalize(path).unwrap()
-            .to_str().unwrap()
-            .split(".")
-            .map(|x| x.to_owned()).collect();
-        let mut part1: String = String::new();
-        let _ = &parts[0..parts.len() - 1].iter().for_each(|x| {
-            if x != "" {
-                part1 += x
-            }
-        });
-        let output_path = format!("{0}{1}{2}", part1, "_new.", parts.last().unwrap());
+    fn write(&self, app: AppHandle) {
+        let lines: String = self.data.content.iter().map(|x| "\"".to_owned() + x + "\", ").collect();
+        let data = format!("{}{}{}", "[", lines.split_at(lines.len() - 2).0, "]");
 
-        fs::write(output_path, text).expect("unable to write path");
+        let sql = "INSERT INTO Wildcards(Name, Path, Lines) VALUES (?1, ?2, ?3)";
+        let change = app.db(|x| x.execute(sql, (&self.data.name, self.data.abs_path.to_str(), data)));
+        match change {
+            Ok(_) => logger::log(&format!("{}{}{}", "Successfully saved '", self.data.name, "' to database"), "WildcardSave", logger::LogVisibility::Backend),
+            Err(x) => logger::log_error(&format!("{}{:?}", "An error occured: ", x), "WildcardSave", logger::LogVisibility::Backend),
+        }
     }
 
     fn get_data(&self) -> &WildcardData {

@@ -2,7 +2,9 @@ use std::{
     fs, path::{Path, PathBuf}
 };
 
-use crate::logging::logger;
+use tauri::AppHandle;
+
+use crate::{database::{datatypes::db_wildcard::DatabaseWildcard, operations::{db_load, db_item, tables::DatabaseTable}}, logging::logger};
 
 use super::wildcard_data::{CompositoryWildcard, SimpleWildcard, Wildcard, WildcardFunctionality};
 
@@ -51,8 +53,20 @@ pub fn load_comp_wildcard() -> CompositoryWildcard{
 }
 
 #[tauri::command]
-pub fn write_wildcard(wildcard: SimpleWildcard) {
-    wildcard.write();
+pub fn load_wildcard_db(app: AppHandle) -> SimpleWildcard{
+    let result = match db_load::load(app, 3, DatabaseTable::Wildcards, &DatabaseWildcard::default()){
+        Some(x) => x,
+        None => {
+            panic!()
+        },
+    };
+
+    SimpleWildcard::new(&result.name, result.lines, result.path)
+}
+
+#[tauri::command]
+pub fn write_wildcard(app: AppHandle, wildcard: SimpleWildcard) {
+    wildcard.write(app);
 }
 
 fn load_wildcards_from_paths(paths: Vec<PathBuf>) -> Vec<Wildcard> {

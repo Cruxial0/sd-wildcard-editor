@@ -10,16 +10,15 @@ static LOG_SOURCE: &str = "DatabaseMigration";
 lazy_static! {
     static ref MUTATIONS: HashMap<u32, Box<dyn DatabaseMutation + Sync>> = {
         let mut m: HashMap<u32, Box<dyn DatabaseMutation + Sync>> = HashMap::new();
-        let v1 = Box::new(MutationEnvironmentDevelopment);
-        let v2 = Box::new(TestMutation);
 
-        let mut1: Box<dyn DatabaseMutation + Sync> = Box::new(*v1);
-        let mut2: Box<dyn DatabaseMutation + Sync> = Box::new(*v2);
-
-        m.insert(1, mut1);
-        m.insert(2, mut2);
+        m.insert(1, to_mutation(MutationEnvironmentDevelopment));
+        m.insert(2, to_mutation(TestMutation));
         m
     };
+}
+
+fn to_mutation<'a>(item: impl DatabaseMutation + Sync + 'a) -> Box<dyn DatabaseMutation + Sync + 'a> {
+    Box::new(item)
 }
 
 /// Applies all mutations from the current version and down, starting from the first and ending at the latest.
@@ -33,7 +32,7 @@ pub fn apply_mutations(tx: &mut Transaction, version: u32) {
 
     match tx.execute_batch(&command) {
         Ok(_) => logger::log("Successfully applied database migrations", LOG_SOURCE, logger::LogVisibility::Backend),
-        Err(x) => logger::log(&format!("An error occured while applying database migrations: {:?}", x), LOG_SOURCE, logger::LogVisibility::Backend)
+        Err(x) => logger::log_error(&format!("An error occured while applying database migrations: {:?}", x), LOG_SOURCE, logger::LogVisibility::Backend)
     }
 }
 

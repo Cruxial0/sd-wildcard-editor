@@ -67,7 +67,7 @@ impl FrontendConversion for Color {
             Color::BrightMagenta => FrontendColor::BrightMagenta,
             Color::BrightCyan => FrontendColor::BrightCyan,
             Color::BrightWhite => FrontendColor::BrightWhite,
-            Color::TrueColor { r, g, b } => FrontendColor::Black,
+            Color::TrueColor { .. } => FrontendColor::Black,
         }
     }
 }

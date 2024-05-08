@@ -9,7 +9,7 @@ use crate::logging::logger;
 use super::mutations::mutation_selector;
 
 const CURRENT_DB_VERSION: u32 = 1;
-const DEBUG: bool = true;
+const DEBUG: bool = false;
 static LOG_SOURCE: &str = "DatabaseInitialize";
 
 /// Initializes the database connection, creating the .sqlite file if needed, and upgrading the database
