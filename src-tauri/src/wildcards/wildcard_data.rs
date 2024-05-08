@@ -1,5 +1,4 @@
 use std::{fmt::format, fs, path::PathBuf};
-
 use serde::{Deserialize, Serialize};
 
 pub trait WildcardFunctionality {
@@ -32,7 +31,7 @@ impl WildcardData {
 #[derive(Serialize, Deserialize)]
 pub enum Wildcard {
     Simple(SimpleWildcard),
-    Compository(CompositoryWildcard)
+    Compository(CompositoryWildcard),
 }
 
 #[derive(Serialize, Deserialize)]
@@ -43,7 +42,7 @@ pub struct SimpleWildcard {
 #[derive(Serialize, Deserialize)]
 pub struct CompositoryWildcard {
     data: WildcardData,
-    children: Vec<Wildcard>
+    children: Vec<Wildcard>,
 }
 
 impl SimpleWildcard {
@@ -55,10 +54,10 @@ impl SimpleWildcard {
 }
 
 impl CompositoryWildcard {
-    pub fn new(name: &str, children: Vec<Wildcard>) -> CompositoryWildcard{
+    pub fn new(name: &str, children: Vec<Wildcard>) -> CompositoryWildcard {
         CompositoryWildcard {
             data: WildcardData::new(name, Vec::new(), PathBuf::new()),
-            children: children
+            children: children,
         }
     }
 }
@@ -66,13 +65,18 @@ impl CompositoryWildcard {
 impl WildcardFunctionality for SimpleWildcard {
     fn write(&self) {
         let text = self.data.content.join("\n");
-        let mut path = self.data.abs_path
-            .to_str()
-            .expect("Could not unwrap path")
-            .to_owned();
-        let parts: Vec<String> = fs::canonicalize(path).unwrap().to_str().unwrap().split(".").map(|x| x.to_owned()).collect();
+        let path = self.data.abs_path
+            .to_str().expect("Could not unwrap path").to_owned();
+        let parts: Vec<String> = fs::canonicalize(path).unwrap()
+            .to_str().unwrap()
+            .split(".")
+            .map(|x| x.to_owned()).collect();
         let mut part1: String = String::new();
-        let _ = &parts[0..parts.len() - 1].iter().for_each(|x| if x != "" {part1 += x});
+        let _ = &parts[0..parts.len() - 1].iter().for_each(|x| {
+            if x != "" {
+                part1 += x
+            }
+        });
         let output_path = format!("{0}{1}{2}", part1, "_new.", parts.last().unwrap());
 
         fs::write(output_path, text).expect("unable to write path");
@@ -86,6 +90,7 @@ impl WildcardFunctionality for SimpleWildcard {
         self.data.set_content(content)
     }
 }
+
 
 // impl serde::Serialize for SimpleWildcard {
 //     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>

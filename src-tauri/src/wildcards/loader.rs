@@ -2,6 +2,8 @@ use std::{
     fs, path::{Path, PathBuf}
 };
 
+use crate::logging::logger;
+
 use super::wildcard_data::{CompositoryWildcard, SimpleWildcard, Wildcard, WildcardFunctionality};
 
 #[tauri::command]
@@ -62,7 +64,7 @@ fn load_wildcards_from_paths(paths: Vec<PathBuf>) -> Vec<Wildcard> {
             content.split_whitespace().map(|v| v.to_string()).collect(),
             (&path).to_owned(),
         );
-        println!("{:?}", path);
+        logger::log(&format!("{:?}", path), "WildcardLoad", logger::LogVisibility::Backend);
         wildcards.push(Wildcard::Simple(wildcard));
     }
     wildcards
