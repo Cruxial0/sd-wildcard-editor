@@ -1,115 +1,17 @@
-use std::{
-    fs, path::{Path, PathBuf}
-};
-
+use std::path::PathBuf;
 use tauri::AppHandle;
 
-use crate::{database::{datatypes::db_wildcard::DatabaseWildcard, operations::{db_load, db_item, tables::DatabaseTable}}, logging::logger};
-
-use super::wildcard_data::{CompositoryWildcard, SimpleWildcard, Wildcard, WildcardFunctionality};
+use crate::database::{datatypes::{db_settings::DatabaseSettings, db_wildcard::DatabaseWildcard}, operations::db_item::DatabaseItem};
 
 #[tauri::command]
-pub fn load_wildcard(name: String) -> SimpleWildcard {
-    let root = get_public_directory();
-    let base_path = Path::new(root.as_str()).join("wildcards");
-    let path = walk_directory(
-        String::from(base_path.to_str().unwrap()),
-        Some(vec!["txt"]),
-        Some(name),
-    );
-    let content = fs::read_to_string(&path.first().unwrap())
-        .expect("Could not read file.")
-        .lines()
-        .map(|x| x.to_string())
-        .collect();
-    SimpleWildcard::new(
-        path.first().unwrap().to_str()
-            .unwrap().split('\\')
-            .last().unwrap(),
-        content,
-        path.first().unwrap().to_owned(),
-    )
-}
+pub fn load_wildcard_db(app: AppHandle) -> DatabaseWildcard{      
+    let mut db_settings = DatabaseSettings::load_or_default(&app, 1);
+    let wc = DatabaseWildcard::default();
 
+    db_settings.add_tracked_dir(get_public_directory());
 
-
-#[tauri::command]
-pub fn load_wildcards() -> Vec<Wildcard> {
-    let root = get_public_directory();
-    let path = Path::new(root.as_str()).join("wildcards");
-    load_wildcards_from_paths(walk_directory(
-        String::from(path.to_str().unwrap()),
-        Some(vec!["txt"]),
-        None,
-    ))
-}
-
-#[tauri::command]
-pub fn load_comp_wildcard() -> CompositoryWildcard{
-    let mut wildcards = load_wildcards();
-    let wildcard = Wildcard::Compository(CompositoryWildcard::new("Test", vec![Wildcard::Simple(SimpleWildcard::new("Test", vec![String::from("a"), String::from("b")], PathBuf::new()))]));
-    wildcards.push(wildcard);
-    CompositoryWildcard::new("CompositoryWildcard", wildcards)
-}
-
-#[tauri::command]
-pub fn load_wildcard_db(app: AppHandle) -> SimpleWildcard{
-    let result = match db_load::load(app, 3, DatabaseTable::Wildcards, &DatabaseWildcard::default()){
-        Some(x) => x,
-        None => {
-            panic!()
-        },
-    };
-
-    SimpleWildcard::new(&result.name, result.lines, result.path)
-}
-
-#[tauri::command]
-pub fn write_wildcard(app: AppHandle, wildcard: SimpleWildcard) {
-    wildcard.write(app);
-}
-
-fn load_wildcards_from_paths(paths: Vec<PathBuf>) -> Vec<Wildcard> {
-    let mut wildcards: Vec<Wildcard> = vec![];
-    for path in paths {
-        let content = fs::read_to_string(&path).expect("Could not read file.");
-        let wildcard = SimpleWildcard::new(
-            path.to_str().unwrap().split('\\').last().unwrap(),
-            content.split_whitespace().map(|v| v.to_string()).collect(),
-            (&path).to_owned(),
-        );
-        logger::log(&format!("{:?}", path), "WildcardLoad", logger::LogVisibility::Backend);
-        wildcards.push(Wildcard::Simple(wildcard));
-    }
-    wildcards
-}
-
-fn walk_directory(
-    path: String,
-    extensions: Option<Vec<&str>>,
-    name_filter: Option<String>,
-) -> Vec<PathBuf> {
-    let mut files: Vec<PathBuf> = vec![];
-    let ext = extensions.as_ref();
-
-    for entry in walkdir::WalkDir::new(path.to_owned())
-        .follow_links(true)
-        .into_iter()
-        .filter_map(|e| e.ok())
-    {
-        let f_name = entry.file_name().to_string_lossy();
-
-        if ext.is_some_and(|_| !ext.unwrap().contains(&f_name.split(".").last().unwrap())) {
-            continue;
-        }
-        if name_filter.as_ref().is_some_and(|f| !f_name.contains(f)) {
-            continue;
-        }
-
-        files.push(entry.path().to_path_buf());
-    }
-
-    files
+    db_settings.write(&app, None, None);
+    wc
 }
 
 fn get_public_directory() -> String {

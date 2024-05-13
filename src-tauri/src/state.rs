@@ -4,7 +4,7 @@ use rusqlite::Connection;
 use tauri::{AppHandle, State, Manager};
 
 pub struct AppState {
-    pub db: std::sync::Mutex<Option<Connection>>,
+    pub db: std::sync::Mutex<Option<Connection>>
 }
 
 pub trait ServiceAccess {

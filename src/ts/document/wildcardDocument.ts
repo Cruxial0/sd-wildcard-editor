@@ -404,7 +404,7 @@ export class WildcardDocument
         {
             console.log("wrote text");
             this.wildcard.data.content = this.getLines();
-            //invoke('write_wildcard', { wildcard: this.wildcard });
+            invoke('write_wildcard', { wildcard: this.wildcard });
             console.log("loading from db");
             data.value = invoke('load_wildcard_db').then((x) => console.log(x));
         }

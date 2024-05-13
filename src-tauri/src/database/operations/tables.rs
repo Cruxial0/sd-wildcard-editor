@@ -1,6 +1,7 @@
 pub enum DatabaseTable{
     Projects,
     Wildcards,
+    AppSettings
 }
 
 impl DatabaseTable {
@@ -8,6 +9,7 @@ impl DatabaseTable {
         match *self {
             DatabaseTable::Projects => "Projects".to_owned(),
             DatabaseTable::Wildcards => "Wildcards".to_owned(),
+            DatabaseTable::AppSettings => "AppSettings".to_owned(),
         }
     }
 }

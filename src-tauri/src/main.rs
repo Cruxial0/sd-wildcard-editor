@@ -8,6 +8,7 @@ mod database;
 mod wildcards;
 mod state;
 mod logging;
+mod helpers;
 
 use tauri::{State, Manager};
 use wildcards::loader;
@@ -18,10 +19,6 @@ fn main() {
     tauri::Builder::default()
         .manage(AppState{ db: Default::default() })
         .invoke_handler(tauri::generate_handler![
-            loader::load_wildcard,
-            loader::load_wildcards,
-            loader::write_wildcard,
-            loader::load_comp_wildcard,
             loader::load_wildcard_db
         ])
         .setup(|app| {

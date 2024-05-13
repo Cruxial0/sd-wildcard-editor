@@ -1,15 +1,15 @@
 // Inspired by https://github.com/RandomEngy/tauri-sqlite
 
-use rusqlite::{named_params, Connection};
+use rusqlite::Connection;
 use std::fs;
 use tauri::AppHandle;
 
 use crate::logging::logger;
 
-use super::mutations::mutation_selector;
+use super::migration_handler;
 
-const CURRENT_DB_VERSION: u32 = 1;
-const DEBUG: bool = false;
+const CURRENT_DB_VERSION: u32 = 2;
+const DEBUG: bool = true;
 static LOG_SOURCE: &str = "DatabaseInitialize";
 
 /// Initializes the database connection, creating the .sqlite file if needed, and upgrading the database
@@ -23,6 +23,7 @@ pub fn initialize_database(app_handle: &AppHandle) -> Result<Connection, rusqlit
     let sqlite_path = app_dir.join("SD-WILDCARD-EDITOR.sqlite");
 
     logger::log(&format!("{:?}", &sqlite_path), LOG_SOURCE, logger::LogVisibility::Backend);
+
     let mut db = Connection::open(sqlite_path)?;
 
     let mut user_pragma = db.prepare("PRAGMA user_version")?;
@@ -46,7 +47,7 @@ pub fn upgrade_database_if_needed(
 
         tx.pragma_update(None, "user_version", CURRENT_DB_VERSION)?;
 
-        mutation_selector::apply_mutations(&mut tx, CURRENT_DB_VERSION);
+        migration_handler::apply_migrations(&mut tx, CURRENT_DB_VERSION);
 
         tx.commit()?;
     }
@@ -54,22 +55,22 @@ pub fn upgrade_database_if_needed(
     Ok(())
 }
 
-pub fn add_item(title: &str, db: &Connection) -> Result<(), rusqlite::Error> {
-    let mut statement = db.prepare("INSERT INTO items (title) VALUES (@title)")?;
-    statement.execute(named_params! { "@title": title })?;
+// pub fn add_item(title: &str, db: &Connection) -> Result<(), rusqlite::Error> {
+//     let mut statement = db.prepare("INSERT INTO items (title) VALUES (@title)")?;
+//     statement.execute(named_params! { "@title": title })?;
 
-    Ok(())
-}
+//     Ok(())
+// }
 
-pub fn get_all(db: &Connection) -> Result<Vec<String>, rusqlite::Error> {
-    let mut statement = db.prepare("SELECT * FROM items")?;
-    let mut rows = statement.query([])?;
-    let mut items = Vec::new();
-    while let Some(row) = rows.next()? {
-        let title: String = row.get("title")?;
+// pub fn get_all(db: &Connection) -> Result<Vec<String>, rusqlite::Error> {
+//     let mut statement = db.prepare("SELECT * FROM items")?;
+//     let mut rows = statement.query([])?;
+//     let mut items = Vec::new();
+//     while let Some(row) = rows.next()? {
+//         let title: String = row.get("title")?;
 
-        items.push(title);
-    }
+//         items.push(title);
+//     }
 
-    Ok(items)
-}
+//     Ok(items)
+// }

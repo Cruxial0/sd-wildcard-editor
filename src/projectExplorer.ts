@@ -83,6 +83,16 @@ function buildSubject(compWildcard)
 
 export async function buildProjectExplorer()
 {
+    var writeBtn = document.querySelector("#writeBtn") as HTMLDivElement;
+    console.log(writeBtn);
+    const data = ref();
+    
+    writeBtn.onmousedown = () =>
+    {
+        console.log("loading from db");
+        data.value = invoke('load_wildcard_db').then((x) => console.log(x));
+    }
+    return;
     // Set destination item
     item = document.getElementById('text-editor-0')?.querySelector('.line-container')!;
 

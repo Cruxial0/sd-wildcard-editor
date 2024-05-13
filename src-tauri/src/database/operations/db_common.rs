@@ -1,12 +1,22 @@
+use rusqlite::Error;
 use tauri::AppHandle;
 
-use crate::state::ServiceAccess;
-use super::tables::DatabaseTable;
+use crate::{logging::logger, state::ServiceAccess};
 
-pub fn exists(app: AppHandle, id: u32, table: DatabaseTable) -> bool {
-    let exists = app.db(|x| x.execute("SELECT EXISTS(SELECT 1 FROM ?1 where ID = ?2)", (table.to_str(), id)));
+use super::db_item::DatabaseItem;
+
+pub fn exists<T: DatabaseItem>(app: &AppHandle, data: &T) -> Result<bool, Error> {
+    let exists: Result<u32, Error> = app.db(|x| {
+        let sql = format!("SELECT * FROM {} where ID = {};", data.table().to_str(), data.id());
+        x.query_row(&sql, (), |r| r.get(0))
+    });
+    
     match exists {
-        Ok(x) => x != 0,
-        Err(_) => false,
+        Ok(x) => Ok(x > 0),
+        Err(rusqlite::Error::QueryReturnedNoRows) => Ok(false),
+        Err(e) => {
+            logger::log_error(&format!("An error occured ({:?}): {}", e.sqlite_error_code().unwrap(), e), "CheckExists", logger::LogVisibility::Backend);
+            Err(e)
+        }
     }
 }

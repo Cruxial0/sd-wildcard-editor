@@ -1,4 +1,5 @@
 use chrono::{DateTime, Local};
+use tauri::{command::CommandArg, AppHandle};
 
 use crate::logging::logger_helpers::{format_datetime_backend, format_source_backend, format_content_backend};
 
@@ -25,7 +26,7 @@ fn external_log(content: String, date_time: String, source: String, is_error: bo
     let frontend_datetime = format_datetime_frontend(date_time);
     let frontend_source = format_source_frontend(source, is_error);
 
-    todo!(); // send payload to frontend console
+    todo!(); // send payload to frontend console (needs access to AppHandle::emit_all)
 }
 
 fn stage(content: &str, source: &str, visibility: LogVisibility, is_error: bool){
