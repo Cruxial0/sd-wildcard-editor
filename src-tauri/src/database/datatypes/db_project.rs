@@ -17,7 +17,6 @@ impl DatabaseProject {
     pub fn add_wildcard(&mut self, wildcard: &DatabaseWildcard) {
         if self.wildcard_ids.contains(&wildcard.id) { return; }
         self.wildcard_ids.push(wildcard.id);
-        logger::log(&format!("{:?}", self.wildcard_ids), "DatabaseProject", logger::LogVisibility::Backend);
     }
 
     pub fn add_project(&mut self, project: &DatabaseProject) {

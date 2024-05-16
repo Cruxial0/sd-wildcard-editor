@@ -1,5 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+// Temporary - Mutes unused warnings; Remove when production ready
+#![allow(unused)] 
 
 #[macro_use]
 extern crate lazy_static;
@@ -10,6 +12,8 @@ mod state;
 mod logging;
 mod helpers;
 
+use logging::{log_level::LogLevel, logger::LogVisibility};
+use state::ServiceAccess;
 use tauri::{State, Manager};
 use wildcards::loader;
 use crate::state::AppState;
@@ -17,7 +21,7 @@ use crate::state::AppState;
 fn main() {
 
     tauri::Builder::default()
-        .manage(AppState{ db: Default::default() })
+        .manage(AppState{ db: Default::default(), logger: Default::default() })
         .invoke_handler(tauri::generate_handler![
             loader::load_wildcard_db
         ])
@@ -25,9 +29,18 @@ fn main() {
             let handle = app.handle();
 
             let app_state: State<AppState> = handle.state();
+
+            let mut logger = logging::logger::Logger::initialize_logger(&handle);
+            logger.set_log_level(LogLevel::INFO);
+            *app_state.logger.lock().unwrap() = Some(logger);
+
             let db = database::helper::initialize_database(&handle).expect("Database initialize should succeed");
             *app_state.db.lock().unwrap() = Some(db);
-            logging::logger::log_error("Test error :D", "AppInitialize", logging::logger::LogVisibility::Backend);
+
+            let lgr = *handle.get_logger();
+            &lgr.log_error("Test error :D", "AppInitialize", LogVisibility::Backend);
+            &lgr.log_trace("Test trace", "AppInitialize", LogVisibility::Backend);
+            &lgr.log_info("Test content for frontend!", "AppInitialize", LogVisibility::Frontend);
 
             Ok(())
         })

@@ -1,7 +1,7 @@
 use rusqlite::Error;
 use tauri::AppHandle;
 
-use crate::{logging::logger, state::ServiceAccess};
+use crate::{logging::logger::LogVisibility, state::ServiceAccess};
 
 use super::db_item::DatabaseItem;
 
@@ -15,7 +15,8 @@ pub fn exists<T: DatabaseItem>(app: &AppHandle, data: &T) -> Result<bool, Error>
         Ok(x) => Ok(x > 0),
         Err(rusqlite::Error::QueryReturnedNoRows) => Ok(false),
         Err(e) => {
-            logger::log_error(&format!("An error occured ({:?}): {}", e.sqlite_error_code().unwrap(), e), "CheckExists", logger::LogVisibility::Backend);
+            let err = format!("An error occured ({:?}): {}", e.sqlite_error_code().unwrap(), e);
+            app.logger(|logger| logger.log_error(&err, std::module_path!(), LogVisibility::Backend));
             Err(e)
         }
     }

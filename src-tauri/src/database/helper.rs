@@ -4,7 +4,7 @@ use rusqlite::Connection;
 use std::fs;
 use tauri::AppHandle;
 
-use crate::logging::logger;
+use crate::{logging::logger::{self, Logger}, state::ServiceAccess};
 
 use super::migration_handler;
 
@@ -22,7 +22,8 @@ pub fn initialize_database(app_handle: &AppHandle) -> Result<Connection, rusqlit
     fs::create_dir_all(&app_dir).expect("The app data directory should be created.");
     let sqlite_path = app_dir.join("SD-WILDCARD-EDITOR.sqlite");
 
-    logger::log(&format!("{:?}", &sqlite_path), LOG_SOURCE, logger::LogVisibility::Backend);
+    app_handle.logger(|x| x.log_info(&format!("{:?}", &sqlite_path), LOG_SOURCE, logger::LogVisibility::Backend));
+    let logger = *app_handle.get_logger();
 
     let mut db = Connection::open(sqlite_path)?;
 
@@ -30,16 +31,13 @@ pub fn initialize_database(app_handle: &AppHandle) -> Result<Connection, rusqlit
     let existing_user_version: u32 = user_pragma.query_row([], |row| Ok(row.get(0)?))?;
     drop(user_pragma);
 
-    upgrade_database_if_needed(&mut db, existing_user_version)?;
+    upgrade_database_if_needed(&mut db, existing_user_version, &logger)?;
 
     Ok(db)
 }
 
 /// Upgrades the database to the current version.
-pub fn upgrade_database_if_needed(
-    db: &mut Connection,
-    existing_version: u32,
-) -> Result<(), rusqlite::Error> {
+pub fn upgrade_database_if_needed(db: &mut Connection, existing_version: u32, logger: &Logger) -> Result<(), rusqlite::Error> {
     if existing_version < CURRENT_DB_VERSION || DEBUG {
         db.pragma_update(None, "journal_mode", "WAL")?;
 
@@ -47,7 +45,7 @@ pub fn upgrade_database_if_needed(
 
         tx.pragma_update(None, "user_version", CURRENT_DB_VERSION)?;
 
-        migration_handler::apply_migrations(&mut tx, CURRENT_DB_VERSION);
+        migration_handler::apply_migrations(&mut tx, CURRENT_DB_VERSION, logger);
 
         tx.commit()?;
     }

@@ -1,4 +1,5 @@
 use rusqlite::Error;
+use tauri::api::dir;
 
 use crate::{database::operations::{db_common::exists, db_item::DatabaseItem, tables::DatabaseTable}, logging::logger};
 
@@ -29,11 +30,8 @@ impl DatabaseSettings {
         }
     }
     pub fn add_tracked_dir(&mut self, directory: String) {
-        let dir = String::from(&directory);
         if self.tracked_dirs.contains(&directory) { return };
         self.tracked_dirs.push(directory);
-
-        logger::log(&format!("Added tracked directory: '{}'", dir), "AddTrackedDirectory", logger::LogVisibility::Backend)
     }
 }
 

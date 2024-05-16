@@ -58,7 +58,7 @@ pub fn format_source_frontend(source: String, is_error: bool) -> (String, String
 
     match is_error {
         true => color_frontend(src, ERROR_COLOR.to_frontend()),
-        false => color_frontend(src, DEFAULT_COLOR.to_frontend()),
+        false => color_frontend(src, SOURCE_COLOR.to_frontend()),
     }
 }
 

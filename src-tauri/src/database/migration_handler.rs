@@ -1,6 +1,7 @@
+use crate::logging::logger::{LogVisibility, Logger};
+
 use super::migrations::environment_development::MutationEnvironmentDevelopment;
 use super::migrations::mutation_behaviour_settings::MutationBehaviourSettings;
-use crate::logging::logger;
 use rusqlite::Transaction;
 use std::collections::HashMap;
 
@@ -23,7 +24,7 @@ fn to_migration<'a>(
 }
 
 /// Applies all mutations from the current version and down, starting from the first and ending at the latest.
-pub fn apply_migrations(tx: &mut Transaction, version: u32) {
+pub fn apply_migrations(tx: &mut Transaction, version: u32, logger: &Logger) {
     let mut command = "".to_owned();
 
     for i in 1..version + 1 {
@@ -32,18 +33,18 @@ pub fn apply_migrations(tx: &mut Transaction, version: u32) {
     }
 
     match tx.execute_batch(&command) {
-        Ok(_) => logger::log(
+        Ok(_) => logger.log_info(
             "Successfully applied database migrations",
             LOG_SOURCE,
-            logger::LogVisibility::Backend,
+            LogVisibility::Backend,
         ),
-        Err(x) => logger::log_error(
+        Err(x) => logger.log_error(
             &format!(
                 "An error occured while applying database migrations: {:?}",
                 x
             ),
             LOG_SOURCE,
-            logger::LogVisibility::Backend,
+            LogVisibility::Backend
         ),
     }
 }

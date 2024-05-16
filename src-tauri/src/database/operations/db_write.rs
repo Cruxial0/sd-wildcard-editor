@@ -79,8 +79,14 @@ pub fn update<T: DatabaseItem>(app: &AppHandle, data: &T, fields: &str, values: 
         let result = stmt.execute(params_from_iter(v));
 
         match result {
-            Ok(_) => logger::log(&format!("Updated database with: '{}'", sql), "DatabaseGenericInsert", logger::LogVisibility::Backend),
-            Err(e) => logger::log_error(&format!("An error occured: {:?}", e), "DatabaseGenericInsert", logger::LogVisibility::Backend),
+            Ok(_) => {
+                let msg = format!("Updated database with: '{}'", sql);
+                app.logger(|logger| logger.log_info(&msg, "DatabaseGenericInsert", logger::LogVisibility::Both))
+            },
+            Err(e) => {
+                let err = &format!("An error occured: {:?}", e);
+                app.logger(|logger| logger.log_error(&err, "DatabaseGenericInsert", logger::LogVisibility::Backend))
+            }
         }
     });
 }
@@ -96,8 +102,14 @@ pub fn insert<T: DatabaseItem>(app: &AppHandle, data: &T) {
         let result = stmt.execute(params_from_iter(data.values()));
 
         match result {
-            Ok(_) => logger::log(&format!("Wrote into database with: '{}'", debug_sql), "DatabaseGenericWrite", logger::LogVisibility::Backend),
-            Err(e) => logger::log_error(&format!("An error occured: {:?}", e), "DatabaseGenericWrite", logger::LogVisibility::Backend),
+            Ok(_) => {
+                let msg = &format!("Wrote into database with: '{}'", debug_sql);
+                app.logger(|logger| logger.log_info(&msg, "DatabaseGenericWrite", logger::LogVisibility::Backend))
+            }
+            Err(e) => {
+                let err = &format!("An error occured: {:?}", e);
+                app.logger(|logger| logger.log_error(&err, "DatabaseGenericWrite", logger::LogVisibility::Backend))
+            }
         }
     });
 }
