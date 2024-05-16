@@ -1,16 +1,16 @@
 use std::path::PathBuf;
 use tauri::AppHandle;
 
-use crate::database::{datatypes::{db_settings::DatabaseSettings, db_wildcard::DatabaseWildcard}, operations::db_item::DatabaseItem};
+use crate::database::{datatypes::{db_project::DatabaseProject, db_settings::DatabaseSettings, db_wildcard::DatabaseWildcard}, operations::db_item::DatabaseItem};
 
 #[tauri::command]
 pub fn load_wildcard_db(app: AppHandle) -> DatabaseWildcard{      
-    let mut db_settings = DatabaseSettings::load_or_default(&app, 1);
     let wc = DatabaseWildcard::default();
+    let mut project = DatabaseProject::default();
+    project.add_wildcard(&wc);
 
-    db_settings.add_tracked_dir(get_public_directory());
+    project.write(&app, None, None);
 
-    db_settings.write(&app, None, None);
     wc
 }
 
