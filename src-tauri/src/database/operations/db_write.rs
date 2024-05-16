@@ -17,12 +17,25 @@ fn value_placeholders_from_fields(fields: &str) -> String {
 }
 
 fn key_value_placeholders_from_fields(fields: &str) -> String {
-    let parts: Vec<&str> = fields.split(",").collect();
+    let parts: Vec<&str> = fields.split(",").map(|x| x.trim()).collect();
     let mut placeholder = "".to_owned();
     let mut i = 0;
 
     for p in parts {
-        let buf = format!("{} = ?{}, ", p, i + 1);
+        let buf = format!("{} = ?{},", p, i + 1);
+        placeholder.push_str(buf.as_ref());
+        i += 1;
+    }
+    placeholder.split_at(&placeholder.len() - 1).0.to_owned()
+}
+
+fn debug_key_value_placeholders_from_fields(fields: &str, values: &Vec<Value>) -> String {
+    let parts: Vec<&str> = fields.split(",").map(|x| x.trim()).collect();
+    let mut placeholder = "".to_owned();
+    let mut i = 0;
+
+    for p in parts {
+        let buf = format!("{} = {:?}, ", p, values[i]);
         placeholder.push_str(buf.as_ref());
         i += 1;
     }
@@ -54,10 +67,16 @@ pub fn write_or_insert<T: DatabaseItem>(app: &AppHandle, data: &T, fields: Optio
 /// Modifies the existing record in the database.
 /// Will error if the primary key does not exist.
 pub fn update<T: DatabaseItem>(app: &AppHandle, data: &T, fields: &str, values: Vec<Value>) {
-    let sql = 
-        format!("UPDATE {} SET {} WHERE id = {}", data.table().to_str(), key_value_placeholders_from_fields(fields), data.id());
-        app.db(|x| {let mut stmt = x.prepare(&sql).expect("Should be able to prepare SQL query");
-        let result = stmt.query(params_from_iter(values));
+    let mut stripped_fields: Vec<String> = fields.split(",").into_iter().map(|x| x.to_owned()).collect();
+    stripped_fields.remove(0);
+    let f = to_comma_seperated(&stripped_fields);
+    let mut v = values;
+    v.remove(0);
+
+    let sql = format!("UPDATE {} SET {} WHERE id = {}", data.table().to_str(), key_value_placeholders_from_fields(&f), data.id());
+    // let debug_sql = format!("UPDATE {} SET {} WHERE id = {}", data.table().to_str(), debug_key_value_placeholders_from_fields(&f, &v), data.id());
+    app.db(|x| {let mut stmt = x.prepare(&sql).expect("Should be able to prepare SQL query");
+        let result = stmt.execute(params_from_iter(v));
 
         match result {
             Ok(_) => logger::log(&format!("Updated database with: '{}'", sql), "DatabaseGenericInsert", logger::LogVisibility::Backend),

@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use rusqlite::Statement;
+use rusqlite::{Error, Statement};
 
 use crate::{database::operations::{db_item::DatabaseItem, tables::DatabaseTable}, logging::logger};
 
@@ -12,11 +12,20 @@ pub struct DatabaseWildcard {
     pub lines: Vec<String>
 }
 
+impl DatabaseWildcard {
+    pub fn from_id(id: &u32) -> DatabaseWildcard {
+        DatabaseWildcard {
+            id: *id,
+            ..Default::default()
+        }
+    }
+}
+
 impl Default for DatabaseWildcard {
     fn default() -> Self {
         DatabaseWildcard {
             id: 0,
-            name: "Default".to_owned(),
+            name: "New Wildcard".to_owned(),
             path: PathBuf::new(),
             lines: Vec::new()
         }
@@ -26,7 +35,7 @@ impl Default for DatabaseWildcard {
 impl DatabaseItem for DatabaseWildcard {
     type Item = DatabaseWildcard;
     
-    fn parse(&self, stmt: &mut Statement) -> Option<Self> {
+    fn parse(&self, stmt: &mut Statement) -> Result<Self, Error> {
         let data = stmt.query_row([], |row| {
             let path: String = row.get::<usize, String>(2).expect("Path should be deserializable").into();
             let lines: String = row.get::<usize, String>(3).expect("Lines should be deserializable").into();
@@ -38,13 +47,7 @@ impl DatabaseItem for DatabaseWildcard {
             })
         });
 
-        match data {
-            Ok(x) => Some(x),
-            Err(e) => {
-                logger::log_error(&format!("An error occured: {:?}", e), "WildcardDeserialize", logger::LogVisibility::Backend);
-                None
-            },
-        }
+        data
     }
 
     fn id(&self) -> u32 {
@@ -65,7 +68,7 @@ impl DatabaseItem for DatabaseWildcard {
         values.push(self.id.into());
         values.push(name.into());
         values.push(self.path.to_str().unwrap().to_owned().into());
-        values.push(serde_json::to_string(&self.lines).unwrap().into());
+        values.push(serde_json::to_string(&self.lines).expect("JSON serialization should succeed").into());
         values
     }
 }

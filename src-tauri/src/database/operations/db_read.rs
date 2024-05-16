@@ -10,11 +10,11 @@ pub fn load<T: DatabaseItem>(app: &AppHandle, item: &T) -> Option<T> {
 
         // Prepare a query, then pass returned sqlite::Statement to DatabaseItem::parse, then finally match the returned value.
         match x.prepare(&sql).and_then(|mut s| Ok(item.parse(&mut s))).expect("") {
-            Some(x) => {
+            Ok(x) => {
                 logger::log(&format!("Loaded value from database using: '{}'", sql), "DatabaseGenericLoad", logger::LogVisibility::Backend);
                 Some(x)
             },
-            None => {
+            Err(_) => {
                 logger::log_error(&format!("Failed to load data from database using: '{}'", sql), "DatabaseGenericLoad", logger::LogVisibility::Backend);
                 None
             }

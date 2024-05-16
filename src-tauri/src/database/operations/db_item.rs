@@ -6,7 +6,7 @@ use super::{db_read, db_write, tables::DatabaseTable};
 pub trait DatabaseItem : Default {
     type Item;
 
-    fn parse(&self, stmt: &mut Statement) -> Option<Self>;
+    fn parse(&self, stmt: &mut Statement) -> Result<Self, rusqlite::Error>;
     fn id(&self) -> u32;
     fn table(&self) -> DatabaseTable;
     fn fields<'a>(&self) -> Vec<String>;

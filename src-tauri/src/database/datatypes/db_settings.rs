@@ -1,3 +1,5 @@
+use rusqlite::Error;
+
 use crate::{database::operations::{db_common::exists, db_item::DatabaseItem, tables::DatabaseTable}, logging::logger};
 
 pub struct DatabaseSettings {
@@ -38,7 +40,7 @@ impl DatabaseSettings {
 impl DatabaseItem for DatabaseSettings{
     type Item = DatabaseSettings;
 
-    fn parse(&self, stmt: &mut rusqlite::Statement) -> Option<Self> {
+    fn parse(&self, stmt: &mut rusqlite::Statement) -> Result<Self, Error> {
         let data = stmt.query_row((), |row| {
             Ok(DatabaseSettings{
                 version: row.get(0)?,
@@ -47,13 +49,7 @@ impl DatabaseItem for DatabaseSettings{
             })
         });
 
-        match data {
-            Ok(x) => Some(x),
-            Err(e) => {
-                logger::log_error(&format!("An error occured: {:?}", e), "SettingsDeserialize", logger::LogVisibility::Backend);
-                None
-            },
-        }
+        data
     }
 
     fn id(&self) -> u32 {
@@ -72,7 +68,7 @@ impl DatabaseItem for DatabaseSettings{
     fn values(&self) -> Vec<rusqlite::types::Value> {
         let mut values: Vec<rusqlite::types::Value> = Vec::new();
         values.push(self.version.into());
-        values.push(serde_json::to_string(&self.tracked_dirs).expect("JSON serializion should succeed").into());
+        values.push(serde_json::to_string(&self.tracked_dirs).expect("JSON serialization should succeed").into());
         values.push(self.selected_style.into());
         values
     }
