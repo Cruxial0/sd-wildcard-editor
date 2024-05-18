@@ -67,6 +67,20 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ]
+    },
+    "cli": {
+      "description": "",
+      "longDescription": "",
+      "beforeHelp": "",
+      "afterHelp": "",
+      "args": [
+        {
+          "name": "debug",
+          "index": 1,
+          "takesValue": false
+        }
+      ],
+      "subcommands": {}
     }
   }
 }

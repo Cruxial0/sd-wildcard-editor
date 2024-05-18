@@ -1,9 +1,11 @@
-use crate::logging::logger::{LogVisibility, Logger};
-
-use super::migrations::environment_development::MutationEnvironmentDevelopment;
-use super::migrations::mutation_behaviour_settings::MutationBehaviourSettings;
 use rusqlite::Transaction;
 use std::collections::HashMap;
+
+use crate::logging::logger::{LogVisibility, Logger};
+
+use super::migrations::environment_development::MigrationEnvironmentDevelopment;
+use super::migrations::mutation_behaviour_settings::MigrationBehaviourSettings;
+use super::migrations::tracked_files_table::MigrationTrackedFilesTable;
 
 static LOG_SOURCE: &str = "DatabaseMigration";
 
@@ -11,8 +13,9 @@ lazy_static! {
     static ref MIGRATIONS: HashMap<u32, Box<dyn DatabaseMigration + Sync>> = {
         let mut m: HashMap<u32, Box<dyn DatabaseMigration + Sync>> = HashMap::new();
 
-        m.insert(1, to_migration(MutationEnvironmentDevelopment));
-        m.insert(2, to_migration(MutationBehaviourSettings));
+        m.insert(1, to_migration(MigrationEnvironmentDevelopment));
+        m.insert(2, to_migration(MigrationBehaviourSettings));
+        m.insert(3, to_migration(MigrationTrackedFilesTable));
         m
     };
 }
@@ -44,7 +47,7 @@ pub fn apply_migrations(tx: &mut Transaction, version: u32, logger: &Logger) {
                 x
             ),
             LOG_SOURCE,
-            LogVisibility::Backend
+            LogVisibility::Backend,
         ),
     }
 }

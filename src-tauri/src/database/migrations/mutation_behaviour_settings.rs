@@ -1,8 +1,8 @@
 use crate::database::migration_handler::DatabaseMigration;
 
-pub struct MutationBehaviourSettings;
+pub struct MigrationBehaviourSettings;
 
-impl DatabaseMigration for MutationBehaviourSettings {
+impl DatabaseMigration for MigrationBehaviourSettings {
     fn get_batch_command(&self) -> String {
         "
         CREATE TABLE IF NOT EXISTS AppSettings (

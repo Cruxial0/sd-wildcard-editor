@@ -1,27 +1,39 @@
 use itertools::Itertools;
 use rusqlite::{Error, types::Value, Statement};
+use tauri::AppHandle;
+use walkdir::DirEntry;
 
-use crate::{database::operations::{db_item::DatabaseItem, tables::DatabaseTable}, logging::logger};
+use crate::{database::operations::{db_item::DatabaseItem, db_read::load_multiple, tables::DatabaseTable}, logging::logger, state::ServiceAccess};
 
 use super::db_wildcard::DatabaseWildcard;
 
+#[derive(Clone, Hash, Eq)]
 pub struct DatabaseProject {
-    id: u32,
-    name: String,
-    description: String,
-    wildcard_ids: Vec<u32>,
-    project_ids: Vec<u32>
+    pub id: u32,
+    pub name: String,
+    pub description: String,
+    pub wildcard_ids: Vec<u32>,
+    pub project_ids: Vec<u32>,
+    pub wildcards: Vec<DatabaseWildcard>,
+    pub projects: Vec<DatabaseProject>
 }
 
 impl DatabaseProject {
     pub fn add_wildcard(&mut self, wildcard: &DatabaseWildcard) {
         if self.wildcard_ids.contains(&wildcard.id) { return; }
         self.wildcard_ids.push(wildcard.id);
+        self.wildcards.push(wildcard.clone());
     }
 
     pub fn add_project(&mut self, project: &DatabaseProject) {
         if self.project_ids.contains(&project.id) { return; }
-        self.project_ids.push(project.id)
+        self.project_ids.push(project.id);
+        self.projects.push(project.clone());
+    }
+
+    pub fn load_recursive(&mut self, handle: &AppHandle) {
+        self.wildcards = load_multiple(handle, &DatabaseWildcard::default(), self.wildcard_ids.clone()).expect("Should be able to load wildcards");
+        self.projects = load_multiple(handle, self, self.project_ids.clone()).expect("Should be able to load projects");
     }
 
     pub fn from_id(id: &u32) -> DatabaseProject {
@@ -30,6 +42,26 @@ impl DatabaseProject {
             ..Default::default()
         }
     }
+
+    pub fn wildcards(&self) -> &Vec<DatabaseWildcard> {
+        &self.wildcards
+    }
+
+    pub fn from_direntry(handle: &AppHandle, name: String) -> Option<DatabaseProject>{
+        let unique_id = handle.db_session(|session| session.get_and_claim_id(DatabaseTable::Projects));
+        
+        match unique_id {
+            Ok(id) => {
+                Some(DatabaseProject {
+                    id: id,
+                    name: name,
+                    ..Default::default()
+                })
+            },
+            Err(_) => None,
+        }
+        
+    }
 }
 
 impl Default for DatabaseProject {
@@ -37,10 +69,18 @@ impl Default for DatabaseProject {
         DatabaseProject {
             id: 1,
             name: "DefaultProject".to_owned(),
-            description: "Default Description".to_owned(),
+            description: "".to_owned(),
             wildcard_ids: Vec::new(),
-            project_ids: Vec::new()
+            project_ids: Vec::new(),
+            wildcards: Vec::new(),
+            projects: Vec::new()
         }
+    }
+}
+
+impl PartialEq for DatabaseProject {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
     }
 }
 
@@ -56,6 +96,7 @@ impl DatabaseItem for DatabaseProject {
                 description: row.get(2)?,
                 wildcard_ids: serde_json::from_str(&row.get::<usize, String>(3)?).expect("JSON Deserialization should succeed"),
                 project_ids: serde_json::from_str(&row.get::<usize, String>(4)?).expect("JSON Deserialization should succeed"),
+                ..Default::default()
             })
         });
 

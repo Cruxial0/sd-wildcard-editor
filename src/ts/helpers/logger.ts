@@ -9,8 +9,8 @@ export async function setup_log_listener()
     {
         var payload = event.payload as LogPackage;
         console.log(payload);
-        var text = "%c[" + payload.strings[0] + "] %c " + payload.strings[1] + " %c| " + payload.strings[2];
-        console.log(text, payload.styles[0], payload.styles[1], payload.styles[2]);
+        var text = "%c" + payload.strings[0] + " %c[" + payload.strings[1] + "] %c " + payload.strings[2] + " %c| " + payload.strings[3];
+        console.log(text, payload.styles[0], payload.styles[1], payload.styles[2], payload.styles[3]);
     });
 }
 

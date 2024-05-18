@@ -1,10 +1,12 @@
 use std::path::PathBuf;
 
 use rusqlite::{Error, Statement};
+use tauri::AppHandle;
+use walkdir::DirEntry;
 
-use crate::{database::operations::{db_item::DatabaseItem, tables::DatabaseTable}, logging::logger};
+use crate::{database::operations::{db_item::DatabaseItem, tables::DatabaseTable}, logging::logger, state::ServiceAccess};
 
-#[derive(Clone)]
+#[derive(Clone, Hash, Eq)]
 pub struct DatabaseWildcard {
     pub id: u32,
     pub name: String,
@@ -19,6 +21,20 @@ impl DatabaseWildcard {
             ..Default::default()
         }
     }
+
+    pub fn from_direntry(handle: &AppHandle, entry: &DirEntry) -> DatabaseWildcard {
+        let content: Vec<String> = std::fs::read_to_string(entry.path())
+            .expect("File should be readable").lines().map(|l| l.to_string()).collect();
+
+        let unique_id = handle.db_session(|session| session.get_and_claim_id(DatabaseTable::Wildcards));
+
+        DatabaseWildcard {
+            id: unique_id.expect("Should be able to claim id"),
+            name: entry.file_name().to_str().to_owned().unwrap().to_string(),
+            path: PathBuf::from(entry.path()),
+            lines: content
+        }
+    }
 }
 
 impl Default for DatabaseWildcard {
@@ -29,6 +45,12 @@ impl Default for DatabaseWildcard {
             path: PathBuf::new(),
             lines: Vec::new()
         }
+    }
+}
+
+impl PartialEq for DatabaseWildcard {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
     }
 }
 

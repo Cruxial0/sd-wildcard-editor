@@ -1,9 +1,9 @@
 use crate::database::migration_handler::DatabaseMigration;
 
 #[derive(Default)]
-pub struct MutationEnvironmentDevelopment;
+pub struct MigrationEnvironmentDevelopment;
 
-impl DatabaseMigration for MutationEnvironmentDevelopment {
+impl DatabaseMigration for MigrationEnvironmentDevelopment {
     fn get_batch_command(&self) -> String {
         "
         CREATE TABLE IF NOT EXISTS Projects (
@@ -21,6 +21,7 @@ impl DatabaseMigration for MutationEnvironmentDevelopment {
             path VARCHAR(255), 
             lines TEXT,
             PRIMARY KEY(id)
-        );".to_owned()
+        );"
+        .to_owned()
     }
 }

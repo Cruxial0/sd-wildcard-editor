@@ -1,20 +1,21 @@
 use super::{
-    logger_frontend::{FrontendColor, FrontendConversion},
-    logger_settings::{
-        DATETIME_COLOR, DEFAULT_COLOR, ERROR_COLOR, SOURCE_COLOR, SOURCE_CUTOFF, SOURCE_INDENT,
-    },
+    log_level::{self, LogLevel}, logger_colors::{FrontendColor, FrontendConversion, COLORS}, logger_settings::{
+        COLOR_DEFAULT, COLOR_ERROR, COLOR_INFO, DATETIME_COLOR, SOURCE_CUTOFF, SOURCE_INDENT,
+    }
 };
 use colored::{Color, ColoredString, Colorize};
 
-fn adjust_source_length(source: String) -> String {
+pub fn adjust_source_length(source: String, log_level: &LogLevel) -> String {
     let mut src = source;
-    if src.len() > SOURCE_INDENT {
-        let cropped = src.split_at(SOURCE_INDENT - SOURCE_CUTOFF).0;
+    let offset = log_level.to_string().len();
+    let indent = SOURCE_INDENT - &offset;
+    if src.len() > indent {
+        let cropped = src.split_at(indent - SOURCE_CUTOFF).0;
         src = format!("{}{}", cropped, "...");
     }
 
-    if src.len() < SOURCE_INDENT {
-        let diff = SOURCE_INDENT - src.len();
+    if src.len() < indent {
+        let diff = indent - src.len();
         let mut whitespace = "".to_owned();
         for _ in 0..diff {
             whitespace.push_str(" ")
@@ -25,52 +26,32 @@ fn adjust_source_length(source: String) -> String {
     src
 }
 
+fn get_color(log_level: &LogLevel) -> Color {
+    match COLORS.contains_key(log_level) {
+        true => COLORS[log_level],
+        false => Color::BrightMagenta,
+    }
+}
+
 /// Creates a tuple with the following structure: (TEXT, color: #HEXCLR;)
-fn color_frontend(text: String, color: FrontendColor) -> (String, String) {
+fn _color_frontend(text: String, color: FrontendColor) -> (String, String) {
     (text, format!("{}{}{}", "color: ", color.as_str(), ";"))
 }
 
-pub fn format_source_backend(source: String, is_error: bool) -> ColoredString {
-    let src = adjust_source_length(source);
-
-    match is_error {
-        true => color_from_enum(src, ERROR_COLOR),
-        false => color_from_enum(src, SOURCE_COLOR),
-    }
+pub fn format_backend(source: String, log_level: &LogLevel) -> ColoredString {
+    color_from_enum(source, get_color(log_level))
 }
 
-pub fn format_datetime_backend(datetime: String, is_error: bool) -> ColoredString {
-    match is_error{
-        true => color_from_enum(datetime, ERROR_COLOR),
-        false => color_from_enum(datetime, DATETIME_COLOR),
-    }
+pub fn color_backend(source: String, color: Color) -> ColoredString{
+    color_from_enum(source, color)
 }
 
-pub fn format_content_backend(content: String, is_error: bool) -> ColoredString {
-    match is_error {
-        true => color_from_enum(content, ERROR_COLOR),
-        false => color_from_enum(content, DEFAULT_COLOR),
-    }
+pub fn format_frontend(source: String, log_level: &LogLevel) -> (String, String) {
+    _color_frontend(source, get_color(log_level).to_frontend())
 }
 
-pub fn format_source_frontend(source: String, is_error: bool) -> (String, String) {
-    let src = adjust_source_length(source);
-
-    match is_error {
-        true => color_frontend(src, ERROR_COLOR.to_frontend()),
-        false => color_frontend(src, SOURCE_COLOR.to_frontend()),
-    }
-}
-
-pub fn format_datetime_frontend(datetime: String) -> (String, String) {
-    color_frontend(datetime, DATETIME_COLOR.to_frontend())
-}
-
-pub fn format_content_frontend(content: String, is_error: bool) -> (String, String) {
-    match is_error {
-        true => color_frontend(content, ERROR_COLOR.to_frontend()),
-        false => color_frontend(content, DEFAULT_COLOR.to_frontend()),
-    }
+pub fn color_frontend(source: String, color: Color) -> (String, String) {
+    _color_frontend(source, color.to_frontend())
 }
 
 fn color_from_enum(text: String, color: Color) -> ColoredString {

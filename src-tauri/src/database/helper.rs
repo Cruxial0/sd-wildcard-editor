@@ -8,7 +8,7 @@ use crate::{logging::logger::{self, Logger}, state::ServiceAccess};
 
 use super::migration_handler;
 
-const CURRENT_DB_VERSION: u32 = 2;
+const CURRENT_DB_VERSION: u32 = 3;
 const DEBUG: bool = true;
 static LOG_SOURCE: &str = "DatabaseInitialize";
 
@@ -39,6 +39,19 @@ pub fn initialize_database(app_handle: &AppHandle) -> Result<Connection, rusqlit
 /// Upgrades the database to the current version.
 pub fn upgrade_database_if_needed(db: &mut Connection, existing_version: u32, logger: &Logger) -> Result<(), rusqlite::Error> {
     if existing_version < CURRENT_DB_VERSION || DEBUG {
+
+        if DEBUG {
+            db.execute_batch(
+                "PRAGMA writable_schema = 1;
+                DELETE FROM sqlite_master;
+                PRAGMA writable_schema = 0;
+                VACUUM;
+                PRAGMA integrity_check;"
+            );
+
+            logger.log_warn("[DEBUG] Database was wiped.", "DatabaseUpgrade", logger::LogVisibility::Backend);
+        }
+        
         db.pragma_update(None, "journal_mode", "WAL")?;
 
         let mut tx = db.transaction()?;

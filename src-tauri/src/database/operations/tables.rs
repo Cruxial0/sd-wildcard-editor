@@ -1,7 +1,9 @@
+#[derive(PartialEq, Eq, Hash, Clone)]
 pub enum DatabaseTable{
     Projects,
     Wildcards,
-    AppSettings
+    AppSettings,
+    TrackedFiles
 }
 
 impl DatabaseTable {
@@ -10,6 +12,7 @@ impl DatabaseTable {
             DatabaseTable::Projects => "Projects".to_owned(),
             DatabaseTable::Wildcards => "Wildcards".to_owned(),
             DatabaseTable::AppSettings => "AppSettings".to_owned(),
+            DatabaseTable::TrackedFiles => "TrackedFiles".to_owned()
         }
     }
 }

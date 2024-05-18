@@ -28,3 +28,7 @@ public/wildcards/*
 !public/wildcards/long file.txt
 !public/wildcards/touhou-chars.txt
 !public/wildcards/wildcard.txt
+
+!public/wildcards/nested-directory/
+public/wildcards/nested-directory/*
+!public/wildcards/nested-directory/nested-file.txt

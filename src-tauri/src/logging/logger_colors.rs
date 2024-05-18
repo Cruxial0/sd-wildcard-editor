@@ -1,6 +1,19 @@
-use std::borrow::Cow;
-
+use std::{borrow::Cow, collections::HashMap};
 use colored::Color;
+
+use super::log_level::LogLevel;
+lazy_static!{
+    pub static ref COLORS: HashMap<LogLevel, Color> = {
+        let mut hm = HashMap::new();
+        hm.insert(LogLevel::FATAL, Color::Red);
+        hm.insert(LogLevel::ERROR, Color::BrightRed);
+        hm.insert(LogLevel::WARN, Color::BrightYellow);
+        hm.insert(LogLevel::INFO, Color::Cyan);
+        hm.insert(LogLevel::DEBUG, Color::White);
+        hm.insert(LogLevel::TRACE, Color::BrightBlack);
+        hm
+    };
+}
 
 pub enum FrontendColor{
     Black,

@@ -103,8 +103,7 @@ pub fn insert<T: DatabaseItem>(app: &AppHandle, data: &T) {
 
         match result {
             Ok(_) => {
-                let msg = &format!("Wrote into database with: '{}'", debug_sql);
-                app.logger(|logger| logger.log_info(&msg, "DatabaseGenericWrite", logger::LogVisibility::Backend))
+                app.logger(|logger| logger.log_info(&sql, "DatabaseGenericWrite", logger::LogVisibility::Backend))
             }
             Err(e) => {
                 let err = &format!("An error occured: {:?}", e);

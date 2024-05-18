@@ -1,3 +1,5 @@
+use std::fmt::format;
+
 use tauri::AppHandle;
 
 use crate::{
@@ -15,10 +17,7 @@ pub fn load<T: DatabaseItem>(app: &AppHandle, item: &T) -> Option<T> {
     );
     let data: Option<T> = app.db_mut(|x| {
         // Prepare a query, then pass returned sqlite::Statement to DatabaseItem::parse, then finally match the returned value.
-        match x
-            .prepare(&sql)
-            .and_then(|mut s| Ok(item.parse(&mut s)))
-            .expect("")
+        match x.prepare(&sql).and_then(|mut s| Ok(item.parse(&mut s))).expect("")
         {
             Ok(x) => {
                 let msg = format!("Loaded value from database using: '{}'", sql);
@@ -40,6 +39,16 @@ pub fn load<T: DatabaseItem>(app: &AppHandle, item: &T) -> Option<T> {
     data
 }
 
-pub fn load_all<T: DatabaseItem>(app: AppHandle, pk: u32, item: &T) -> Option<Vec<T>> {
-    todo!()
+pub fn load_multiple<T: DatabaseItem>(app: &AppHandle, data: &T, ids: Vec<u32>) -> Option<Vec<T>> {
+    let mut items: Vec<T> = Vec::new();
+
+    for id in ids {
+        match load(app, data) {
+            Some(x) => items.push(x),
+            None => {
+                app.logger(|lgr| lgr.log_error("", "LoadMultiple", LogVisibility::Backend))
+            },
+        }
+    }
+    Some(items)
 }

@@ -1,7 +1,7 @@
 use rusqlite::{types::Value, Statement};
 use tauri::AppHandle;
 
-use super::{db_read, db_write, tables::DatabaseTable};
+use super::{db_common, db_read, db_write, tables::DatabaseTable};
 
 pub trait DatabaseItem : Default {
     type Item;

@@ -1,14 +1,10 @@
 use chrono::{DateTime, Local};
 use tauri::{command::CommandArg, AppHandle, Manager};
 
-use crate::logging::logger_helpers::{
-    format_content_backend, format_datetime_backend, format_source_backend,
-};
+use crate::logging::{logger_helpers::color_backend, logger_settings::DATETIME_COLOR};
 
 use super::{
-    log_level::LogLevel,
-    logger_helpers::{format_content_frontend, format_datetime_frontend, format_source_frontend},
-    logger_settings::DATETIME_FORMAT,
+    log_level::LogLevel, logger_helpers::{adjust_source_length, color_frontend, format_backend, format_frontend}, logger_settings::DATETIME_FORMAT
 };
 
 static LOG_EVENT: &str = "console-log";
@@ -35,25 +31,29 @@ pub struct Logger {
 
 impl Logger {
     /// Prints a result to the rust console
-    fn internal_log(&self, content: String, date_time: String, source: String, is_error: bool) {
+    fn internal_log(&self, content: String, date_time: String, source: String, log_level: &LogLevel) {
+        let is_error = log_level == &LogLevel::ERROR;
         println!(
-            "[{}] {} | {}",
-            format_datetime_backend(date_time, is_error),
-            format_source_backend(source, is_error),
-            format_content_backend(content, is_error)
+            "{} [{}] {} | {}",
+            color_backend(date_time, DATETIME_COLOR),
+            format_backend(log_level.to_string(), log_level),
+            format_backend(adjust_source_length(source, log_level), log_level),
+            format_backend(content, log_level)
         );
     }
 
     /// Prints a result to the frontend console
-    fn external_log(&self, content: String, date_time: String, source: String, is_error: bool, log_level: LogLevel) {
-        let frontend_content = format_content_frontend(content, is_error);
-        let frontend_datetime = format_datetime_frontend(date_time);
-        let frontend_source = format_source_frontend(source, is_error);
+    fn external_log(&self, content: String, date_time: String, source: String, log_level: &LogLevel) {
+        let is_error = log_level == &LogLevel::ERROR;
+        let frontend_datetime = color_frontend(date_time, DATETIME_COLOR);
+        let frontend_loglevel = format_frontend(log_level.to_string(), log_level);
+        let frontend_source = format_frontend(source, log_level);
+        let frontend_content = format_frontend(content, log_level);
 
         let package = LogPackage{
-            strings: vec![frontend_datetime.0, frontend_source.0, frontend_content.0],
-            styles: vec![frontend_datetime.1, frontend_source.1, frontend_content.1],
-            severity: log_level
+            strings: vec![frontend_datetime.0, frontend_loglevel.0, frontend_source.0, frontend_content.0],
+            styles: vec![frontend_datetime.1, frontend_loglevel.1, frontend_source.1, frontend_content.1],
+            severity: log_level.to_owned()
         };
 
         if let Some(x) = &self.app_handle {
@@ -61,7 +61,7 @@ impl Logger {
         }
     }
 
-    fn stage(&self, content: &str, source: &str, visibility: LogVisibility, is_error: bool, log_level: LogLevel) {
+    fn stage(&self, content: &str, source: &str, visibility: LogVisibility, log_level: LogLevel) {
 
         if log_level > self.log_level {
             return;
@@ -74,55 +74,57 @@ impl Logger {
                 content.to_string(),
                 date_time.to_string(),
                 source.to_owned(),
-                is_error,
+                &log_level,
             ),
             LogVisibility::Frontend => self.external_log(
                 content.to_string(),
                 date_time.to_string(),
                 source.to_owned(),
-                is_error,
-                log_level
+                &log_level
             ),
             LogVisibility::Both => {
                 self.internal_log(
                     content.to_string(),
                     date_time.to_string(),
                     source.to_owned(),
-                    is_error,
+                    &log_level,
                 );
                 self.external_log(
                     content.to_string(),
                     date_time.to_string(),
                     source.to_owned(),
-                    is_error,
-                    log_level
+                    &log_level
                 );
             }
         }
     }
 
     pub fn log_fatal(&self, content: &str, source: &str, visibility: LogVisibility) {
-        self.stage(content, source, visibility, true, LogLevel::FATAL)
+        self.stage(content, source, visibility,  LogLevel::FATAL)
     }
 
     pub fn log_error(&self, content: &str, source: &str, visibility: LogVisibility) {
-        self.stage(content, source, visibility, true, LogLevel::ERROR)
+        self.stage(content, source, visibility,  LogLevel::ERROR)
     }
 
     pub fn log_warn(&self, content: &str, source: &str, visibility: LogVisibility) {
-        self.stage(content, source, visibility, false, LogLevel::WARN)
+        self.stage(content, source, visibility,  LogLevel::WARN)
     }
 
     pub fn log_info(&self, content: &str, source: &str, visibility: LogVisibility) {
-        self.stage(content, source, visibility, false, LogLevel::INFO)
+        self.stage(content, source, visibility,  LogLevel::INFO)
     }
 
     pub fn log_debug(&self, content: &str, source: &str, visibility: LogVisibility) {
-        self.stage(content, source, visibility, false, LogLevel::DEBUG)
+        self.stage(content, source, visibility,  LogLevel::DEBUG)
     }
 
     pub fn log_trace(&self, content: &str, source: &str, visibility: LogVisibility) {
-        self.stage(content, source, visibility, false, LogLevel::TRACE)
+        self.stage(content, source, visibility,  LogLevel::TRACE)
+    }
+
+    pub fn log(&self, content: &str, source: &str, visibility: LogVisibility, log_level: &str){
+        self.stage(content, source, visibility, LogLevel::Custom(log_level.into()))
     }
 
     pub fn initialize_logger(handle: &AppHandle) -> Logger {
