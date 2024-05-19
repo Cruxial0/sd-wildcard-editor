@@ -1,9 +1,9 @@
-use std::{borrow::BorrowMut, collections::HashMap, fs::{self, FileType}, io::Error};
+use std::{borrow::BorrowMut, collections::HashMap, fs::{self, FileType}, io::Error, time::Instant};
 
 use tauri::AppHandle;
 use walkdir::{DirEntry, WalkDir};
 
-use crate::{database::{datatypes::{db_project::DatabaseProject, db_wildcard::DatabaseWildcard, db_workspace::Workspace}, operations::db_item::DatabaseItem}, logging::logger::LogVisibility, state::ServiceAccess};
+use crate::{database::{datatypes::{db_project::DatabaseProject, db_wildcard::DatabaseWildcard, db_workspace::Workspace}, operations::{db_item::DatabaseItem, tables::DatabaseTable}}, logging::logger::LogVisibility, state::ServiceAccess};
 
 fn get_project_index_by_name(projects: &Vec<DatabaseProject>, name: String) -> Option<usize>{
     projects.iter()
@@ -58,10 +58,15 @@ pub fn parse_directory_chain(handle: &AppHandle, dir: &str){
     let mut projects: Vec<DatabaseProject> = Vec::new();
     let items = WalkDir::new(dir).follow_links(true);
 
+    let start = Instant::now();
+    let mut files = 0;
+    let mut directories = 0;
+
     // depth 0 = base folder, depth 1 = loose files, depth >1 = files within directories
     for item in items {
         let entry = item.expect("Entry should be valid");
-        // if entry.file_type().is_dir() { continue; }
+        if entry.file_type().is_dir() { directories += 1; }
+        if entry.file_type().is_file() { files += 1; }
 
         match entry.depth() {
             0 => (),
@@ -70,10 +75,21 @@ pub fn parse_directory_chain(handle: &AppHandle, dir: &str){
         }
     }
 
+    let workspace = Workspace::from_project(handle, &projects.remove(0));
+
+    workspace.write(handle, None, None);
+    workspace.wildcards().iter().for_each(|w| w.write(handle, None, None));
+    workspace.projetcs().iter().for_each(|p| p.write(handle, None, None));
+
     for pr in projects {
         pr.write(handle, None, None);
-        for wc in pr.wildcards {
+        for wc in pr.wildcards() {
             wc.write(handle, None, None);
         }
     }
+
+    let duration = start.elapsed();
+
+    let msg = format!("Loaded {} projects and {} wildcards in {:?}", directories, files, duration);
+    handle.logger(|lgr| lgr.log_info(&msg, "ParseDirectory", LogVisibility::Backend))
 }

@@ -14,8 +14,8 @@ pub struct DatabaseProject {
     pub description: String,
     pub wildcard_ids: Vec<u32>,
     pub project_ids: Vec<u32>,
-    pub wildcards: Vec<DatabaseWildcard>,
-    pub projects: Vec<DatabaseProject>
+    wildcards: Vec<DatabaseWildcard>,
+    projects: Vec<DatabaseProject>
 }
 
 impl DatabaseProject {
@@ -45,6 +45,27 @@ impl DatabaseProject {
 
     pub fn wildcards(&self) -> &Vec<DatabaseWildcard> {
         &self.wildcards
+    }
+
+    pub fn projects(&self) -> &Vec<DatabaseProject> {
+        &self.projects
+    }
+
+    pub fn load(&mut self, handle: &AppHandle, load_children: bool){
+        self.load_wildcards_internal(handle);
+        self.load_projects_internal(handle, load_children);
+    }
+
+    fn load_wildcards_internal(&mut self, handle: &AppHandle) {
+        self.wildcards = self.wildcard_ids.iter().map(|w| DatabaseWildcard::from_id(w).read(handle).unwrap()).collect();
+    }
+
+    fn load_projects_internal(&mut self, handle: &AppHandle, load_children: bool) {
+        let mut projects: Vec<DatabaseProject> = self.project_ids.iter().map(|p| DatabaseProject::from_id(p).read(handle).unwrap()).collect();
+        if load_children {
+            projects.iter_mut().for_each(|x| x.load(handle, true));
+        }
+        self.projects = projects;
     }
 
     pub fn from_direntry(handle: &AppHandle, name: String) -> Option<DatabaseProject>{
@@ -125,4 +146,19 @@ impl DatabaseItem for DatabaseProject {
     }
     
     fn id(&self) -> u32 { self.id }
+}
+
+impl serde::Serialize for DatabaseProject {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer {
+            use serde::ser::SerializeStruct;
+
+            let mut state = serializer.serialize_struct("Workspace", 4)?;
+            state.serialize_field("id", &self.id)?;
+            state.serialize_field("name", &self.name)?;
+            state.serialize_field("wildcards", &self.wildcards)?;
+            state.serialize_field("projects", &self.projects)?;
+            state.end()
+    }
 }

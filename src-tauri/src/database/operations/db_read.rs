@@ -22,14 +22,14 @@ pub fn load<T: DatabaseItem>(app: &AppHandle, item: &T) -> Option<T> {
             Ok(x) => {
                 let msg = format!("Loaded value from database using: '{}'", sql);
                 app.logger(|logger| {
-                    logger.log_info(&msg, std::module_path!(), LogVisibility::Backend)
+                    logger.log_debug(&msg, "GenericLoad", LogVisibility::Backend)
                 });
                 Some(x)
             }
             Err(_) => {
                 let err = &format!("Failed to load data from database using: '{}'", sql);
                 app.logger(|logger| {
-                    logger.log_error(&err, std::module_path!(), LogVisibility::Frontend)
+                    logger.log_error(&err, "GenericLoad", LogVisibility::Both)
                 });
                 None
             }

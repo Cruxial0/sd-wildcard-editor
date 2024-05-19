@@ -1,9 +1,9 @@
 <script lang="ts">
 export default {
-    props: ['name'],
+    props: ['name', 'id'],
     data: (instance) =>
     {
-        return { file: instance.name }
+        return { file: instance.name, id: parseInt(instance.id) }
     }
 }
 </script>

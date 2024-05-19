@@ -64,7 +64,7 @@ impl DatabaseSession {
             Some(ids) => match ids.contains(id) {
                     true => Err(Error::Io(std::io::Error::new(std::io::ErrorKind::AlreadyExists, "Id was already claimed!"))),
                     false => {
-                        self.handle.as_ref().unwrap().logger(|lgr| lgr.log_info(&format!("Claimed id: {} (Table: {})", id, table.to_str()), "ClaimId", LogVisibility::Backend));
+                        self.handle.as_ref().unwrap().logger(|lgr| lgr.log_debug(&format!("Claimed id: {} (Table: {})", id, table.to_str()), "ClaimId", LogVisibility::Backend));
                         Ok(ids.push(*id))
                     },
                 },

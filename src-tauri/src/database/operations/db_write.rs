@@ -81,7 +81,7 @@ pub fn update<T: DatabaseItem>(app: &AppHandle, data: &T, fields: &str, values: 
         match result {
             Ok(_) => {
                 let msg = format!("Updated database with: '{}'", sql);
-                app.logger(|logger| logger.log_info(&msg, "DatabaseGenericInsert", logger::LogVisibility::Both))
+                app.logger(|logger| logger.log_debug(&msg, "DatabaseGenericInsert", logger::LogVisibility::Both))
             },
             Err(e) => {
                 let err = &format!("An error occured: {:?}", e);
@@ -103,7 +103,7 @@ pub fn insert<T: DatabaseItem>(app: &AppHandle, data: &T) {
 
         match result {
             Ok(_) => {
-                app.logger(|logger| logger.log_info(&sql, "DatabaseGenericWrite", logger::LogVisibility::Backend))
+                app.logger(|logger| logger.log_debug(&sql, "DatabaseGenericWrite", logger::LogVisibility::Backend))
             }
             Err(e) => {
                 let err = &format!("An error occured: {:?}", e);

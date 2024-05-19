@@ -1,23 +1,13 @@
-class WildcardData
-{
-    name: string;
-    content: string[];
-    abs_path: string;
-
-    constructor(name: string, content: string[], path: string)
-    {
-        this.name = name;
-        this.content = content;
-        this.abs_path = path;
-    }
-}
-
 export class Wildcard
 {
-    data: WildcardData;
+    name: string;
+    id: number;
+    content: string[];
 
     constructor(json)
     {
-        this.data = json.data;
+        this.name = json.name;
+        this.id = parseInt(json.id);
+        this.content = json.content;
     }
 }

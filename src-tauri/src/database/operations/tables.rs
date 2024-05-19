@@ -3,7 +3,8 @@ pub enum DatabaseTable{
     Projects,
     Wildcards,
     AppSettings,
-    TrackedFiles
+    TrackedFiles,
+    Workspace
 }
 
 impl DatabaseTable {
@@ -12,7 +13,8 @@ impl DatabaseTable {
             DatabaseTable::Projects => "Projects".to_owned(),
             DatabaseTable::Wildcards => "Wildcards".to_owned(),
             DatabaseTable::AppSettings => "AppSettings".to_owned(),
-            DatabaseTable::TrackedFiles => "TrackedFiles".to_owned()
+            DatabaseTable::TrackedFiles => "TrackedFiles".to_owned(),
+            DatabaseTable::Workspace => "Workspace".to_owned()
         }
     }
 }

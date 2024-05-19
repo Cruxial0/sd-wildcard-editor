@@ -24,7 +24,8 @@ fn main() {
     tauri::Builder::default()
         .manage(AppState::default())
         .invoke_handler(tauri::generate_handler![
-            loader::load_wildcard_db
+            loader::load_workspace,
+            loader::load_wildcard
         ])
         .setup(|app| {
             let handle = app.handle();

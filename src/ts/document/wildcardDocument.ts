@@ -403,7 +403,7 @@ export class WildcardDocument
         writeBtn.onmousedown = () =>
         {
             console.log("wrote text");
-            this.wildcard.data.content = this.getLines();
+            this.wildcard.content = this.getLines();
             invoke('write_wildcard', { wildcard: this.wildcard });
             console.log("loading from db");
             data.value = invoke('load_wildcard_db').then((x) => console.log(x));
@@ -417,10 +417,10 @@ export class WildcardDocument
         this.margin = document.createElement('div');
         this.editor = document.createElement('div');
         this.prevIndex = new DocumentIndex(null, null, null);
-        for (let i = 0; i < wildcard.data.content.length; i++)
+        for (let i = 0; i < wildcard.content.length; i++)
         {
             var line = new DocumentLine(i, this);
-            line.insertCSV(wildcard.data.content[i]);
+            line.insertCSV(wildcard.content[i]);
             this.lines.push(line);
         }
         this.format();

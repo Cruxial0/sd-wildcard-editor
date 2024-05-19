@@ -11,9 +11,9 @@ function addFileClickHandler(instance)
 {
     instance.$el.addEventListener("mousedown", async function ()
     {
-        var wildcardName = instance.$data.file.replace(/\.[^/.]+$/, "");
+        // var wildcardName = instance.$data.file.replace(/\.[^/.]+$/, "");
         const wildcard = ref<Wildcard>();
-        wildcard.value = await invoke("load_wildcard", { name: wildcardName });
+        wildcard.value = await invoke("load_wildcard", { id: instance.$data.id });
 
         var doc = new WildcardDocument(wildcard.value!);
         item.innerHTML = '';
@@ -42,7 +42,7 @@ function createFileInstance(componentProperties)
 
 function createSingleWildcard(wildcard: Wildcard)
 {
-    const instance = createFileInstance({ name: wildcard.data.name });
+    const instance = createFileInstance({ name: wildcard.name, id: wildcard.id });
     addIconToElement(FileType.WILDCARD_STD, instance.$el);
     addFileClickHandler(instance);
     return instance;
@@ -50,25 +50,23 @@ function createSingleWildcard(wildcard: Wildcard)
 
 function createCompWildcard(compWildcard)
 {
-    const subject = createFileInstance({ name: compWildcard.data.name });
+    const subject = createFileInstance({ name: compWildcard.name, id: compWildcard.id });
     subject.$el.querySelector("#file-entry").classList.add("gtk1");
     addIconToElement(FileType.DIRECTORY, subject.$el);
     
-    for (let i = 0; i < compWildcard.children.length; i++)
+    for (let i = 0; i < compWildcard.projects.length; i++)
     {
-        var item;
-        if (compWildcard.children[i].Simple)
-        {
-            var wildcard = compWildcard.children[i].Simple as Wildcard;
-            item = createSingleWildcard(wildcard);
-        }
-        if (compWildcard.children[i].Compository)
-        {
-            item = createCompWildcard(compWildcard.children[i].Compository);
-        }
-        
+        var project = createCompWildcard(compWildcard.projects[i]);
+        subject.$el.querySelector("#children").appendChild(project.$el);
+    }
+
+    for (let i = 0; i < compWildcard.wildcards.length; i++)
+    {
+        var wildcard = compWildcard.wildcards[i] as Wildcard;
+        var item = createSingleWildcard(wildcard);
         subject.$el.querySelector("#children").appendChild(item.$el);
     }
+
     return subject;
 }
 
@@ -83,21 +81,21 @@ function buildSubject(compWildcard)
 
 export async function buildProjectExplorer()
 {
-    var writeBtn = document.querySelector("#writeBtn") as HTMLDivElement;
-    console.log(writeBtn);
-    const data = ref();
+    // var writeBtn = document.querySelector("#writeBtn") as HTMLDivElement;
+    // console.log(writeBtn);
+    // const data = ref();
     
-    writeBtn.onmousedown = () =>
-    {
-        console.log("loading from db");
-        data.value = invoke('load_wildcard_db').then((x) => console.log(x));
-    }
-    return;
+    // writeBtn.onmousedown = () =>
+    // {
+    //     console.log("loading from db");
+    //     data.value = invoke('load_wildcard_db').then((x) => console.log(x));
+    // }
+
     // Set destination item
     item = document.getElementById('text-editor-0')?.querySelector('.line-container')!;
 
     const files = ref();
-    files.value = await invoke('load_comp_wildcard');
+    files.value = await invoke('load_workspace');
     console.log(files.value);
 
     if (!files.value)
