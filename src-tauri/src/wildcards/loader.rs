@@ -9,7 +9,10 @@ use super::directory_parser::parse_directory_chain;
 #[tauri::command]
 pub fn load_workspace(handle: AppHandle) -> Workspace{
     parse_directory_chain(&handle, &get_public_directory());
-    let mut workspace = Workspace::from_id(&0).read(&handle).unwrap();
+    let mut workspace = match Workspace::from_id(&0).read(&handle) {
+        Some(w) => w,
+        None => Workspace::from_id(&0),
+    };
 
     workspace.load(&handle, true);
 
@@ -17,12 +20,23 @@ pub fn load_workspace(handle: AppHandle) -> Workspace{
 }
 
 #[tauri::command]
-pub fn load_wildcard(handle: AppHandle, id: u32) -> DatabaseWildcard {
-    DatabaseWildcard::from_id(&id).read(&handle).unwrap()
+pub fn load_wildcard(handle: AppHandle, id: u32) -> Option<DatabaseWildcard> {
+    let wc = DatabaseWildcard::from_id(&id);
+    wc.read(&handle)
 }
 
 fn get_public_directory() -> String {
-    let root: PathBuf = project_root::get_project_root().expect("Could not file project root");
-    let path: PathBuf = [root.to_str().unwrap(), "..", "public", "wildcards"].iter().collect();
+    let root = std::env::current_exe().unwrap();
+    let parent = root.parent().unwrap();
+    let str_path: String = [parent.to_str().unwrap(), "\\public", "\\wildcards"].iter().map(|p| String::from(*p)).collect();
+    println!("{}", str_path);
+    let path: PathBuf = get_or_create_path(&str_path).unwrap();
     String::from(path.to_str().expect("Could not convert path to string."))
+}
+
+fn get_or_create_path(path: &str) -> Result<PathBuf, std::io::Error> {
+    match std::fs::create_dir_all(path) {
+        Ok(_) => Ok(PathBuf::from(path)),
+        Err(e) => Err(e),
+    }
 }
