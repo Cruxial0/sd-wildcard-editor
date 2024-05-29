@@ -71,7 +71,8 @@ pub fn parse_directory_chain(handle: &AppHandle, dir: &str){
         match entry.depth() {
             0 => (),
             1 => add_project_entry(handle, &mut projects, &entry),
-            2.. => add_project_entry(handle, &mut projects, &entry)
+            2.. => add_project_entry(handle, &mut projects, &entry),
+            _ => todo!()
         }
     }
 

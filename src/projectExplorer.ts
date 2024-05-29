@@ -29,7 +29,7 @@ function addIconToElement(type: FileType, element: HTMLElement)
 {
     const icon = new WildcardFile(type).GetIconInstance();
     icon.$el.classList.add('file-icon');
-    icon.$el.style = "height: 100%; margin-bottom: 5px;";
+    icon.$el.style = "height: 100%; aspect-ratio: 1 / 1; margin-bottom: 5px;";
 
     element.querySelector("#file-entry")!.prepend(icon.$el);
 }
