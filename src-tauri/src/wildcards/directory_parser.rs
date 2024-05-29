@@ -75,21 +75,24 @@ pub fn parse_directory_chain(handle: &AppHandle, dir: &str){
         }
     }
 
-    let workspace = Workspace::from_project(handle, &projects.remove(0));
+    if projects.len() > 0 {
+        let workspace = Workspace::from_project(handle, &projects.remove(0));
 
-    workspace.write(handle, None, None);
-    workspace.wildcards().iter().for_each(|w| w.write(handle, None, None));
-    workspace.projetcs().iter().for_each(|p| p.write(handle, None, None));
+        workspace.write(handle, None, None);
+        workspace.wildcards().iter().for_each(|w| w.write(handle, None, None));
+        workspace.projetcs().iter().for_each(|p| p.write(handle, None, None));
 
-    for pr in projects {
-        pr.write(handle, None, None);
-        for wc in pr.wildcards() {
-            wc.write(handle, None, None);
+        for pr in projects {
+            pr.write(handle, None, None);
+            for wc in pr.wildcards() {
+                wc.write(handle, None, None);
+            }
         }
+
+        let duration = start.elapsed();
+
+        let msg = format!("Loaded {} projects and {} wildcards in {:?}", directories, files, duration);
+        handle.logger(|lgr| lgr.log_info(&msg, "ParseDirectory", LogVisibility::Backend))
     }
-
-    let duration = start.elapsed();
-
-    let msg = format!("Loaded {} projects and {} wildcards in {:?}", directories, files, duration);
-    handle.logger(|lgr| lgr.log_info(&msg, "ParseDirectory", LogVisibility::Backend))
+    
 }
