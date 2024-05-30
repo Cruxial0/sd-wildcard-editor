@@ -76,12 +76,14 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
-
+  update-latest:
+    runs-on: ubuntu-latest
+    steps:
       - uses: actions/upload-artifact@v4
         with:
           name: latest.json
           path: latest.json
-
+      
       - uses: geekyeggo/delete-artifact@v1
         with:
           name: latest.json
