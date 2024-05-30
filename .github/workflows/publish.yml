@@ -81,9 +81,9 @@ jobs:
     steps:
       - uses: actions/upload-artifact@v4
         with:
-          name: latest.json
+          name: latest
           path: latest.json
       
-      - uses: geekyeggo/delete-artifact@v1
+      - uses: geekyeggo/delete-artifact@v5
         with:
-          name: latest.json
+          name: latest
