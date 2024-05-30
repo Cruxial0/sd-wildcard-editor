@@ -1,6 +1,6 @@
 [package]
 name = "sd-wildcard-editor"
-version = "0.0.0"
+version = "0.0.1"
 description = "A Wildcard editor for Stable Diffusion"
 authors = ["Cruxial"]
 edition = "2021"

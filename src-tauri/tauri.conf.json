@@ -45,12 +45,12 @@
       "csp": null
     },
     "updater": {
-      "active": false,
+      "active": true,
+      "endpoints": [
+        "https://github.com/Cruxial0/sd-wildcard-editor/blob/main/latest.json"
+      ],
       "dialog": true,
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDk3NEJFQzRFNTE4NTI1M0YKUldRL0pZVlJUdXhMbDBvcEpvMHdBOHJ1UnZnVUcxdno3NnJSRll1djFYRHJ1aXR5NjdMUjFybFgK",
-      "endpoints": [
-        "https://github.com/Cruxial0/sd-wildcard-editor/main/latest.json"
-      ],
       "windows": {
         "installMode": "passive",
         "installerArgs": []
