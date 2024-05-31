@@ -26,7 +26,13 @@ pub fn load_wildcard(handle: AppHandle, id: u32) -> Option<DatabaseWildcard> {
 }
 
 fn get_public_directory() -> String {
-    let root = std::env::current_exe().unwrap();
+    let root = if cfg!(debug_assertions) {
+        project_root::get_project_root().unwrap()
+    } 
+    else {
+        std::env::current_exe().unwrap()
+    };
+
     let parent = root.parent().unwrap();
     let str_path: String = [parent.to_str().unwrap(), "\\public", "\\wildcards"].iter().map(|p| String::from(*p)).collect();
     println!("{}", str_path);

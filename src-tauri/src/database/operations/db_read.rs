@@ -26,10 +26,11 @@ pub fn load<T: DatabaseItem>(app: &AppHandle, item: &T) -> Option<T> {
                 });
                 Some(x)
             }
-            Err(_) => {
+            Err(e) => {
                 let err = &format!("Failed to load data from database using: '{}'", sql);
                 app.logger(|logger| {
-                    logger.log_error(&err, "GenericLoad", LogVisibility::Both)
+                    logger.log_error(&err, "GenericLoad", LogVisibility::Both);
+                    logger.log_debug(&format!("{:?}", e), "GenericLoad", LogVisibility::Backend)
                 });
                 None
             }

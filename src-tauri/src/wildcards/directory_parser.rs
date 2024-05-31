@@ -68,6 +68,8 @@ pub fn parse_directory_chain(handle: &AppHandle, dir: &str){
         if entry.file_type().is_dir() { directories += 1; }
         if entry.file_type().is_file() { files += 1; }
 
+        handle.logger(|lgr| lgr.log_debug(&format!("Parsing {:?}", entry.file_name()), "ParseDir", LogVisibility::Backend));
+
         match entry.depth() {
             0 => (),
             1 => add_project_entry(handle, &mut projects, &entry),
@@ -76,10 +78,11 @@ pub fn parse_directory_chain(handle: &AppHandle, dir: &str){
         }
     }
 
-    if projects.len() > 0 {
-        let workspace = Workspace::from_project(handle, &projects.remove(0));
+    // Initialize a default workspace ahead of time to ensure a workspace is always generated
+    let mut workspace: Workspace = Workspace::default();
 
-        workspace.write(handle, None, None);
+    if projects.len() > 0 {
+        workspace = Workspace::from_project(handle, &projects.remove(0));
         workspace.wildcards().iter().for_each(|w| w.write(handle, None, None));
         workspace.projetcs().iter().for_each(|p| p.write(handle, None, None));
 
@@ -95,5 +98,7 @@ pub fn parse_directory_chain(handle: &AppHandle, dir: &str){
         let msg = format!("Loaded {} projects and {} wildcards in {:?}", directories, files, duration);
         handle.logger(|lgr| lgr.log_info(&msg, "ParseDirectory", LogVisibility::Backend))
     }
+
+    workspace.write(handle, None, None);
     
 }
