@@ -59,3 +59,11 @@ __CHARACTER-4__
 ```
 __CHARACTER-BASE__, __CHARACTER-CLOTHES__
 ```
+
+## Contributing
+Contributions are always welcome, and encouraged.
+
+### Setting up
+1. Install Rust & Cargo
+2. Set up tauri ([guide](https://tauri.app/v1/guides/getting-started/prerequisites))
+3. Start the tauri development server with `cargo tauri dev`
