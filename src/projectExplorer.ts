@@ -2,22 +2,22 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { createApp, ref } from "vue";
 import FileIndicator from './components/NavBar/FileIndicator.vue';
 import { FileType, WildcardFile } from "./fileType.ts";
-import { WildcardDocument } from "./ts/document/wildcardDocument.ts";
-import { Wildcard } from "./ts/data/wildcard.ts";
+import { LoadWildcard, Wildcard } from "./ts/data/wildcard.ts";
+import { AddViewportTab, AddViewportTextEditor, DisplayViewport } from "./ts/viewport/viewportHelper.ts";
 
 let item;
 
-function addFileClickHandler(instance)
+async function addFileClickHandler(instance)
 {
+    const wildcard = ref<Wildcard>();
+    wildcard.value = await LoadWildcard(instance.$data.id);
+    
+
     instance.$el.addEventListener("mousedown", async function ()
     {
-        // var wildcardName = instance.$data.file.replace(/\.[^/.]+$/, "");
-        const wildcard = ref<Wildcard>();
-        wildcard.value = await invoke("load_wildcard", { id: instance.$data.id });
-
-        var doc = new WildcardDocument(wildcard.value!);
-        item.innerHTML = '';
-        item.appendChild(doc.render());
+        let id = AddViewportTextEditor(wildcard.value!.id);
+        await AddViewportTab(id);
+        await DisplayViewport(id, item as HTMLElement);
 
         var selected = document.querySelector('.file-entry.selected-entry');
         if (selected) selected.classList.remove('selected-entry');
@@ -42,7 +42,7 @@ function createFileInstance(componentProperties)
 
 function createSingleWildcard(wildcard: Wildcard)
 {
-    const instance = createFileInstance({ name: wildcard.name, id: wildcard.id });
+    const instance = createFileInstance({ name: wildcard.name, wildcardId: wildcard.id });
     addIconToElement(FileType.WILDCARD_STD, instance.$el);
     addFileClickHandler(instance);
     return instance;
@@ -50,7 +50,7 @@ function createSingleWildcard(wildcard: Wildcard)
 
 function createCompWildcard(compWildcard)
 {
-    const subject = createFileInstance({ name: compWildcard.name, id: compWildcard.id });
+    const subject = createFileInstance({ name: compWildcard.name, wildcardId: compWildcard.id });
     subject.$el.querySelector("#file-entry").classList.add("gtk1");
     addIconToElement(FileType.DIRECTORY, subject.$el);
     
@@ -92,7 +92,8 @@ export async function buildProjectExplorer()
     // }
 
     // Set destination item
-    item = document.getElementById('text-editor-0')?.querySelector('.line-container')!;
+    // InitializeViewportHelper();
+    item = document.getElementById('viewport-content')!;
 
     const files = ref();
     files.value = await invoke('load_workspace');
