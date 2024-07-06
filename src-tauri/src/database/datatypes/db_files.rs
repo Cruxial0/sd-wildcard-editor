@@ -3,14 +3,14 @@ use std::path::PathBuf;
 use crate::database::operations::db_item::DatabaseItem;
 
 #[derive(Default)]
-pub struct DatabaseTrackedFile {
+pub struct DatabaseTrackedFiles {
     pub name: String,
     pub kind: u32,
     pub path: PathBuf
 }
 
-impl DatabaseItem for DatabaseTrackedFile {
-    type Item = DatabaseTrackedFile;
+impl DatabaseItem for DatabaseTrackedFiles {
+    type Item = DatabaseTrackedFiles;
 
     fn parse(&self, stmt: &mut rusqlite::Statement) -> Result<Self, rusqlite::Error> {
         todo!()
