@@ -11,10 +11,8 @@ impl DatabaseMigration for MigrationTrackedFilesTable {
             PRIMARY KEY(id)
         );
         CREATE TABLE IF NOT EXISTS TrackedFiles (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            path TEXT,
-            type INTEGER,
-            content TEXT
+            id INTEGER NOT NULL UNIQUE,
+            files TEXT
         );
         ".into()
     }
