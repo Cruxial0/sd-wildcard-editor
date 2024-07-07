@@ -39,8 +39,10 @@ export class DocumentLine extends DocumentItem
     private generateIndexElement(): HTMLDivElement
     {
         var index = document.createElement('div');
+        var span = document.createElement('a');
+        span.innerHTML = (this.idx + 1).toString();
         index.className = "index";
-        index.innerHTML = (this.idx + 1).toString();
+        index.appendChild(span);
         index.addEventListener(this.INTERACT_EVENT, () => this.select());
         return index;
     }

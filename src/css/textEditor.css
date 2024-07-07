@@ -2,15 +2,17 @@
     white-space-collapse:preserve;
     --editor-padding-left: 5px;
     --editor-context-height: 18px;
-    --line-height: 22px;
+    --line-height: 1.2em;
     --editor-width: calc(100vw - var(--nav-bar-width) - var(--function-bar-width));
-    --line-padding-tb: 2px;
+    --line-padding-tb: 3px;
     --line-padding-l: 5px;
     --line-padding: var(--line-padding-tb) 0px var(--line-padding-tb) var(--line-padding-l);
 
     /* Used to offset padding in case of uneven amounts of leading/trailing whitespaces */
     --comp-padding-r: 0px; 
     --comp-padding-l: 0px;
+
+    --tag-padding: 0px calc(3px + var(--comp-padding-r)) 0px calc(3px + var(--comp-padding-l));
 }
 
 .indexMargin{
@@ -22,10 +24,10 @@
 }
 
 .index{
-    max-height: var(--line-height);
-    justify-content: center;
+    display: flex;
+    height: var(--line-height);
     align-items: center;
-    text-align: center;
+    justify-content: center;
     border-right: 1px solid;
     border-color: var(--highlight-color);
     padding: var(--line-padding-tb) 0px;
@@ -36,30 +38,31 @@
 }
 
 .text-editor{
+    display: flex;
+    
+    flex-shrink: 0;
     height: 100%;
-    width: var(--editor-width);
+    font-size: 1.25em;
 }
 
 .editor-context{
     display: flex;
+    
+    flex-shrink: 0;
     height: var(--editor-context-height);
-    width: 97%; /* idk why this works */
     align-items: center;
     color: var(--text-color-hover);
     flex-direction: row-reverse;
-    font-size: 12px;
 }
 
 .line-container{
     height: calc(100% - var(--editor-context-height));
-    width: 100%;
 }
 
 .line-container span:hover {
     background-color: var(--button-hover);
     border-radius: 5px;
-    padding: 0px calc(3px + var(--comp-padding-r)) 0px calc(3px + var(--comp-padding-l));
-    
+    padding: var(--tag-padding);
 }
 
 .line-container .selected-line span:hover {
@@ -75,7 +78,7 @@
 .selected-span{
     background-color: var(--button-hover);
     border-radius: 5px;
-    padding: 0px calc(3px + var(--comp-padding-r)) 0px calc(3px + var(--comp-padding-l));
+    padding: var(--tag-padding);
 }
 
 .selected-line .selected-span {
@@ -104,6 +107,7 @@
     max-height: var(--line-height);
     text-wrap: nowrap;
     padding: var(--line-padding);
+    align-items: center;
 }
 
 .line:hover{
@@ -117,12 +121,16 @@
 
 .editor::-webkit-scrollbar
 {
-	width: 5px;
+	width: 10px;
     height: 10px;
     border-radius: 50px;
 }
 
 .editor::-webkit-scrollbar-track:hover{
+    cursor:crosshair !important;
+}
+
+.editor::-webkit-scrollbar-thumb:hover{
     cursor:crosshair !important;
 }
 

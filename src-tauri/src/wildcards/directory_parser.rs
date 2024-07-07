@@ -1,9 +1,9 @@
-use std::{borrow::BorrowMut, collections::HashMap, fs::{self, FileType}, io::Error, time::Instant};
+use std::{borrow::BorrowMut, collections::HashMap, fs::{self, FileType}, io::Error, path::PathBuf, time::Instant};
 
 use tauri::AppHandle;
 use walkdir::{DirEntry, WalkDir};
 
-use crate::{database::{datatypes::{db_project::DatabaseProject, db_wildcard::DatabaseWildcard, db_workspace::Workspace}, operations::{db_item::DatabaseItem, tables::DatabaseTable}}, logging::logger::LogVisibility, state::ServiceAccess};
+use crate::{database::{datatypes::{db_files::DatabaseTrackedFiles, db_project::DatabaseProject, db_wildcard::DatabaseWildcard, db_workspace::Workspace}, operations::{db_item::DatabaseItem, tables::DatabaseTable}}, logging::logger::LogVisibility, state::ServiceAccess};
 
 fn get_project_index_by_name(projects: &Vec<DatabaseProject>, name: String) -> Option<usize>{
     projects.iter()
@@ -18,9 +18,14 @@ fn get_parent(entry: &DirEntry) -> Option<&str>{
     entry.path().parent().unwrap().file_name().unwrap().to_str()
 }
 
-fn add_project_entry<'a>(handle: &AppHandle, projects: &'a mut Vec<DatabaseProject>, entry: &DirEntry) {
+fn add_project_entry<'a>(handle: &AppHandle, projects: &'a mut Vec<DatabaseProject>, entry: &DirEntry, tracked_files: &mut DatabaseTrackedFiles) {
     let parent = get_parent(entry).expect("Parent should exist").to_owned();
     let path = entry.path().to_string_lossy().to_string();
+
+    if tracked_files.file_exists(PathBuf::from(&path), true) {
+        return;
+    }
+
     let logger = *handle.get_logger();
     
     let mut project_buffer: DatabaseProject;
@@ -61,6 +66,10 @@ pub fn parse_directory_chain(handle: &AppHandle, dir: &str){
     let start = Instant::now();
     let mut files = 0;
     let mut directories = 0;
+    let mut tracked_files = match DatabaseTrackedFiles::default().read(&handle){
+        Some(x) => x,
+        None => DatabaseTrackedFiles::default(),
+    };
 
     // depth 0 = base folder, depth 1 = loose files, depth >1 = files within directories
     for item in items {
@@ -72,8 +81,8 @@ pub fn parse_directory_chain(handle: &AppHandle, dir: &str){
 
         match entry.depth() {
             0 => (),
-            1 => add_project_entry(handle, &mut projects, &entry),
-            2.. => add_project_entry(handle, &mut projects, &entry),
+            1 => add_project_entry(handle, &mut projects, &entry, &mut tracked_files),
+            2.. => add_project_entry(handle, &mut projects, &entry, &mut tracked_files),
             _ => todo!()
         }
     }
@@ -98,7 +107,8 @@ pub fn parse_directory_chain(handle: &AppHandle, dir: &str){
         let msg = format!("Loaded {} projects and {} wildcards in {:?}", directories, files, duration);
         handle.logger(|lgr| lgr.log_info(&msg, "ParseDirectory", LogVisibility::Backend))
     }
-
+    
+    tracked_files.write(handle, None, None);
     workspace.write(handle, None, None);
     
 }

@@ -25,6 +25,14 @@ pub fn load_wildcard(handle: AppHandle, id: u32) -> Option<DatabaseWildcard> {
     wc.read(&handle)
 }
 
+#[tauri::command]
+pub fn wildcard_name_from_id(handle: AppHandle, id: u32) -> String {
+    match DatabaseWildcard::from_id(&id).read(&handle){
+        Some(x) => x.name,
+        None => String::from("NULL"),
+    }
+}
+
 fn get_public_directory() -> String {
     let root = if cfg!(debug_assertions) {
         project_root::get_project_root().unwrap()

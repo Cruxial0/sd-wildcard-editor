@@ -11,8 +11,11 @@
   },
   "dependencies": {
     "@tauri-apps/api": "^1",
+    "lucide-vue-next": "^0.400.0",
+    "resize-observer-polyfill": "^1.5.1",
     "vue": "^3.3.4",
-    "vue-resizable": "^2.1.7"
+    "vue-resizable": "^2.1.7",
+    "vue-scrolly": "^0.9.3"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^1",

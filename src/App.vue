@@ -1,16 +1,10 @@
-<script setup lang="ts">
-// This starter template is using Vue 3 <script setup> SFCs
-// Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
-
-</script>
-
 <template>
   <div class="base_container" style="max-width: 100vw; max-height: 100vh;">
     <div id="title-bar" data-tauri-drag-region class="titlebar row outline-b color">
       <div class="row" style="margin-right: auto; align-items: center;">
         <img src="/tauri.svg" style="padding: 7px; height: 70%;" />
-        <button class="context-button">File</button>
-        <button class="context-button">Edit</button>
+        <button class="context-button" @click="showPopup = true">File</button>
+        <button class="context-button" @click="showNotification">Edit</button>
         <button class="context-button">Selection</button>
         <button class="context-button">View</button>
       </div>
@@ -47,11 +41,11 @@
         <div class="row" style="flex-grow: 1;">
           <div id="viewport" class="column" style="flex-grow: 1;">
             <div id="viewport-header" class="viewport-header row color outline-b">
-              <ViewportTab title="Wildcard.txt" />
-              <ViewportTab title="Tab 2" />
+              <ViewportTab viewportTitle="Wildcard.txt" />
+              <ViewportTab viewportTitle="Tab 2" />
             </div>
             <div id="viewport-content" class="viewport-container">
-              <TextEditor id="text-editor-0" />
+
             </div>
           </div>
         </div>
@@ -65,6 +59,11 @@
     </div>
 
   </div>
+  <GenericPopup :isVisible="showPopup" @close="showPopup = false">
+    <h2>{{ popupTitle }}</h2>
+    <p>{{ popupContent }}</p>
+  </GenericPopup>
+  <NotificationManager ref="notificationManager" />
 </template>
 <script lang="ts">
 import { appWindow } from '@tauri-apps/api/window'
@@ -79,6 +78,9 @@ import SettingsIcon from './components/Icons/SettingsIcon.vue'
 import TextEditor from './components/Viewport/TextEditor.vue'
 import ViewportTab from './components/Viewport/ViewportTab.vue'
 import ProjectExplorer from './components/NavBar/ProjectExplorer.vue'
+import GenericPopup from './components/Popup/GenericPopup.vue'
+import NotificationManager from './components/Notification/NotificationManager.vue'
+import GenericNotification from './components/Notification/GenericNotification.vue'
 
 export default {
 
@@ -90,12 +92,36 @@ export default {
     SettingsIcon,
     TextEditor,
     ViewportTab,
-    ProjectExplorer
+    ProjectExplorer,
+    GenericPopup,
+    NotificationManager,
+    GenericNotification
   },
   async mounted()
   {
     await setup();
   },
+  data()
+  {
+    return {
+      showPopup: false,
+      popupTitle: 'Dynamic Title',
+      popupContent: 'This is dynamic content, which is substantially longer to test if the window dynamically resizes or not. Bruh why are you even reading this lol'
+    }
+  },
+  methods:
+  {
+    showNotification()
+    {
+      console.log("showing notification");
+      this.$refs.notificationManager.addNotification({
+        icon: 'CheckCircleIcon',
+        header: 'Success!',
+        message: 'Your action was completed successfully.',
+        borderColor: '#2ecc71'
+      })
+    }
+  }
 }
 
 async function setup()

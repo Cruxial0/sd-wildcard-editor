@@ -1,6 +1,6 @@
 
 <template>
-    <div class="column text-editor" style="margin-top: auto;">
+    <div class="column text-editor">
         <div id="line-container" class="line-container">
             
         </div>
