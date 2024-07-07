@@ -85,8 +85,6 @@ impl DatabaseTrackedFiles {
         let hash = DatabaseTrackedFiles::hash_file_path(&path);
         let exists = self.files.contains(&hash);
 
-        println!("{}; {}", hash, exists);
-
         if !exists && add_missing { self.files.push(hash) }
         
         exists
