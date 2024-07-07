@@ -91,9 +91,4 @@ impl DatabaseTrackedFiles {
         
         exists
     }
-
-    pub fn debug(&self){
-        println!("{}", self.id);
-        println!("{:?}", self.files);
-    }
 }

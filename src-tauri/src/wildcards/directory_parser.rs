@@ -108,7 +108,6 @@ pub fn parse_directory_chain(handle: &AppHandle, dir: &str){
         handle.logger(|lgr| lgr.log_info(&msg, "ParseDirectory", LogVisibility::Backend))
     }
     
-    tracked_files.debug();
     tracked_files.write(handle, None, None);
     workspace.write(handle, None, None);
     
