@@ -95,6 +95,7 @@ export async function AddViewportTab(id: number)
 
         var selected = document.querySelector('.' + 'viewport-tab' + '.' + 'selected-tab');
         if (selected) selected.classList.remove('selected-tab');
+        selected?.scrollIntoView();
         tab.$el.querySelector('.viewport-tab').classList.add('selected-tab');
     }
 }

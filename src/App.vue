@@ -40,9 +40,11 @@
       <div class="column" style="flex-grow: 1;">
         <div class="row" style="flex-grow: 1;">
           <div id="viewport" class="column" style="flex-grow: 1;">
-            <div id="viewport-header" class="viewport-header row color outline-b">
-              <ViewportTab viewportTitle="Wildcard.txt" />
-              <ViewportTab viewportTitle="Tab 2" />
+            <div id="viewport-scroll-container">
+              <div id="viewport-header" class="viewport-header row color outline-b">
+                <ViewportTab viewportTitle="Wildcard.txt" />
+                <ViewportTab viewportTitle="Tab 2" />
+              </div>
             </div>
             <div id="viewport-content" class="viewport-container">
 

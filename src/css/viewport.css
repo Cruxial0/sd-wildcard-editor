@@ -1,0 +1,49 @@
+.viewport-header {
+    height: var(--viewport-header-height);
+    width: calc(100vw - var(--nav-bar-width) - var(--function-bar-width));
+    max-width: calc(100vw - var(--nav-bar-width) - var(--function-bar-width));
+    scroll-padding-block-start: 0px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    /* for firefox*/
+    scrollbar-color: white transparent;
+    scrollbar-width: thin;
+    clip-path: inset(0 0 0 0);
+}
+
+.viewport-container{
+    width: calc(100vw - var(--nav-bar-width) - var(--function-bar-width)); 
+    height: calc(100vh - var(--context-menu-height) - var(--title-bar-height) - var(--viewport-header-height));
+}
+
+.viewport-width {
+    width: calc(100vw - var(--nav-bar-width) - var(--function-bar-width));
+}
+
+.viewport-tab{
+    font-size: 1em;
+    white-space: nowrap;
+}
+
+.viewport-tab.selected-tab{
+    color: var(--highlight-color-alt);
+}
+.viewport-tab.selected-tab:hover{
+    color: var(--highlight-color);
+}
+.viewport-tab:hover{
+    color: var(--text-color-hover);
+}
+.viewport-tab.selected-tab > .file-icon svg{
+    stroke: var(--highlight-color-alt);
+}
+.viewport-tab.selected-tab:hover > .file-icon svg{
+    stroke: var(--highlight-color);
+}
+.viewport-tab:hover > .file-icon svg{
+    stroke: var(--text-color-hover);
+}
+
+.viewport-tab:hover > .close-tab {
+    visibility: visible;
+}

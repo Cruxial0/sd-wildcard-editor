@@ -74,11 +74,6 @@
   z-index: 1;
 }
 
-.viewport-container{
-  width: calc(100vw - var(--nav-bar-width) - var(--function-bar-width)); 
-  height: calc(100vh - var(--context-menu-height) - var(--title-bar-height) - var(--viewport-header-height));
-}
-
 .tab-outline{
   border-bottom: 1px solid;
   margin-bottom: -1px;
@@ -108,37 +103,6 @@
   height: calc(100vh - var(--title-bar-height));
   z-index: 2;
   flex-direction: row-reverse;
-}
-
-.file-entry{
-  display: flex;
-  padding: 3px 5px 3px 15px;
-  height: 15px;
-  margin-left: 10px;
-  align-items: center;
-}
-
-.file-entry.selected-entry{
-  background-color: var(--comp-color-alt);
-  color: var(--text-color-hover);
-}
-
-.file-entry:hover{
-  background-color: var(--comp-color-alt);
-  color: var(--text-color-hover);
-}
-
-.file-icon svg{
-  stroke-width: 2px;
-  stroke: var(--text-color);
-}
-
-.file-entry.selected-entry svg{
-  stroke: var(--text-color-hover);
-}
-
-.file-entry:hover svg{
-  stroke: var(--text-color-hover);
 }
 
 .nav-bar-content{
@@ -191,38 +155,6 @@
   filter: brightness(0) saturate(100%) invert(92%) sepia(0%) saturate(1%) hue-rotate(252deg) brightness(92%) contrast(92%);
 }
 
-.viewport-header{
-  height: var(--viewport-header-height);
-  width: calc(100vw - var(--nav-bar-width) - var(--function-bar-width));
-}
-
-.viewport-width {
-  width: calc(100vw - var(--nav-bar-width) - var(--function-bar-width));
-}
-
-.viewport-tab{
-  font-size: 1em;
-}
-
-.viewport-tab.selected-tab{
-  color: var(--highlight-color-alt);
-}
-.viewport-tab.selected-tab:hover{
-  color: var(--highlight-color);
-}
-.viewport-tab:hover{
-  color: var(--text-color-hover);
-}
-.viewport-tab.selected-tab > .file-icon svg{
-  stroke: var(--highlight-color-alt);
-}
-.viewport-tab.selected-tab:hover > .file-icon svg{
-  stroke: var(--highlight-color);
-}
-.viewport-tab:hover > .file-icon svg{
-  stroke: var(--text-color-hover);
-}
-
 .close-tab {
   display: flex;
   visibility: hidden;
@@ -236,10 +168,6 @@
 
 .selected-tab:hover{
   border-color: var(--highlight-color);
-}
-
-.viewport-tab:hover > .close-tab {
-  visibility: visible;
 }
 
 .close-tab:hover {
