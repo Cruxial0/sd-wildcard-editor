@@ -8,7 +8,9 @@ export abstract class ViewportItem
     /**
      * Display this viewport element at the given element
      */
-    public display(element: HTMLElement) {
+    public display(element: HTMLElement)
+    {
+        console.log(element.id);
         element.innerHTML = '';
         element.appendChild(this.data!);
         this.isLoaded = true;

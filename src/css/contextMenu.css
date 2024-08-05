@@ -1,0 +1,44 @@
+.rmb-context-menu {
+    position: absolute;
+    display: none;
+    background-color: var(--context-menu-color);
+    padding: 5px 0;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 5px;
+    border-radius: 5%;
+    z-index: 1000;
+  }
+  
+  .rmb-context-menu ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    border-radius: 5px;
+}
+
+.rmb-context-menu ul li {
+    padding: 5px 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    border-radius: 5%;
+}
+
+.rmb-context-menu ul li:hover {
+    background-color: var(--context-menu-color-hover);
+}
+
+.rmb-context-menu-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Example icon styles - replace with your own icons or icon font */
+.icon-edit { background: url('edit-icon.png') no-repeat center center / contain; }
+.icon-delete { background: url('delete-icon.png') no-repeat center center / contain; }
+.icon-share { background: url('share-icon.png') no-repeat center center / contain; }
+.icon-download { background: url('download-icon.png') no-repeat center center / contain; }
+.icon-info { background: url('info-icon.png') no-repeat center center / contain; }

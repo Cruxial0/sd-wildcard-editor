@@ -3,6 +3,8 @@ import TextEditor from "../../components/Viewport/TextEditor.vue";
 import { ViewportItem } from "./viewportItem";
 import { ViewportTextEditor } from "./viewportTextEditor";
 import ViewportTab from "../../components/Viewport/ViewportTab.vue";
+import MergePatternEditor from "../../components/Viewport/MergePatternEditor.vue";
+import { ViewportMergePatternEditor } from "./viewportMergePattern";
 
 const viewportElementId = 'viewport-content';
 const viewportTabElementId = 'viewport-header';
@@ -27,9 +29,21 @@ export function AddViewportTextEditor(id: number): number
     return maxId - 1;
 }
 
-export function  DisplayViewport(id: number): void;
-export function  DisplayViewport(id: number, element: HTMLElement): void;
-export function  DisplayViewport(id: number, element?: HTMLElement): void
+
+export function AddViewportMergePattern(): number
+{
+    if (viewports.has(99)) RemoveViewport(99);
+
+    var viewport = createInstance(MergePatternEditor, { name: "Test 1" });
+    var item = new ViewportMergePatternEditor(viewport.$el);
+    viewports.set(99, item);
+
+    return 99;
+}
+
+export function DisplayViewport(id: number): void;
+export function DisplayViewport(id: number, element: HTMLElement): void;
+export function DisplayViewport(id: number, element?: HTMLElement): void
 {
     console.log(viewportTabs);
     let elem = element ? element : document.getElementById(viewportElementId)!;
@@ -50,7 +64,7 @@ export function  DisplayViewport(id: number, element?: HTMLElement): void
     }
 }
 
-export function  UnloadViewport(id: number)
+export function UnloadViewport(id: number)
 {
     let viewport = viewports.get(id);
     if (viewport) viewport.unload();
@@ -100,7 +114,7 @@ export async function AddViewportTab(id: number)
     }
 }
 
-export async function  CreateViewportTab(id: number): Promise<ComponentPublicInstance | undefined>
+export async function CreateViewportTab(id: number): Promise<ComponentPublicInstance | undefined>
 {
     let item = viewports.get(id);
 

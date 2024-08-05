@@ -64,7 +64,8 @@ export class ViewportTextEditor extends ViewportItem
     private renderDoc()
     {
         console.log('loading');
-        this.data?.querySelector('.line-container')!.appendChild(this.document!.render());
+        this.data!.querySelector('.line-container')!.innerHTML = '';
+        this.data!.querySelector('.line-container')!.appendChild(this.document!.render());
     }
 
     constructor(data: HTMLElement, wildcardId: number)

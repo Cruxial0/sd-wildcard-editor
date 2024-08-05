@@ -64,6 +64,7 @@ impl DatabaseItem for DatabaseTrackedFiles {
     fn values<'a>(&self) -> Vec<rusqlite::types::Value> {
         let mut values: Vec<Value> = Vec::new();
         let files = serde_json::to_string(&self.files).expect("JSON serialization should succeed");
+        
         values.push(self.id.into());
         values.push(files.into());
         return values;

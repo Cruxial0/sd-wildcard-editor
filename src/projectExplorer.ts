@@ -4,8 +4,10 @@ import FileIndicator from './components/NavBar/FileIndicator.vue';
 import { FileType, WildcardFile } from "./fileType.ts";
 import { LoadWildcard, Wildcard } from "./ts/data/wildcard.ts";
 import { AddViewportTab, AddViewportTextEditor, DisplayViewport } from "./ts/viewport/viewportHelper.ts";
+import { AddContextMenuHandler } from "./ts/rmb-context-menu/contextMenuHandlers.ts";
 
 let item;
+let dataMenu = 'cm-file-entry'
 
 async function addFileClickHandler(instance)
 {
@@ -23,6 +25,9 @@ async function addFileClickHandler(instance)
         if (selected) selected.classList.remove('selected-entry');
         instance.$el.classList.add('selected-entry');
     });
+
+    instance.$el.setAttribute('data-menu', dataMenu);
+    AddContextMenuHandler(instance.$el, dataMenu);
 }
 
 function addIconToElement(type: FileType, element: HTMLElement)
