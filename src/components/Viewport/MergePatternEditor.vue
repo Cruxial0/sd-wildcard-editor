@@ -30,8 +30,8 @@ const disabled = ref(false)
         </div>
         <div id="merge-editor-lines">
             <div style="margin-top: 10px;">
-                <VueDraggable class="row" v-model="itemsCollection" :disabled="disabled" :animation="150" ghostClass="ghost">
-                    <MergePatternItem v-for="item in itemsCollection" :key="item.id" :name="item.name" :kind="item.kind"
+                <VueDraggable class="merge-editor-line" v-model="itemsCollection" :disabled="disabled" :animation="150" ghostClass="ghost">
+                    <MergePatternItem v-for="item in itemsCollection" :key="item.order" :name="item.name" :kind="item.kind"
                         @click="toggle($event)">
                     </MergePatternItem>
                 </VueDraggable>
@@ -46,6 +46,7 @@ import MergePatternLine from './MergePatternLine.vue'
 
 const inputDev = ref('');
 const itemsCollection = ref(new Array());
+let newId = 7277;
 
 export default {
     components: {
@@ -78,12 +79,19 @@ export default {
         addItem()
         {
             let inputName = inputDev.value == '' ? 'newItem' : inputDev.value;
-            console.log(inputDev);
-            itemsCollection.value.push({ name: inputName, kind: '0', id: 3 });
+            itemsCollection.value.push({ name: inputName, kind: '0', id: newId });
+            newId++;
         },
         setData(data)
         {
-            itemsCollection.value = data;
+            let newData = new Array();
+            let order = 0;
+            data.forEach(element => {
+                newData.push({ name: element.name, kind: element.kind, id: element.id, order: order });
+                order++;
+            });
+            itemsCollection.value = newData;
+            newId = order;
             this.$forceUpdate;
         },
     }

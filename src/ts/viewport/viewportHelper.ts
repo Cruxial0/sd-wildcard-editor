@@ -37,7 +37,7 @@ export function AddViewportMergePattern(comboWildcard): number
 
     var children = new Array;
     comboWildcard.wildcards.forEach(element => { children.push({ name: element.name, kind: 0, id: element.id }) });
-    comboWildcard.projects.forEach(element => { children.push({ name: element.name, kind: 1, id: element.id }) });
+    comboWildcard.projects.forEach(element => { children.push({ name: element.name, kind: 1, id: element.id + 6000 }) });
     
     children.sort(x => x.id);
 
@@ -78,7 +78,7 @@ export function DisplayViewport(id: number, element?: HTMLElement): void
 export function UnloadViewport(id: number)
 {
     if (id == loadedViewport) return;
-    
+
     console.log("unloading id:" + id);
     let viewport = viewports.get(id);
     if (viewport) viewport.unload();
