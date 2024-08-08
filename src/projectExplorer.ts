@@ -25,16 +25,14 @@ async function addFileClickHandler(instance)
     });
 
     instance.$el.setAttribute('data-menu', dataMenuFile);
-    AddContextMenuHandler(instance.$el, dataMenuFile);
+    AddContextMenuHandler(instance.$el, dataMenuFile, instance.$data.id);
 }
 
-async function addFolderClickHandler(instance, comboWildcard)
+async function addFolderClickHandler(instance)
 {
-    instance.$el.addEventListener("click", async function ()
+    instance.$el.addEventListener("click", async function (e: MouseEvent)
     {
-        let id = await AddViewportMergePattern(comboWildcard); 
-        await AddViewportTab(id);
-        await DisplayViewport(id, item as HTMLElement);
+        e.stopPropagation();
         console.log("click event triggered");
 
         let children = instance.$el.children[1];
@@ -43,7 +41,7 @@ async function addFolderClickHandler(instance, comboWildcard)
     });
 
     instance.$el.setAttribute('data-menu', dataMenuFolder);
-    AddContextMenuHandler(instance.$el, dataMenuFolder);
+    AddContextMenuHandler(instance.$el, dataMenuFolder, instance.$data.id);
 }
 
 function addIconToElement(type: FileType, element: HTMLElement)
@@ -74,13 +72,13 @@ function createCompWildcard(compWildcard)
     const subject = createFileInstance({ name: compWildcard.name, wildcardId: compWildcard.id });
     subject.$el.querySelector("#file-entry").classList.add("gtk1");
     addIconToElement(FileType.DIRECTORY, subject.$el);
-    
+
     for (let i = 0; i < compWildcard.projects.length; i++)
     {
         let comboWildcard = compWildcard.projects[i];
         var project = createCompWildcard(comboWildcard);
         subject.$el.querySelector("#children").appendChild(project.$el);
-        addFolderClickHandler(project, comboWildcard);
+        addFolderClickHandler(project);
     }
 
     for (let i = 0; i < compWildcard.wildcards.length; i++)

@@ -26,6 +26,18 @@ pub fn load_wildcard(handle: AppHandle, id: u32) -> Option<DatabaseWildcard> {
 }
 
 #[tauri::command]
+pub fn load_project(handle: AppHandle, id: u32) -> DatabaseProject {
+    let mut proj = match DatabaseProject::from_id(&id).read(&handle) {
+        Some(p) => p,
+        None => DatabaseProject::from_id(&0),
+    };
+
+    proj.load(&handle, true);
+
+    proj
+}
+
+#[tauri::command]
 pub fn wildcard_name_from_id(handle: AppHandle, id: u32) -> String {
     match DatabaseWildcard::from_id(&id).read(&handle){
         Some(x) => x.name,

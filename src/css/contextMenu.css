@@ -26,6 +26,8 @@
 
 .rmb-context-menu ul li:hover {
     background-color: var(--context-menu-color-hover);
+    color: var(--text-color-hover);
+    stroke: var(--text-color-hover);
 }
 
 .rmb-context-menu-icon {

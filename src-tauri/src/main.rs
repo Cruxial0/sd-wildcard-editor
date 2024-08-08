@@ -26,6 +26,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             loader::load_workspace,
             loader::load_wildcard,
+            loader::load_project,
             loader::wildcard_name_from_id
         ])
         .setup(|app| {

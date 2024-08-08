@@ -1,6 +1,6 @@
 let trackedMenus: string[] = [];
 
-export function AddContextMenuHandlers(triggers: string, dataMenus: string)
+export function AddContextMenuHandlers(triggers: string, dataMenus: string, triggerId: number)
 {
     document.addEventListener('DOMContentLoaded', function ()
     {
@@ -22,6 +22,7 @@ export function AddContextMenuHandlers(triggers: string, dataMenus: string)
           menu.style.display = 'block';
           menu.style.left = (e as MouseEvent).pageX + 'px';
           menu.style.top = (e as MouseEvent).pageY + 'px';
+          menu.setAttribute('callerId', triggerId.toString());
         });
       });
     
@@ -33,13 +34,14 @@ export function AddContextMenuHandlers(triggers: string, dataMenus: string)
     });
 }
 
-export function AddContextMenuHandler(trigger: HTMLElement, dataMenu: string)
+export function AddContextMenuHandler(trigger: HTMLElement, dataMenu: string, triggerId: number)
 {
   const menus = document.getElementById(dataMenu)!;
 
   trigger.addEventListener('contextmenu', function (e)
   {
       e.preventDefault();
+      e.stopPropagation();
       const menuId = trigger.getAttribute('data-menu')!;
       const menu = document.getElementById(menuId)! as HTMLElement;
 
@@ -50,15 +52,13 @@ export function AddContextMenuHandler(trigger: HTMLElement, dataMenu: string)
       menu.style.display = 'block';
       menu.style.left = (e as MouseEvent).pageX + 'px';
       menu.style.top = (e as MouseEvent).pageY + 'px';
+    
+      menu.setAttribute('callerId', triggerId.toString());
   });
 
   if (!trackedMenus.includes(dataMenu))
   {
-    document.addEventListener('mouseup', function ()
-    {
-      console.log(menus);
-      menus.style.display = 'none';
-    });
+    document.addEventListener('mouseup', function () { menus.style.display = 'none'; });
     trackedMenus.push(dataMenu);
   }
   // Hide menus when clicking outside

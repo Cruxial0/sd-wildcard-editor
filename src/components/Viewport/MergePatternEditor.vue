@@ -1,28 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import
-{
-    type UseDraggableReturn,
-    VueDraggable,
-    type SortableEvent
-} from 'vue-draggable-plus'
+import{ VueDraggable} from 'vue-draggable-plus'
 
 const disabled = ref(false)
-
-const onStart = (e: SortableEvent) =>
-{
-    console.log('start', e)
-}
-
-const onEnd = (e: SortableEvent) =>
-{
-    console.log('onEnd', e)
-}
-
-const onUpdate = () =>
-{
-    console.log('update')
-}
 </script>
 
 <template>
@@ -50,8 +30,7 @@ const onUpdate = () =>
         </div>
         <div id="merge-editor-lines">
             <div style="margin-top: 10px;">
-                <VueDraggable class="row" v-model="itemsCollection" :disabled="disabled" :animation="150"
-                    ghostClass="ghost" @start="onStart" @update="onUpdate" @end="onEnd">
+                <VueDraggable class="row" v-model="itemsCollection" :disabled="disabled" :animation="150" ghostClass="ghost">
                     <MergePatternItem v-for="item in itemsCollection" :key="item.id" :name="item.name" :kind="item.kind"
                         @click="toggle($event)">
                     </MergePatternItem>
@@ -77,7 +56,6 @@ export default {
     data() 
     {
         return {
-            items: [],
             drag: false
         }
     },
