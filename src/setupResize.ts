@@ -19,7 +19,6 @@ function resize_x(e){
     let currWidth = parseInt(getComputedStyle(item, '').width);
     
     var val = currWidth + dx < min ? "180px" : (currWidth + dx) + "px";
-    console.log(currWidth - dx);
     update_variable(nb_variable, val);
 }
 

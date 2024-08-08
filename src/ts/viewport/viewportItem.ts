@@ -12,6 +12,7 @@ export abstract class ViewportItem
     {
         console.log(element.id);
         element.innerHTML = '';
+        console.log(this.data);
         element.appendChild(this.data!);
         this.isLoaded = true;
     }

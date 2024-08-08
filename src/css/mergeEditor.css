@@ -1,0 +1,65 @@
+:root {
+    --merge-item-border-radius: 5%;
+}
+
+.merge-editor-container {
+    padding: 10px;
+}
+
+.merge-title {
+    font-size: large;
+}
+
+.merge-item-container{
+    min-width: 50px;
+    height: 30px;
+    border-radius: var(--merge-item-border-radius);
+    overflow: hidden;
+}
+
+.merge-item {
+    display: flex;
+    flex-grow: 1;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--context-menu-color);
+    padding-top: 1px;
+    padding-right: 5px;
+    padding-left: 5px;
+}
+
+.merge-item-container:hover {
+    color: var(--text-color-hover);
+    stroke: var(--text-color-hover);
+}
+
+.merge-item.deselect {
+    background-color: var(--context-menu-color-washed);
+    color: var(--text-color-deselect);
+}
+
+#merge-item-container {
+    margin-left: 5px;
+}
+
+select {
+    color: var(--text-color);
+    background-color: var(--context-menu-color);
+    border-width: 0px;
+    font-weight: bold;
+    padding: 2px;
+}
+
+select:hover{
+    color: var(--text-color-hover);
+}
+
+optgroup > option {
+    color: red !important;
+    border-top-color: white;
+    border-bottom-width: 1px;
+}
+
+option {
+    color: blueviolet;
+}

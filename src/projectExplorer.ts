@@ -3,21 +3,19 @@ import { createApp, ref } from "vue";
 import FileIndicator from './components/NavBar/FileIndicator.vue';
 import { FileType, WildcardFile } from "./fileType.ts";
 import { LoadWildcard, Wildcard } from "./ts/data/wildcard.ts";
-import { AddViewportTab, AddViewportTextEditor, DisplayViewport } from "./ts/viewport/viewportHelper.ts";
+import { AddViewportMergePattern, AddViewportTab, AddViewportTextEditor, DisplayViewport } from "./ts/viewport/viewportHelper.ts";
 import { AddContextMenuHandler } from "./ts/rmb-context-menu/contextMenuHandlers.ts";
 
 let item;
-let dataMenu = 'cm-file-entry'
+let dataMenuFile = 'cm-file-entry';
+let dataMenuFolder = 'cm-combo-wildcard-entry';
 
 async function addFileClickHandler(instance)
 {
-    const wildcard = ref<Wildcard>();
-    wildcard.value = await LoadWildcard(instance.$data.id);
-    
-
-    instance.$el.addEventListener("mousedown", async function ()
+    instance.$el.addEventListener("click", async function (e: MouseEvent)
     {
-        let id = AddViewportTextEditor(wildcard.value!.id);
+        e.stopPropagation();
+        let id = AddViewportTextEditor(instance.$data.id);
         await AddViewportTab(id);
         await DisplayViewport(id, item as HTMLElement);
 
@@ -26,8 +24,26 @@ async function addFileClickHandler(instance)
         instance.$el.classList.add('selected-entry');
     });
 
-    instance.$el.setAttribute('data-menu', dataMenu);
-    AddContextMenuHandler(instance.$el, dataMenu);
+    instance.$el.setAttribute('data-menu', dataMenuFile);
+    AddContextMenuHandler(instance.$el, dataMenuFile);
+}
+
+async function addFolderClickHandler(instance, comboWildcard)
+{
+    instance.$el.addEventListener("click", async function ()
+    {
+        let id = await AddViewportMergePattern(comboWildcard); 
+        await AddViewportTab(id);
+        await DisplayViewport(id, item as HTMLElement);
+        console.log("click event triggered");
+
+        let children = instance.$el.children[1];
+        if (children.classList.contains('collapsed')) children.classList.remove('collapsed');
+        else children.classList.add('collapsed');
+    });
+
+    instance.$el.setAttribute('data-menu', dataMenuFolder);
+    AddContextMenuHandler(instance.$el, dataMenuFolder);
 }
 
 function addIconToElement(type: FileType, element: HTMLElement)
@@ -61,8 +77,10 @@ function createCompWildcard(compWildcard)
     
     for (let i = 0; i < compWildcard.projects.length; i++)
     {
-        var project = createCompWildcard(compWildcard.projects[i]);
+        let comboWildcard = compWildcard.projects[i];
+        var project = createCompWildcard(comboWildcard);
         subject.$el.querySelector("#children").appendChild(project.$el);
+        addFolderClickHandler(project, comboWildcard);
     }
 
     for (let i = 0; i < compWildcard.wildcards.length; i++)
@@ -71,6 +89,8 @@ function createCompWildcard(compWildcard)
         var item = createSingleWildcard(wildcard);
         subject.$el.querySelector("#children").appendChild(item.$el);
     }
+
+    
 
     return subject;
 }

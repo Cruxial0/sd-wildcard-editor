@@ -1,3 +1,5 @@
-<div>
-    
-</div>
+<template>
+    <div class="column">
+
+    </div>
+</template>

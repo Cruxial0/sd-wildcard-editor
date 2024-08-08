@@ -28,3 +28,7 @@
 .file-entry:hover svg{
     stroke: var(--text-color-hover);
 }
+
+.collapsed {
+    display: none;
+}

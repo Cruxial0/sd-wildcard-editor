@@ -5,6 +5,7 @@ import { ViewportTextEditor } from "./viewportTextEditor";
 import ViewportTab from "../../components/Viewport/ViewportTab.vue";
 import MergePatternEditor from "../../components/Viewport/MergePatternEditor.vue";
 import { ViewportMergePatternEditor } from "./viewportMergePattern";
+import { Wildcard } from "../data/wildcard";
 
 const viewportElementId = 'viewport-content';
 const viewportTabElementId = 'viewport-header';
@@ -30,15 +31,24 @@ export function AddViewportTextEditor(id: number): number
 }
 
 
-export function AddViewportMergePattern(): number
+export function AddViewportMergePattern(comboWildcard): number
 {
-    if (viewports.has(99)) RemoveViewport(99);
+    if (viewports.has(comboWildcard.id)) return comboWildcard.id;
 
-    var viewport = createInstance(MergePatternEditor, { name: "Test 1" });
-    var item = new ViewportMergePatternEditor(viewport.$el);
-    viewports.set(99, item);
+    var children = new Array;
+    comboWildcard.wildcards.forEach(element => { children.push({ name: element.name, kind: 0, id: element.id }) });
+    comboWildcard.projects.forEach(element => { children.push({ name: element.name, kind: 1, id: element.id }) });
+    
+    children.sort(x => x.id);
 
-    return 99;
+    console.log(children);
+
+    var viewport = createInstance(MergePatternEditor, { name: comboWildcard.name });
+    viewport.$options.methods.setData(children);
+    var item = new ViewportMergePatternEditor(viewport.$el, comboWildcard.id, comboWildcard);
+    viewports.set(comboWildcard.id, item);
+
+    return comboWildcard.id;
 }
 
 export function DisplayViewport(id: number): void;
@@ -50,9 +60,10 @@ export function DisplayViewport(id: number, element?: HTMLElement): void
     let viewport = viewports.get(id);
     if (viewport)
     {
+        console.log("Loaded viewport: " + loadedViewport);
         if (loadedViewport != -1) UnloadViewport(loadedViewport);
         loadedViewport = id;
-        viewport.display(elem);
+        viewport.display(elem as HTMLElement);
 
         let tab = viewportTabs.get(id);
         if (tab)
@@ -66,6 +77,9 @@ export function DisplayViewport(id: number, element?: HTMLElement): void
 
 export function UnloadViewport(id: number)
 {
+    if (id == loadedViewport) return;
+    
+    console.log("unloading id:" + id);
     let viewport = viewports.get(id);
     if (viewport) viewport.unload();
     document.getElementById(viewportElementId)!.innerHTML = '';

@@ -1,3 +1,5 @@
+let trackedMenus: string[] = [];
+
 export function AddContextMenuHandlers(triggers: string, dataMenus: string)
 {
     document.addEventListener('DOMContentLoaded', function ()
@@ -33,7 +35,7 @@ export function AddContextMenuHandlers(triggers: string, dataMenus: string)
 
 export function AddContextMenuHandler(trigger: HTMLElement, dataMenu: string)
 {
-  const menus = document.querySelectorAll<HTMLElement>(dataMenu)!;
+  const menus = document.getElementById(dataMenu)!;
 
   trigger.addEventListener('contextmenu', function (e)
   {
@@ -42,7 +44,7 @@ export function AddContextMenuHandler(trigger: HTMLElement, dataMenu: string)
       const menu = document.getElementById(menuId)! as HTMLElement;
 
       // Hide all menus
-      menus.forEach(m => m.style.display = 'none');
+      menus.style.display = 'none';
 
       // Show the selected menu
       menu.style.display = 'block';
@@ -50,9 +52,15 @@ export function AddContextMenuHandler(trigger: HTMLElement, dataMenu: string)
       menu.style.top = (e as MouseEvent).pageY + 'px';
   });
 
-  // Hide menus when clicking outside
-  document.addEventListener('click', function ()
+  if (!trackedMenus.includes(dataMenu))
   {
-    menus.forEach(menu => menu.style.display = 'none');
-  });
+    document.addEventListener('mouseup', function ()
+    {
+      console.log(menus);
+      menus.style.display = 'none';
+    });
+    trackedMenus.push(dataMenu);
+  }
+  // Hide menus when clicking outside
+  
 }

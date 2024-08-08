@@ -66,6 +66,7 @@
 
   </div>
   <FileEntryCM></FileEntryCM>
+  <ComboWildcardCM></ComboWildcardCM>
   <GenericPopup :isVisible="showPopup" @close="showPopup = false">
     <h2>{{ popupTitle }}</h2>
     <p>{{ popupContent }}</p>
@@ -89,6 +90,9 @@ import GenericPopup from './components/Popup/GenericPopup.vue'
 import NotificationManager from './components/Notification/NotificationManager.vue'
 import GenericNotification from './components/Notification/GenericNotification.vue'
 import FileEntryCM from './components/ContextMenu/FileEntryCM.vue'
+import ComboWildcardCM from './components/ContextMenu/ComboWildcardCM.vue'
+import MergePatternEditor from './components/Viewport/MergePatternEditor.vue'
+import {VueDraggable} from 'vue-draggable-plus'
 
 export default {
 
@@ -104,7 +108,10 @@ export default {
     GenericPopup,
     NotificationManager,
     GenericNotification,
-    FileEntryCM
+    FileEntryCM,
+    ComboWildcardCM,
+    MergePatternEditor,
+    VueDraggable
   },
   async mounted()
   {

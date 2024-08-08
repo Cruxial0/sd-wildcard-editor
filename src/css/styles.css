@@ -234,6 +234,26 @@ button{
   color: var(--text-color);
 }
 
+button:hover {
+  color: var(--text-color-hover);
+}
+
+input {
+  display: flex;
+  align-items: center;
+  border-width: 0px;
+  background-color: var(--comp-color);
+  color: var(--text-color);
+}
+
+input:hover{
+  color: var(--text-color-hover);
+}
+
+input:focus{
+  color: var(--text-color-hover);
+}
+
 [contenteditable]{
   outline: 0px solid transparent;
 }

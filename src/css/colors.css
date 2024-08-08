@@ -6,7 +6,9 @@
     --comp-color-alt: #22222e;
     --comp-color-alt-hover: #1b1b24;
     --text-color: #a0a0a0;
+    --text-color-deselect: #a0a0a0a9;
     --context-menu-color: #292b3b; 
+    --context-menu-color-washed: #35374b48; 
     --context-menu-color-hover: #35374b;
     --text-color-hover: #ffffff;
     --button-hover: #353535;
