@@ -2,7 +2,7 @@ use std::{collections::HashMap, path::PathBuf};
 use tauri::AppHandle;
 use walkdir::{DirEntry, WalkDir};
 
-use crate::{database::{datatypes::{db_project::DatabaseProject, db_settings::DatabaseSettings, db_wildcard::DatabaseWildcard, db_workspace::Workspace}, operations::db_item::DatabaseItem}, logging::logger::LogVisibility, state::ServiceAccess};
+use crate::{database::{datatypes::{db_project::DatabaseSubject, db_settings::DatabaseSettings, db_wildcard::DatabaseWildcard, db_workspace::Workspace}, operations::db_item::DatabaseItem}, logging::logger::LogVisibility, state::ServiceAccess};
 
 use super::directory_parser::parse_directory_chain;
 
@@ -26,10 +26,10 @@ pub fn load_wildcard(handle: AppHandle, id: u32) -> Option<DatabaseWildcard> {
 }
 
 #[tauri::command]
-pub fn load_project(handle: AppHandle, id: u32) -> DatabaseProject {
-    let mut proj = match DatabaseProject::from_id(&id).read(&handle) {
+pub fn load_project(handle: AppHandle, id: u32) -> DatabaseSubject {
+    let mut proj = match DatabaseSubject::from_id(&id).read(&handle) {
         Some(p) => p,
-        None => DatabaseProject::from_id(&0),
+        None => DatabaseSubject::from_id(&0),
     };
 
     proj.load(&handle, true);

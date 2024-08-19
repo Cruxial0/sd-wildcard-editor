@@ -1,43 +1,57 @@
 use itertools::Itertools;
-use rusqlite::{Error, types::Value, Statement};
+use rusqlite::{types::Value, Error, Statement};
 use tauri::AppHandle;
 use walkdir::DirEntry;
 
-use crate::{database::operations::{db_item::DatabaseItem, db_read::load_multiple, tables::DatabaseTable}, logging::logger, state::ServiceAccess};
+use crate::{
+    database::operations::{db_item::DatabaseItem, db_read::load_multiple, tables::DatabaseTable},
+    logging::logger,
+    state::ServiceAccess,
+};
 
 use super::db_wildcard::DatabaseWildcard;
 
 #[derive(Clone, Hash, Eq)]
-pub struct DatabaseProject {
+pub struct DatabaseSubject {
     pub id: u32,
     pub name: String,
     pub description: String,
     pub wildcard_ids: Vec<u32>,
-    pub project_ids: Vec<u32>,
+    pub subject_ids: Vec<u32>,
     wildcards: Vec<DatabaseWildcard>,
-    projects: Vec<DatabaseProject>
+    subjects: Vec<DatabaseSubject>,
 }
 
-impl DatabaseProject {
+impl DatabaseSubject {
     pub fn add_wildcard(&mut self, wildcard: &DatabaseWildcard) {
-        if self.wildcard_ids.contains(&wildcard.id) { return; }
+        if self.wildcard_ids.contains(&wildcard.id) {
+            return;
+        }
         self.wildcard_ids.push(wildcard.id);
         self.wildcards.push(wildcard.clone());
     }
 
-    pub fn add_project(&mut self, project: &DatabaseProject) {
-        if self.project_ids.contains(&project.id) { return; }
-        self.project_ids.push(project.id);
-        self.projects.push(project.clone());
+    pub fn add_subject(&mut self, subject: &DatabaseSubject) {
+        if self.subject_ids.contains(&subject.id) {
+            return;
+        }
+        self.subject_ids.push(subject.id);
+        self.subjects.push(subject.clone());
     }
 
     pub fn load_recursive(&mut self, handle: &AppHandle) {
-        self.wildcards = load_multiple(handle, &DatabaseWildcard::default(), self.wildcard_ids.clone()).expect("Should be able to load wildcards");
-        self.projects = load_multiple(handle, self, self.project_ids.clone()).expect("Should be able to load projects");
+        self.wildcards = load_multiple(
+            handle,
+            &DatabaseWildcard::default(),
+            self.wildcard_ids.clone(),
+        )
+        .expect("Should be able to load wildcards");
+        self.subjects = load_multiple(handle, self, self.subject_ids.clone())
+            .expect("Should be able to load subjects");
     }
 
-    pub fn from_id(id: &u32) -> DatabaseProject {
-        DatabaseProject {
+    pub fn from_id(id: &u32) -> DatabaseSubject {
+        DatabaseSubject {
             id: *id,
             ..Default::default()
         }
@@ -47,76 +61,84 @@ impl DatabaseProject {
         &self.wildcards
     }
 
-    pub fn projects(&self) -> &Vec<DatabaseProject> {
-        &self.projects
+    pub fn subjects(&self) -> &Vec<DatabaseSubject> {
+        &self.subjects
     }
 
-    pub fn load(&mut self, handle: &AppHandle, load_children: bool){
+    pub fn load(&mut self, handle: &AppHandle, load_children: bool) {
         self.load_wildcards_internal(handle);
-        self.load_projects_internal(handle, load_children);
+        self.load_subjects_internal(handle, load_children);
     }
 
     fn load_wildcards_internal(&mut self, handle: &AppHandle) {
-        self.wildcards = self.wildcard_ids.iter().map(|w| DatabaseWildcard::from_id(w).read(handle).unwrap()).collect();
+        self.wildcards = self
+            .wildcard_ids
+            .iter()
+            .map(|w| DatabaseWildcard::from_id(w).read(handle).unwrap())
+            .collect();
     }
 
-    fn load_projects_internal(&mut self, handle: &AppHandle, load_children: bool) {
-        let mut projects: Vec<DatabaseProject> = self.project_ids.iter().map(|p| DatabaseProject::from_id(p).read(handle).unwrap()).collect();
+    fn load_subjects_internal(&mut self, handle: &AppHandle, load_children: bool) {
+        let mut subjects: Vec<DatabaseSubject> = self
+            .subject_ids
+            .iter()
+            .map(|p| DatabaseSubject::from_id(p).read(handle).unwrap())
+            .collect();
         if load_children {
-            projects.iter_mut().for_each(|x| x.load(handle, true));
+            subjects.iter_mut().for_each(|x| x.load(handle, true));
         }
-        self.projects = projects;
+        self.subjects = subjects;
     }
 
-    pub fn from_direntry(handle: &AppHandle, name: String) -> Option<DatabaseProject>{
-        let unique_id = handle.db_session(|session| session.get_and_claim_id(DatabaseTable::Projects));
-        
+    pub fn from_direntry(handle: &AppHandle, name: String) -> Option<DatabaseSubject> {
+        let unique_id =
+            handle.db_session(|session| session.get_and_claim_id(DatabaseTable::Subjects));
+
         match unique_id {
-            Ok(id) => {
-                Some(DatabaseProject {
-                    id: id,
-                    name: name,
-                    ..Default::default()
-                })
-            },
+            Ok(id) => Some(DatabaseSubject {
+                id: id,
+                name: name,
+                ..Default::default()
+            }),
             Err(_) => None,
         }
-        
     }
 }
 
-impl Default for DatabaseProject {
+impl Default for DatabaseSubject {
     fn default() -> Self {
-        DatabaseProject {
+        DatabaseSubject {
             id: 1,
-            name: "DefaultProject".to_owned(),
+            name: "DefaultSubject".to_owned(),
             description: "".to_owned(),
             wildcard_ids: Vec::new(),
-            project_ids: Vec::new(),
+            subject_ids: Vec::new(),
             wildcards: Vec::new(),
-            projects: Vec::new()
+            subjects: Vec::new(),
         }
     }
 }
 
-impl PartialEq for DatabaseProject {
+impl PartialEq for DatabaseSubject {
     fn eq(&self, other: &Self) -> bool {
         self.id == other.id
     }
 }
 
-impl DatabaseItem for DatabaseProject {
-    type Item = DatabaseProject;
+impl DatabaseItem for DatabaseSubject {
+    type Item = DatabaseSubject;
 
     fn parse(&self, stmt: &mut Statement) -> Result<Self::Item, Error> {
         // SELECT * FROM Wildcards Where ID in (1, 2, 3, etc.)
         let data = stmt.query_row((), |row| {
-            Ok(DatabaseProject{
+            Ok(DatabaseSubject {
                 id: row.get(0)?,
                 name: row.get(1)?,
                 description: row.get(2)?,
-                wildcard_ids: serde_json::from_str(&row.get::<usize, String>(3)?).expect("JSON Deserialization should succeed"),
-                project_ids: serde_json::from_str(&row.get::<usize, String>(4)?).expect("JSON Deserialization should succeed"),
+                wildcard_ids: serde_json::from_str(&row.get::<usize, String>(3)?)
+                    .expect("JSON Deserialization should succeed"),
+                subject_ids: serde_json::from_str(&row.get::<usize, String>(4)?)
+                    .expect("JSON Deserialization should succeed"),
                 ..Default::default()
             })
         });
@@ -125,40 +147,47 @@ impl DatabaseItem for DatabaseProject {
     }
 
     fn table(&self) -> DatabaseTable {
-        DatabaseTable::Projects
+        DatabaseTable::Subjects
     }
 
     fn fields(&self) -> Vec<String> {
-        vec!["id", "name", "description", "wildcards", "projects"]
-            .iter().map(|x| String::from(*x)).collect()
+        vec!["id", "name", "description", "wildcards", "subjects"]
+            .iter()
+            .map(|x| String::from(*x))
+            .collect()
     }
-    
+
     fn values(&self) -> Vec<rusqlite::types::Value> {
         let mut values: Vec<Value> = Vec::new();
-        let wildcard_ids = serde_json::to_string(&self.wildcard_ids).expect("JSON serialization should succeed");
-        let project_ids = serde_json::to_string(&self.project_ids).expect("JSON serialization should succeed");
+        let wildcard_ids =
+            serde_json::to_string(&self.wildcard_ids).expect("JSON serialization should succeed");
+        let subjects_ids =
+            serde_json::to_string(&self.subject_ids).expect("JSON serialization should succeed");
         values.push(self.id.into());
         values.push(self.name.clone().into());
         values.push(self.description.clone().into());
         values.push(wildcard_ids.into());
-        values.push(project_ids.into());
+        values.push(subjects_ids.into());
         values
     }
-    
-    fn id(&self) -> u32 { self.id }
+
+    fn id(&self) -> u32 {
+        self.id
+    }
 }
 
-impl serde::Serialize for DatabaseProject {
+impl serde::Serialize for DatabaseSubject {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer {
-            use serde::ser::SerializeStruct;
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
 
-            let mut state = serializer.serialize_struct("Workspace", 4)?;
-            state.serialize_field("id", &self.id)?;
-            state.serialize_field("name", &self.name)?;
-            state.serialize_field("wildcards", &self.wildcards)?;
-            state.serialize_field("projects", &self.projects)?;
-            state.end()
+        let mut state = serializer.serialize_struct("Workspace", 4)?;
+        state.serialize_field("id", &self.id)?;
+        state.serialize_field("name", &self.name)?;
+        state.serialize_field("wildcards", &self.wildcards)?;
+        state.serialize_field("subjects", &self.subjects)?;
+        state.end()
     }
 }

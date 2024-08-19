@@ -7,7 +7,7 @@ impl DatabaseMigration for MigrationTrackedFilesTable {
         CREATE TABLE IF NOT EXISTS Workspace (
             id INTEGER NOT NULL UNIQUE,
             wildcards TEXT, 
-            projects TEXT,
+            subjects TEXT,
             PRIMARY KEY(id)
         );
         CREATE TABLE IF NOT EXISTS TrackedFiles (

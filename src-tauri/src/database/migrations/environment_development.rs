@@ -6,12 +6,12 @@ pub struct MigrationEnvironmentDevelopment;
 impl DatabaseMigration for MigrationEnvironmentDevelopment {
     fn get_batch_command(&self) -> String {
         "
-        CREATE TABLE IF NOT EXISTS Projects (
+        CREATE TABLE IF NOT EXISTS Subjects (
             id INTEGER, 
             name VARCHAR(255) NOT NULL, 
             description VARCHAR(255), 
             wildcards TEXT, 
-            projects TEXT,
+            subjects TEXT,
             PRIMARY KEY(id)
         );
     

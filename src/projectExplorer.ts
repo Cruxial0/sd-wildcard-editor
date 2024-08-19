@@ -73,12 +73,12 @@ function createCompWildcard(compWildcard)
     subject.$el.querySelector("#file-entry").classList.add("gtk1");
     addIconToElement(FileType.DIRECTORY, subject.$el);
 
-    for (let i = 0; i < compWildcard.projects.length; i++)
+    for (let i = 0; i < compWildcard.subjects.length; i++)
     {
-        let comboWildcard = compWildcard.projects[i];
-        var project = createCompWildcard(comboWildcard);
-        subject.$el.querySelector("#children").appendChild(project.$el);
-        addFolderClickHandler(project);
+        let comboWildcard = compWildcard.subjects[i];
+        var subj = createCompWildcard(comboWildcard);
+        subject.$el.querySelector("#children").appendChild(subj.$el);
+        addFolderClickHandler(subj);
     }
 
     for (let i = 0; i < compWildcard.wildcards.length; i++)
