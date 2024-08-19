@@ -1,5 +1,5 @@
 :root {
-    --merge-item-border-radius: 5%;
+    --merge-item-border-radius: 5px;
 }
 
 .merge-editor-container {

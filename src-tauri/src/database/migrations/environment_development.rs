@@ -12,6 +12,7 @@ impl DatabaseMigration for MigrationEnvironmentDevelopment {
             description VARCHAR(255), 
             wildcards TEXT, 
             subjects TEXT,
+            mergeDefs TEXT,
             PRIMARY KEY(id)
         );
     

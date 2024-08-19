@@ -1,6 +1,6 @@
 <template>
     <div id="merge-item-container" class="merge-item-container">
-        <div id="merge-item-icon" style="display:flex; flex-shrink: 0; width: 20px; height: 100%; background-color: var(--context-menu-color); border-radius: var(--merge-item-border-radius); pointer-events: none; padding-left: 5px;">
+        <div id="merge-item-icon" style="display:flex; flex-shrink: 0; width: 20px; height: 100%; background-color: var(--context-menu-color); pointer-events: none; padding-left: 5px;">
             <div v-if="kind===0" style="display: flex; align-self: center; justify-content: center;">
                 <FileIcon/>
             </div>

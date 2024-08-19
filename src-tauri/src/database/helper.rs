@@ -8,7 +8,7 @@ use crate::{logging::logger::{self, Logger}, state::ServiceAccess};
 
 use super::migration_handler;
 
-const CURRENT_DB_VERSION: u32 = 3;
+const CURRENT_DB_VERSION: u32 = 4;
 const DEBUG: bool = true;
 static LOG_SOURCE: &str = "DatabaseInitialize";
 

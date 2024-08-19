@@ -69,6 +69,7 @@ function createSingleWildcard(wildcard: Wildcard)
 
 function createCompWildcard(compWildcard)
 {
+    console.log(compWildcard);
     const subject = createFileInstance({ name: compWildcard.name, wildcardId: compWildcard.id });
     subject.$el.querySelector("#file-entry").classList.add("gtk1");
     addIconToElement(FileType.DIRECTORY, subject.$el);

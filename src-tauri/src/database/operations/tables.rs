@@ -5,6 +5,7 @@ pub enum DatabaseTable {
     AppSettings,
     TrackedFiles,
     Workspace,
+    MergeDefinitions
 }
 
 impl DatabaseTable {
@@ -15,6 +16,7 @@ impl DatabaseTable {
             DatabaseTable::AppSettings => "AppSettings".to_owned(),
             DatabaseTable::TrackedFiles => "TrackedFiles".to_owned(),
             DatabaseTable::Workspace => "Workspace".to_owned(),
+            DatabaseTable::MergeDefinitions => "MergeDefinitions".to_owned()
         }
     }
 }

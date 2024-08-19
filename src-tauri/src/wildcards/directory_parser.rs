@@ -13,7 +13,7 @@ use walkdir::{DirEntry, WalkDir};
 use crate::{
     database::{
         datatypes::{
-            db_files::DatabaseTrackedFiles, db_project::DatabaseSubject,
+            db_files::DatabaseTrackedFiles, db_subject::DatabaseSubject,
             db_wildcard::DatabaseWildcard, db_workspace::Workspace,
         },
         operations::{db_item::DatabaseItem, tables::DatabaseTable},
@@ -150,11 +150,13 @@ pub fn parse_directory_chain(handle: &AppHandle, dir: &str) {
             .iter()
             .for_each(|p| p.write(handle, None, None));
 
-        for pr in subjects {
-            pr.write(handle, None, None);
-            for wc in pr.wildcards() {
+        for mut subj in subjects {
+            subj.write(handle, None, None);
+            for wc in subj.wildcards() {
                 wc.write(handle, None, None);
             }
+            subj.initialize_merge_definition(handle);
+
         }
 
         let duration = start.elapsed();

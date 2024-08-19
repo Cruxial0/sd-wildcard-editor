@@ -3,7 +3,7 @@ use tauri::AppHandle;
 use uuid::Uuid;
 use walkdir::{DirEntry, WalkDir};
 
-use crate::{database::{datatypes::{db_project::DatabaseSubject, db_settings::DatabaseSettings, db_wildcard::DatabaseWildcard, db_workspace::Workspace}, operations::db_item::DatabaseItem}, logging::logger::LogVisibility, state::ServiceAccess};
+use crate::{database::{datatypes::{db_merge_definition::DatabaseMergeDefinition, db_settings::DatabaseSettings, db_subject::DatabaseSubject, db_wildcard::DatabaseWildcard, db_workspace::Workspace}, operations::db_item::DatabaseItem}, logging::logger::LogVisibility, state::ServiceAccess};
 
 use super::directory_parser::parse_directory_chain;
 
@@ -42,6 +42,14 @@ pub fn wildcard_name_from_id(handle: AppHandle, id: String) -> String {
     match DatabaseWildcard::from_id(&id).read(&handle){
         Some(x) => x.name,
         None => String::from("NULL"),
+    }
+}
+
+#[tauri::command]
+pub fn load_merge_definition_from_subject(handle: AppHandle, id: String) -> Result<Vec<DatabaseMergeDefinition>, String>{
+    match DatabaseSubject::from_id(&id).read(&handle) {
+        Some(mut x) => Ok(x.load_merge_definitions(&handle)),
+        None => Err("Could not load merge definition".to_owned())
     }
 }
 

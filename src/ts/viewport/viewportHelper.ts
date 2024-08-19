@@ -31,24 +31,17 @@ export function AddViewportTextEditor(id: number): number
 }
 
 
-export function AddViewportMergePattern(comboWildcard): number
+export function AddViewportMergePattern(id, mergePatterns): number
 {
-    if (viewports.has(comboWildcard.id)) return comboWildcard.id;
+    if (viewports.has(id)) return id;
+    console.log(mergePatterns);
 
-    var children = new Array;
-    comboWildcard.wildcards.forEach(element => { children.push({ name: element.name, kind: 0, id: element.id }) });
-    comboWildcard.subjects.forEach(element => { children.push({ name: element.name, kind: 1, id: element.id + 6000 }) });
-    
-    children.sort(x => x.id);
+    var viewport = createInstance(MergePatternEditor, { name: mergePatterns.name });
+    viewport.$options.methods.setData(mergePatterns);
+    var item = new ViewportMergePatternEditor(viewport.$el, id, mergePatterns);
+    viewports.set(id, item);
 
-    console.log(children);
-
-    var viewport = createInstance(MergePatternEditor, { name: comboWildcard.name });
-    viewport.$options.methods.setData(children);
-    var item = new ViewportMergePatternEditor(viewport.$el, comboWildcard.id, comboWildcard);
-    viewports.set(comboWildcard.id, item);
-
-    return comboWildcard.id;
+    return id;
 }
 
 export function DisplayViewport(id: number): void;

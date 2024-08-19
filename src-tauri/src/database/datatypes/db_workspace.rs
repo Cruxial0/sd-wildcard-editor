@@ -7,7 +7,7 @@ use crate::{
     state::ServiceAccess,
 };
 
-use super::{db_project::DatabaseSubject, db_wildcard::DatabaseWildcard};
+use super::{db_subject::DatabaseSubject, db_wildcard::DatabaseWildcard};
 
 /// The bottom-most part of the file-hierarchy
 #[derive(Default)]

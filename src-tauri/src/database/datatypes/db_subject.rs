@@ -10,7 +10,7 @@ use crate::{
     state::ServiceAccess,
 };
 
-use super::db_wildcard::DatabaseWildcard;
+use super::{db_merge_definition::DatabaseMergeDefinition, db_wildcard::DatabaseWildcard};
 
 #[derive(Clone, Hash, Eq)]
 pub struct DatabaseSubject {
@@ -19,8 +19,10 @@ pub struct DatabaseSubject {
     pub description: String,
     pub wildcard_ids: Vec<String>,
     pub subject_ids: Vec<String>,
+    pub merge_def_ids: Vec<String>,
     wildcards: Vec<DatabaseWildcard>,
     subjects: Vec<DatabaseSubject>,
+    merge_definitions: Vec<DatabaseMergeDefinition>
 }
 
 impl DatabaseSubject {
@@ -71,6 +73,16 @@ impl DatabaseSubject {
         self.load_subjects_internal(handle, load_children);
     }
 
+    pub fn load_merge_definitions(&mut self, handle: &AppHandle) -> Vec<DatabaseMergeDefinition> {
+        let mut defs: Vec<DatabaseMergeDefinition> = Vec::new();
+        for merge_def in self.merge_def_ids.clone() {
+            let definition = DatabaseMergeDefinition::from_id(&merge_def).read(handle).expect("Should be able to read DatabaseMergeDefinition");
+            defs.push(definition);
+        };
+
+        defs
+    }
+
     fn load_wildcards_internal(&mut self, handle: &AppHandle) {
         self.wildcards = self
             .wildcard_ids
@@ -91,8 +103,16 @@ impl DatabaseSubject {
         self.subjects = subjects;
     }
 
+    pub fn initialize_merge_definition(&mut self, handle: &AppHandle) {
+        let definition = DatabaseMergeDefinition::create_default(self.clone(), handle);
+        println!("{:?}", definition.id); 
+        self.merge_def_ids.push(definition.clone().id);
+
+        self.write(handle, None, None)
+    }
+
     pub fn from_direntry(handle: &AppHandle, name: String) -> Option<DatabaseSubject> {
-        let unique_id = Uuid::new_v4();
+        let unique_id = Uuid::now_v7();
         Some(DatabaseSubject {
             id: unique_id.to_string(),
             name: name,
@@ -104,13 +124,15 @@ impl DatabaseSubject {
 impl Default for DatabaseSubject {
     fn default() -> Self {
         DatabaseSubject {
-            id: Uuid::new_v4().to_string(),
+            id: Uuid::now_v7().to_string(),
             name: "DefaultSubject".to_owned(),
             description: "".to_owned(),
             wildcard_ids: Vec::new(),
             subject_ids: Vec::new(),
             wildcards: Vec::new(),
             subjects: Vec::new(),
+            merge_def_ids: Vec::new(),
+            merge_definitions: Vec::new()
         }
     }
 }
@@ -135,6 +157,8 @@ impl DatabaseItem for DatabaseSubject {
                     .expect("JSON Deserialization should succeed"),
                 subject_ids: serde_json::from_str(&row.get::<usize, String>(4)?)
                     .expect("JSON Deserialization should succeed"),
+                merge_def_ids: serde_json::from_str(&row.get::<usize, String>(5)?)
+                    .expect("JSON Deserialization should succeed"),
                 ..Default::default()
             })
         });
@@ -147,7 +171,7 @@ impl DatabaseItem for DatabaseSubject {
     }
 
     fn fields(&self) -> Vec<String> {
-        vec!["id", "name", "description", "wildcards", "subjects"]
+        vec!["id", "name", "description", "wildcards", "subjects", "mergeDefs"]
             .iter()
             .map(|x| String::from(*x))
             .collect()
@@ -155,15 +179,15 @@ impl DatabaseItem for DatabaseSubject {
 
     fn values(&self) -> Vec<rusqlite::types::Value> {
         let mut values: Vec<Value> = Vec::new();
-        let wildcard_ids =
-            serde_json::to_string(&self.wildcard_ids).expect("JSON serialization should succeed");
-        let subjects_ids =
-            serde_json::to_string(&self.subject_ids).expect("JSON serialization should succeed");
+        let wildcard_ids = serde_json::to_string(&self.wildcard_ids).expect("JSON serialization should succeed");
+        let subjects_ids = serde_json::to_string(&self.subject_ids).expect("JSON serialization should succeed");
+        let merge_def_ids = serde_json::to_string(&self.merge_def_ids).expect("JSON serialization should succeed");
         values.push(self.id.clone().into());
         values.push(self.name.clone().into());
         values.push(self.description.clone().into());
         values.push(wildcard_ids.into());
         values.push(subjects_ids.into());
+        values.push(merge_def_ids.into());
         values
     }
 
@@ -179,11 +203,12 @@ impl serde::Serialize for DatabaseSubject {
     {
         use serde::ser::SerializeStruct;
 
-        let mut state = serializer.serialize_struct("Workspace", 4)?;
+        let mut state = serializer.serialize_struct("Workspace", 5)?;
         state.serialize_field("id", &self.id)?;
         state.serialize_field("name", &self.name)?;
         state.serialize_field("wildcards", &self.wildcards)?;
         state.serialize_field("subjects", &self.subjects)?;
+        state.serialize_field("mergeDefinitions", &self.merge_def_ids);
         state.end()
     }
 }

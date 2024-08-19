@@ -8,6 +8,7 @@ extern crate lazy_static;
 
 mod database;
 mod wildcards;
+mod subjects;
 mod state;
 mod logging;
 mod helpers;
@@ -29,6 +30,7 @@ fn main() {
             loader::load_wildcard,
             loader::load_project,
             loader::wildcard_name_from_id,
+            loader::load_merge_definition_from_subject,
             uuid_utils::get_uuid
         ])
         .setup(|app| {

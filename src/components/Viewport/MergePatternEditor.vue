@@ -71,6 +71,7 @@ import FileIcon from '../Icons/FileIcon.vue';
 import { getUUID } from '../../ts/uuid';
 
 const items = ref();
+const mergePatterns = ref();
 // {name: string, kind: string, id: number, order: number}
 const lineCollection = ref();
 
@@ -117,14 +118,29 @@ export default {
         },
         setData(data)
         {
+
             let newData = new Array();
+            mergePatterns.value = [];
             lineCollection.value = [];
-            data.forEach(element =>
-            {
-                let elem = { name: element.name, kind: element.kind, id: element.id, order: order };
-                newData.push(elem);
-                lineCollection.value[order] = [elem];
-                order++;
+            data.forEach(pattern => {mergePatterns.value.push(pattern.merge_pattern)});
+            mergePatterns.value.forEach(line =>
+            {   
+                
+                console.log(line.merge_pattern);
+                line.merge_pattern.forEach(element =>
+                {
+                    let lineData = new Array();
+                    element.forEach(elem =>
+                    {
+                        console.log(elem);
+                        lineData.push({ name: elem.merge_pattern, kind: elem.kind, id: elem.id, order: order });
+                        order++;
+                    });
+                    newData.push(lineData);
+                });
+                
+                lineCollection.value = newData;
+                
             });
             items.value = newData;
             

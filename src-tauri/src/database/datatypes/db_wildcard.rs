@@ -27,7 +27,7 @@ impl DatabaseWildcard {
         let content: Vec<String> = std::fs::read_to_string(entry.path())
             .expect("File should be readable").lines().map(|l| l.to_string()).collect();
 
-        let unique_id = Uuid::new_v4();
+        let unique_id = Uuid::now_v7();
 
         DatabaseWildcard {
             id: unique_id.to_string(),
@@ -41,7 +41,7 @@ impl DatabaseWildcard {
 impl Default for DatabaseWildcard {
     fn default() -> Self {
         DatabaseWildcard {
-            id: Uuid::new_v4().to_string(),
+            id: Uuid::now_v7().to_string(),
             name: "New Wildcard".to_owned(),
             path: PathBuf::new(),
             lines: Vec::new()
