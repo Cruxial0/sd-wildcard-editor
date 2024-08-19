@@ -1,5 +1,6 @@
 use rusqlite::types::Value;
 use tauri::AppHandle;
+use uuid::Uuid;
 
 use crate::{
     database::operations::{db_item::DatabaseItem, tables::DatabaseTable},
@@ -11,9 +12,9 @@ use super::{db_project::DatabaseSubject, db_wildcard::DatabaseWildcard};
 /// The bottom-most part of the file-hierarchy
 #[derive(Default)]
 pub struct Workspace {
-    id: u32,
-    wildcard_ids: Vec<u32>,
-    subject_ids: Vec<u32>,
+    id: String,
+    wildcard_ids: Vec<String>,
+    subject_ids: Vec<String>,
     wildcards: Vec<DatabaseWildcard>,
     subjects: Vec<DatabaseSubject>,
 }
@@ -72,20 +73,19 @@ impl Workspace {
         self.subjects = subjects;
     }
 
-    pub fn from_id(id: &u32) -> Workspace {
+    pub fn from_id(id: &str) -> Workspace {
         Workspace {
-            id: *id,
+            id: id.to_owned(),
             ..Default::default()
         }
     }
 
     pub fn from_subject(handle: &AppHandle, subject: &DatabaseSubject) -> Workspace {
-        let unique_id =
-            handle.db_session(|session| session.get_and_claim_id(DatabaseTable::Workspace));
-        let wildcard_ids = subject.wildcards().iter().map(|w| w.id).collect();
-        let subject_ids = subject.subjects().iter().map(|p| p.id).collect();
+        let unique_id = Uuid::nil();
+        let wildcard_ids = subject.wildcards().iter().map(|w| w.id.clone()).collect();
+        let subject_ids = subject.subjects().iter().map(|p| p.id.clone()).collect();
         Workspace {
-            id: unique_id.unwrap(),
+            id: unique_id.to_string(),
             wildcard_ids: wildcard_ids,
             subject_ids,
             wildcards: subject.wildcards().clone(),
@@ -119,8 +119,8 @@ impl DatabaseItem for Workspace {
         }
     }
 
-    fn id(&self) -> u32 {
-        self.id
+    fn id(&self) -> String {
+        self.id.clone()
     }
 
     fn table(&self) -> DatabaseTable {
@@ -136,10 +136,10 @@ impl DatabaseItem for Workspace {
 
     fn values<'a>(&self) -> Vec<rusqlite::types::Value> {
         let mut values: Vec<Value> = Vec::new();
-        let wildcard_ids: Vec<u32> = self.wildcards.iter().map(|w| w.id).collect();
-        let subject_ids: Vec<u32> = self.subjects.iter().map(|p| p.id).collect();
+        let wildcard_ids: Vec<String> = self.wildcards.iter().map(|w| w.id.clone()).collect();
+        let subject_ids: Vec<String> = self.subjects.iter().map(|p| p.id.clone()).collect();
 
-        values.push(self.id.into());
+        values.push(self.id.clone().into());
         values.push(
             serde_json::to_string(&wildcard_ids)
                 .expect("Should be able to serialize JSON")

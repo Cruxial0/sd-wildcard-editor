@@ -1,5 +1,6 @@
 use std::{collections::HashMap, path::PathBuf};
 use tauri::AppHandle;
+use uuid::Uuid;
 use walkdir::{DirEntry, WalkDir};
 
 use crate::{database::{datatypes::{db_project::DatabaseSubject, db_settings::DatabaseSettings, db_wildcard::DatabaseWildcard, db_workspace::Workspace}, operations::db_item::DatabaseItem}, logging::logger::LogVisibility, state::ServiceAccess};
@@ -9,9 +10,9 @@ use super::directory_parser::parse_directory_chain;
 #[tauri::command]
 pub fn load_workspace(handle: AppHandle) -> Workspace{
     parse_directory_chain(&handle, &get_public_directory());
-    let mut workspace = match Workspace::from_id(&0).read(&handle) {
+    let mut workspace = match Workspace::from_id(&Uuid::nil().to_string()).read(&handle) {
         Some(w) => w,
-        None => Workspace::from_id(&0),
+        None => Workspace::from_id(&Uuid::nil().to_string()),
     };
 
     workspace.load(&handle, true);
@@ -20,25 +21,24 @@ pub fn load_workspace(handle: AppHandle) -> Workspace{
 }
 
 #[tauri::command]
-pub fn load_wildcard(handle: AppHandle, id: u32) -> Option<DatabaseWildcard> {
+pub fn load_wildcard(handle: AppHandle, id: String) -> Option<DatabaseWildcard> {
     let wc = DatabaseWildcard::from_id(&id);
     wc.read(&handle)
 }
 
 #[tauri::command]
-pub fn load_project(handle: AppHandle, id: u32) -> DatabaseSubject {
-    let mut proj = match DatabaseSubject::from_id(&id).read(&handle) {
-        Some(p) => p,
-        None => DatabaseSubject::from_id(&0),
-    };
-
-    proj.load(&handle, true);
-
-    proj
+pub fn load_project(handle: AppHandle, id: String) -> Result<DatabaseSubject, String> {
+     match DatabaseSubject::from_id(&id).read(&handle) {
+        Some(mut p) => {
+            p.load(&handle, true);
+            Ok(p)
+        },
+        None => Err(format!("Failed to load project with id: {:?}", id)),
+    }
 }
 
 #[tauri::command]
-pub fn wildcard_name_from_id(handle: AppHandle, id: u32) -> String {
+pub fn wildcard_name_from_id(handle: AppHandle, id: String) -> String {
     match DatabaseWildcard::from_id(&id).read(&handle){
         Some(x) => x.name,
         None => String::from("NULL"),

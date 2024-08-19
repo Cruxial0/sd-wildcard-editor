@@ -3,7 +3,7 @@ export default {
     props: ['name', 'wildcardId'],
     data: (instance) =>
     {
-        return { file: instance.name, id: parseInt(instance.wildcardId) }
+        return { file: instance.name, id: instance.wildcardId }
     }
 }
 </script>

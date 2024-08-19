@@ -1,6 +1,7 @@
 use itertools::Itertools;
 use rusqlite::{types::Value, Error, Statement};
 use tauri::AppHandle;
+use uuid::Uuid;
 use walkdir::DirEntry;
 
 use crate::{
@@ -13,11 +14,11 @@ use super::db_wildcard::DatabaseWildcard;
 
 #[derive(Clone, Hash, Eq)]
 pub struct DatabaseSubject {
-    pub id: u32,
+    pub id: String,
     pub name: String,
     pub description: String,
-    pub wildcard_ids: Vec<u32>,
-    pub subject_ids: Vec<u32>,
+    pub wildcard_ids: Vec<String>,
+    pub subject_ids: Vec<String>,
     wildcards: Vec<DatabaseWildcard>,
     subjects: Vec<DatabaseSubject>,
 }
@@ -27,7 +28,7 @@ impl DatabaseSubject {
         if self.wildcard_ids.contains(&wildcard.id) {
             return;
         }
-        self.wildcard_ids.push(wildcard.id);
+        self.wildcard_ids.push(wildcard.id.clone());
         self.wildcards.push(wildcard.clone());
     }
 
@@ -35,7 +36,7 @@ impl DatabaseSubject {
         if self.subject_ids.contains(&subject.id) {
             return;
         }
-        self.subject_ids.push(subject.id);
+        self.subject_ids.push(subject.id.clone());
         self.subjects.push(subject.clone());
     }
 
@@ -50,9 +51,9 @@ impl DatabaseSubject {
             .expect("Should be able to load subjects");
     }
 
-    pub fn from_id(id: &u32) -> DatabaseSubject {
+    pub fn from_id(id: &str) -> DatabaseSubject {
         DatabaseSubject {
-            id: *id,
+            id: id.to_owned(),
             ..Default::default()
         }
     }
@@ -91,24 +92,19 @@ impl DatabaseSubject {
     }
 
     pub fn from_direntry(handle: &AppHandle, name: String) -> Option<DatabaseSubject> {
-        let unique_id =
-            handle.db_session(|session| session.get_and_claim_id(DatabaseTable::Subjects));
-
-        match unique_id {
-            Ok(id) => Some(DatabaseSubject {
-                id: id,
-                name: name,
-                ..Default::default()
-            }),
-            Err(_) => None,
-        }
+        let unique_id = Uuid::new_v4();
+        Some(DatabaseSubject {
+            id: unique_id.to_string(),
+            name: name,
+            ..Default::default()
+        })
     }
 }
 
 impl Default for DatabaseSubject {
     fn default() -> Self {
         DatabaseSubject {
-            id: 1,
+            id: Uuid::new_v4().to_string(),
             name: "DefaultSubject".to_owned(),
             description: "".to_owned(),
             wildcard_ids: Vec::new(),
@@ -163,7 +159,7 @@ impl DatabaseItem for DatabaseSubject {
             serde_json::to_string(&self.wildcard_ids).expect("JSON serialization should succeed");
         let subjects_ids =
             serde_json::to_string(&self.subject_ids).expect("JSON serialization should succeed");
-        values.push(self.id.into());
+        values.push(self.id.clone().into());
         values.push(self.name.clone().into());
         values.push(self.description.clone().into());
         values.push(wildcard_ids.into());
@@ -171,8 +167,8 @@ impl DatabaseItem for DatabaseSubject {
         values
     }
 
-    fn id(&self) -> u32 {
-        self.id
+    fn id(&self) -> String {
+        self.id.clone()
     }
 }
 

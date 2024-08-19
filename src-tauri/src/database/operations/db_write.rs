@@ -73,7 +73,7 @@ pub fn update<T: DatabaseItem>(app: &AppHandle, data: &T, fields: &str, values: 
     let mut v = values;
     v.remove(0);
 
-    let sql = format!("UPDATE {} SET {} WHERE id = {}", data.table().to_str(), key_value_placeholders_from_fields(&f), data.id());
+    let sql = format!("UPDATE {} SET {} WHERE id = \"{}\"", data.table().to_str(), key_value_placeholders_from_fields(&f), data.id());
     // let debug_sql = format!("UPDATE {} SET {} WHERE id = {}", data.table().to_str(), debug_key_value_placeholders_from_fields(&f, &v), data.id());
     app.db(|x| {let mut stmt = x.prepare(&sql).expect("Should be able to prepare SQL query");
         let result = stmt.execute(params_from_iter(v));

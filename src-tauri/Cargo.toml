@@ -24,6 +24,12 @@ colored = "2.1.0"
 itertools = "0.12.1"
 sha2 = "0.10.8"
 
+[dependencies.uuid]
+version = "1.10.0"
+features = [
+    "v4"
+]
+
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
 custom-protocol = ["tauri/custom-protocol"]

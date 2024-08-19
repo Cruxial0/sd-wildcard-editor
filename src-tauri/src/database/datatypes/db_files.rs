@@ -3,6 +3,7 @@ use std::{default, path::PathBuf, str::FromStr};
 use itertools::Itertools;
 use rusqlite::types::Value;
 use sha2::{Sha256, Sha512, Digest};
+use uuid::Uuid;
 
 use crate::database::operations::{db_item::DatabaseItem, tables::DatabaseTable};
 
@@ -48,8 +49,8 @@ impl DatabaseItem for DatabaseTrackedFiles {
         data
     }
 
-    fn id(&self) -> u32 {
-        0
+    fn id(&self) -> String {
+        Uuid::nil().to_string()
     }
 
     fn table(&self) -> crate::database::operations::tables::DatabaseTable {

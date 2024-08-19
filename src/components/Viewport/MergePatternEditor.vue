@@ -68,6 +68,7 @@ function onDragEnd(event: DragEvent)
 import MergePatternItem from './MergePatternItem.vue'
 import MergePatternLine from './MergePatternLine.vue'
 import FileIcon from '../Icons/FileIcon.vue';
+import { getUUID } from '../../ts/uuid';
 
 const items = ref();
 // {name: string, kind: string, id: number, order: number}
@@ -75,7 +76,7 @@ const lineCollection = ref();
 
 const inputDev = ref('');
 
-let newId = 7277;
+let order = 0;
 
 export default {
     components: {
@@ -107,16 +108,16 @@ export default {
         },
         addItem()
         {
-            let inputName = inputDev.value == '' ? 'newItem' : inputDev.value;
-            let item = { name: inputName + newId.toString(), kind: '0', id: newId, order: newId };
+            let id = getUUID();
+            let inputName = inputDev.value == '' ? 'newItem' + '-' + order.toString() : inputDev.value;
+            let item = { name: inputName, kind: '0', id: id, order: order };
             lineCollection.value[lineCollection.value.length - 1].push(item);
             items.value.push(item);
-            newId++;
+            order++;
         },
         setData(data)
         {
             let newData = new Array();
-            let order = 0;
             lineCollection.value = [];
             data.forEach(element =>
             {
@@ -126,8 +127,6 @@ export default {
                 order++;
             });
             items.value = newData;
-            
-            newId = order;
             
             this.$forceUpdate;
         },

@@ -2,22 +2,23 @@ use std::path::PathBuf;
 
 use rusqlite::{Error, Statement};
 use tauri::AppHandle;
+use uuid::Uuid;
 use walkdir::DirEntry;
 
 use crate::{database::operations::{db_item::DatabaseItem, tables::DatabaseTable}, logging::logger, state::ServiceAccess};
 
 #[derive(Clone, Hash, Eq)]
 pub struct DatabaseWildcard {
-    pub id: u32,
+    pub id: String,
     pub name: String,
     pub path: PathBuf,
     pub lines: Vec<String>
 }
 
 impl DatabaseWildcard {
-    pub fn from_id(id: &u32) -> DatabaseWildcard {
+    pub fn from_id(id: &str) -> DatabaseWildcard {
         DatabaseWildcard {
-            id: *id,
+            id: id.to_owned(),
             ..Default::default()
         }
     }
@@ -26,10 +27,10 @@ impl DatabaseWildcard {
         let content: Vec<String> = std::fs::read_to_string(entry.path())
             .expect("File should be readable").lines().map(|l| l.to_string()).collect();
 
-        let unique_id = handle.db_session(|session| session.get_and_claim_id(DatabaseTable::Wildcards));
+        let unique_id = Uuid::new_v4();
 
         DatabaseWildcard {
-            id: unique_id.expect("Should be able to claim id"),
+            id: unique_id.to_string(),
             name: entry.file_name().to_str().to_owned().unwrap().to_string(),
             path: PathBuf::from(entry.path()),
             lines: content
@@ -40,7 +41,7 @@ impl DatabaseWildcard {
 impl Default for DatabaseWildcard {
     fn default() -> Self {
         DatabaseWildcard {
-            id: 0,
+            id: Uuid::new_v4().to_string(),
             name: "New Wildcard".to_owned(),
             path: PathBuf::new(),
             lines: Vec::new()
@@ -72,8 +73,8 @@ impl DatabaseItem for DatabaseWildcard {
         data
     }
 
-    fn id(&self) -> u32 {
-        self.id
+    fn id(&self) -> String {
+        self.id.clone()
     }
 
     fn table(&self) -> DatabaseTable {
@@ -87,7 +88,7 @@ impl DatabaseItem for DatabaseWildcard {
     fn values(&self) -> Vec<rusqlite::types::Value> {
         let mut values: Vec<rusqlite::types::Value> = Vec::new();
         let name = self.name.clone();
-        values.push(self.id.into());
+        values.push(self.id.clone().into());
         values.push(name.into());
         values.push(self.path.to_str().unwrap().to_owned().into());
         values.push(serde_json::to_string(&self.lines).expect("JSON serialization should succeed").into());

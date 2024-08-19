@@ -10,7 +10,7 @@ use super::db_item::DatabaseItem;
 
 pub fn load<T: DatabaseItem>(app: &AppHandle, item: &T) -> Option<T> {
     let sql = format!(
-        "SELECT {} FROM {} WHERE id = {};",
+        "SELECT {} FROM {} WHERE id = \"{}\";",
         to_comma_seperated(&item.fields()),
         item.table().to_str(),
         item.id()
@@ -40,7 +40,7 @@ pub fn load<T: DatabaseItem>(app: &AppHandle, item: &T) -> Option<T> {
     data
 }
 
-pub fn load_multiple<T: DatabaseItem>(app: &AppHandle, data: &T, ids: Vec<u32>) -> Option<Vec<T>> {
+pub fn load_multiple<T: DatabaseItem>(app: &AppHandle, data: &T, ids: Vec<String>) -> Option<Vec<T>> {
     let mut items: Vec<T> = Vec::new();
 
     for id in ids {

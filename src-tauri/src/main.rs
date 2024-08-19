@@ -13,6 +13,7 @@ mod logging;
 mod helpers;
 mod cli_arguments;
 
+use helpers::uuid_utils;
 use logging::{log_level::LogLevel, logger::LogVisibility};
 use state::ServiceAccess;
 use tauri::{State, Manager};
@@ -27,7 +28,8 @@ fn main() {
             loader::load_workspace,
             loader::load_wildcard,
             loader::load_project,
-            loader::wildcard_name_from_id
+            loader::wildcard_name_from_id,
+            uuid_utils::get_uuid
         ])
         .setup(|app| {
             let handle = app.handle();

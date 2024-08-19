@@ -1,6 +1,6 @@
 let trackedMenus: string[] = [];
 
-export function AddContextMenuHandlers(triggers: string, dataMenus: string, triggerId: number)
+export function AddContextMenuHandlers(triggers: string, dataMenus: string, triggerId)
 {
     document.addEventListener('DOMContentLoaded', function ()
     {
@@ -22,7 +22,7 @@ export function AddContextMenuHandlers(triggers: string, dataMenus: string, trig
           menu.style.display = 'block';
           menu.style.left = (e as MouseEvent).pageX + 'px';
           menu.style.top = (e as MouseEvent).pageY + 'px';
-          menu.setAttribute('callerId', triggerId.toString());
+          menu.setAttribute('callerId', triggerId);
         });
       });
     
@@ -34,7 +34,7 @@ export function AddContextMenuHandlers(triggers: string, dataMenus: string, trig
     });
 }
 
-export function AddContextMenuHandler(trigger: HTMLElement, dataMenu: string, triggerId: number)
+export function AddContextMenuHandler(trigger: HTMLElement, dataMenu: string, triggerId: string)
 {
   const menus = document.getElementById(dataMenu)!;
 
@@ -52,8 +52,7 @@ export function AddContextMenuHandler(trigger: HTMLElement, dataMenu: string, tr
       menu.style.display = 'block';
       menu.style.left = (e as MouseEvent).pageX + 'px';
       menu.style.top = (e as MouseEvent).pageY + 'px';
-    
-      menu.setAttribute('callerId', triggerId.toString());
+      menu.setAttribute('callerId', triggerId);
   });
 
   if (!trackedMenus.includes(dataMenu))

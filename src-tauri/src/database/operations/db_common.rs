@@ -6,16 +6,16 @@ use crate::{logging::logger::LogVisibility, state::ServiceAccess};
 use super::{db_item::DatabaseItem, tables::DatabaseTable};
 
 pub fn exists<T: DatabaseItem>(app: &AppHandle, data: &T) -> Result<bool, Error> {
-    let exists: Result<u32, Error> = app.db(|x| {
-        let sql = format!("SELECT * FROM {} where ID = {};", data.table().to_str(), data.id());
+    let exists: Result<String, Error> = app.db(|x| {
+        let sql = format!("SELECT * FROM {} where ID = \"{}\";", data.table().to_str(), data.id());
         x.query_row(&sql, (), |r| r.get(0))
     });
     
     match exists {
-        Ok(x) => Ok(x > 0),
+        Ok(x) => Ok(true),
         Err(rusqlite::Error::QueryReturnedNoRows) => Ok(false),
         Err(e) => {
-            let err = format!("An error occured ({:?}): {}", e.sqlite_error_code().unwrap(), e);
+            let err = format!("An error occured ({:?}): {}", e.sqlite_error_code(), e);
             app.logger(|logger| logger.log_error(&err, std::module_path!(), LogVisibility::Backend));
             Err(e)
         }

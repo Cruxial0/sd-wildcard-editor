@@ -50,8 +50,8 @@ impl DatabaseItem for DatabaseSettings{
         data
     }
 
-    fn id(&self) -> u32 {
-        self.version
+    fn id(&self) -> String {
+        self.version.to_string()
     }
 
     fn table(&self) -> DatabaseTable {
