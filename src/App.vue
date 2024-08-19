@@ -93,6 +93,9 @@ import FileEntryCM from './components/ContextMenu/FileEntryCM.vue'
 import ComboWildcardCM from './components/ContextMenu/ComboWildcardCM.vue'
 import MergePatternEditor from './components/Viewport/MergePatternEditor.vue'
 import {VueDraggable} from 'vue-draggable-plus'
+import { ref } from 'vue'
+
+let notificationManager = ref<typeof NotificationManager>();
 
 export default {
 

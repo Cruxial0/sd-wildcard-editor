@@ -23,10 +23,6 @@ export default {
         FileIcon,
         ComboIcon
     },
-    props: ["name", "kind"],
-    data: (instance) =>
-    {
-        { name: instance.name; kind: instance.kind }
-    }
+    props: ["name", "kind"]
 }
 </script>

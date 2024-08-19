@@ -1,8 +1,29 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import{ VueDraggable} from 'vue-draggable-plus'
+import { Ref, ref } from 'vue'
+import{ SortableEvent, VueDraggable, vDraggable} from 'vue-draggable-plus'
 
-const disabled = ref(false)
+const disabled = ref(false);
+
+function onUpdate(event: SortableEvent)
+{
+    console.log(event);
+}
+function onEnter(event: DragEvent)
+{
+    console.log(event);
+    let t = event.target as HTMLElement;
+    console.log(t);
+    t.classList.add('add-hover');
+}
+function onLeave(event: DragEvent)
+{
+    let t = event.target as HTMLElement;
+    t.classList.remove('add-hover');
+}
+function onDragEnd(event: DragEvent)
+{
+    console.log("drag end");
+}
 </script>
 
 <template>
@@ -30,11 +51,14 @@ const disabled = ref(false)
         </div>
         <div id="merge-editor-lines">
             <div style="margin-top: 10px;">
-                <VueDraggable class="merge-editor-line" v-model="itemsCollection" :disabled="disabled" :animation="150" ghostClass="ghost">
-                    <MergePatternItem v-for="item in itemsCollection" :key="item.order" :name="item.name" :kind="item.kind"
-                        @click="toggle($event)">
+                <div v-for="(item, i) in lineCollection" :key="`line_${i}`" v-draggable="item" group="lines" class="merge-editor-line" :disabled="disabled" :animation="150" ghostClass="ghost" @onUpdate="onUpdate">
+                    <div class="merge-editor-line-border"/>
+                    <MergePatternItem v-for="it in item" :key="it.order" :name="it.name" :kind="it.kind" @click="toggle($event, it)">
                     </MergePatternItem>
-                </VueDraggable>
+                </div>
+            </div>
+            <div id="add-field" class="add-field" @dragenter="onEnter" @dragleave="onLeave" @dragover="onDragEnd">
+                <FileIcon></FileIcon>
             </div>
         </div>
     </div>
@@ -43,9 +67,14 @@ const disabled = ref(false)
 <script lang="ts">
 import MergePatternItem from './MergePatternItem.vue'
 import MergePatternLine from './MergePatternLine.vue'
+import FileIcon from '../Icons/FileIcon.vue';
+
+const items = ref();
+// {name: string, kind: string, id: number, order: number}
+const lineCollection = ref();
 
 const inputDev = ref('');
-const itemsCollection = ref(new Array());
+
 let newId = 7277;
 
 export default {
@@ -61,9 +90,9 @@ export default {
         }
     },
     methods: {
-        toggle(event)
+        toggle(event, debug)
         {
-
+            console.log(debug);
             let element = event.target.id == "merge-item-container" ? event.target : event.target.parentElement;
             if (element.classList.contains('deselect'))
             {
@@ -79,19 +108,27 @@ export default {
         addItem()
         {
             let inputName = inputDev.value == '' ? 'newItem' : inputDev.value;
-            itemsCollection.value.push({ name: inputName, kind: '0', id: newId });
+            let item = { name: inputName + newId.toString(), kind: '0', id: newId, order: newId };
+            lineCollection.value[lineCollection.value.length - 1].push(item);
+            items.value.push(item);
             newId++;
         },
         setData(data)
         {
             let newData = new Array();
             let order = 0;
-            data.forEach(element => {
-                newData.push({ name: element.name, kind: element.kind, id: element.id, order: order });
+            lineCollection.value = [];
+            data.forEach(element =>
+            {
+                let elem = { name: element.name, kind: element.kind, id: element.id, order: order };
+                newData.push(elem);
+                lineCollection.value[order] = [elem];
                 order++;
             });
-            itemsCollection.value = newData;
+            items.value = newData;
+            
             newId = order;
+            
             this.$forceUpdate;
         },
     }

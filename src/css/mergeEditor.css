@@ -4,6 +4,11 @@
 
 .merge-editor-container {
     padding: 10px;
+    max-height: 100%;
+}
+
+#merge-editor-lines {
+    overflow-x: hidden;
 }
 
 .merge-title {
@@ -47,13 +52,45 @@
     width: 100%;
     min-height: 30px;
     flex-wrap: wrap;
-    padding-top: 5px;
-    padding-bottom: 5px;
+    padding: 2px 0px;
+    align-items: center;
     border-left: 1px solid;
+    margin-top: 4px;
 }
 
 .merge-editor-line:hover{
     background-color: var(--comp-color);
+}
+
+.merge-editor-line-border {
+    display: flex;
+    height: 40px;
+    width: 1px;
+    
+}
+
+.add-field{
+    margin-top: 10px;
+    height: 60px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.add-field * {
+    display: none;
+    height: 90%;
+}
+
+.add-hover {
+    border: dashed 2px;
+}
+
+.add-hover * {
+    display: flex;
 }
 
 #merge-item-container {
