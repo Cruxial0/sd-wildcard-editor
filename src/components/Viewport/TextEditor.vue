@@ -10,3 +10,13 @@
         </div>
     </div>
 </template>
+
+<script lang="ts">
+export default {
+    props: ["uuid"],
+    data: (instance) =>
+    {
+        return {uuid: instance.uuid}
+    },
+}
+</script>

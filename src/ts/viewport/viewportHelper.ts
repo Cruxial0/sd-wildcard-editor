@@ -17,13 +17,13 @@ let viewportWildcards: Map<number, number> = new Map();
 var loadedViewport: number = -1;
 var maxId: number = 0;
 
-export function AddViewportTextEditor(id: number): number
+export function AddViewportTextEditor(id: number, wildcardId: string): number
 {
     console.log('INITIAL ID: ' + id);
     if (viewportWildcards.has(id)) return viewportWildcards.get(id)!;
     
-    var textEditor = createInstance(TextEditor, {})
-    var item = new ViewportTextEditor(textEditor.$el, id);
+    var textEditor = createInstance(TextEditor, {uuid: wildcardId})
+    var item = new ViewportTextEditor(textEditor.$el, id, wildcardId);
     viewports.set(maxId, item);
     viewportWildcards.set(id, maxId);
     maxId++;
@@ -34,19 +34,20 @@ export function AddViewportTextEditor(id: number): number
 export function AddViewportMergePattern(id, mergePatterns): number
 {
     if (viewports.has(id)) return id;
+    console.log("merge patterns");
     console.log(mergePatterns);
 
-    var viewport = createInstance(MergePatternEditor, { name: mergePatterns.name, mergeDefinitions: mergePatterns });
+    var viewport = createInstance(MergePatternEditor, { name: mergePatterns[0].name, mergeDefinitions: mergePatterns });
     // viewport.$options.methods.setData(mergePatterns);
-    var item = new ViewportMergePatternEditor(viewport.$el, id, mergePatterns);
+    var item = new ViewportMergePatternEditor(viewport.$el, id, mergePatterns[0]);
     viewports.set(id, item);
 
     return id;
 }
 
-export function DisplayViewport(id: number): void;
-export function DisplayViewport(id: number, element: HTMLElement): void;
-export function DisplayViewport(id: number, element?: HTMLElement): void
+export async function DisplayViewport(id: number): Promise<void>;
+export async function DisplayViewport(id: number, element: HTMLElement): Promise<void>;
+export async function DisplayViewport(id: number, element?: HTMLElement): Promise<void>
 {
     console.log(viewportTabs);
     let elem = element ? element : document.getElementById(viewportElementId)!;
@@ -56,7 +57,8 @@ export function DisplayViewport(id: number, element?: HTMLElement): void
         console.log("Loaded viewport: " + loadedViewport);
         if (loadedViewport != -1) UnloadViewport(loadedViewport);
         loadedViewport = id;
-        viewport.display(elem as HTMLElement);
+        await viewport.display(elem as HTMLElement);
+        
 
         let tab = viewportTabs.get(id);
         tab?.$el.scrollIntoView();

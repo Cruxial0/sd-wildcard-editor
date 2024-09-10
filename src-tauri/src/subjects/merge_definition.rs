@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{database::datatypes::{db_subject::DatabaseSubject, db_wildcard::DatabaseWildcard}, helpers::syntax_utils::WildcardSyntaxExt};
+use crate::{
+    database::datatypes::{db_subject::DatabaseSubject, db_wildcard::DatabaseWildcard},
+    helpers::syntax_utils::WildcardSyntaxExt,
+};
 
 use super::{merge_node::MergeNode, node_type::NodeType};
 
@@ -50,7 +53,7 @@ impl MergeDefinition {
         let mut fields: Vec<MergeItem> = Vec::new();
         for wildcard in wildcards {
             let field = MergeItem {
-                node: MergeNode::Wildcard(wildcard.id.to_wildcard()),
+                node: MergeNode::Wildcard(wildcard.uuid.to_wildcard()),
                 enabled: true,
                 kind: NodeType::Wildcard,
             };

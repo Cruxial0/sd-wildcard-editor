@@ -19,7 +19,7 @@ use helpers::uuid_utils;
 use logging::{log_level::LogLevel, logger::LogVisibility};
 use state::ServiceAccess;
 use tauri::{State, Manager};
-use wildcards::loader;
+use wildcards::{loader, update};
 use crate::state::AppState;
 
 fn main() {
@@ -33,7 +33,8 @@ fn main() {
             loader::wildcard_name_from_id,
             loader::load_merge_definition_from_subject,
             uuid_utils::get_uuid,
-            uuid_utils::get_name_by_uuid
+            uuid_utils::get_name_by_uuid,
+            update::update_wildcard
         ])
         .setup(|app| {
             let handle = app.handle();

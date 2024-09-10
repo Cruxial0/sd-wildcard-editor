@@ -1,3 +1,4 @@
+import { invoke } from "@tauri-apps/api";
 import { Wildcard } from "../data/wildcard";
 import { DOMDirection, DocumentIndex, offsetFromText } from "./documentData";
 import { DocumentItem } from "./documentItem";
@@ -5,6 +6,8 @@ import { DocumentLine } from "./documentLine";
 import { DocumentSpan } from "./documentSpan";
 
 const DELAY = 5000;
+var uuid = "";
+var lines: string[] = [];
 
 export class WildcardDocument
 {
@@ -17,6 +20,7 @@ export class WildcardDocument
     private timer;
     
     private lines: DocumentLine[] = [];
+    private uuid: string;
 
     public render(): HTMLElement
     {
@@ -410,14 +414,18 @@ export class WildcardDocument
 
     private resetTimer()
     {
+        uuid = this.uuid;
+        lines = this.getLines();
+
         clearTimeout(this.timer);
         this.timer = setTimeout(this.save, DELAY);
     }
 
-    private save()
+    private async save()
     {
+        console.log("saving document...");
         this.saved = true;
-        console.log("Saving document...");
+        await invoke('update_wildcard', { uuid: uuid, lines: lines });
     }
 
     private getLines(): string[]
@@ -448,14 +456,17 @@ export class WildcardDocument
         // }
     }
 
-    constructor(wildcard: Wildcard)
+    constructor(wildcard: Wildcard, wildcardId: string)
     {
-        this.wildcard = wildcard;
+        
         this.element = document.createElement('div');
         this.margin = document.createElement('div');
         this.editor = document.createElement('div');
         this.prevIndex = new DocumentIndex(null, null, null);
         this.saved = true;
+
+        this.wildcard = wildcard;
+        this.uuid = wildcardId;
 
         for (let i = 0; i < wildcard.content.length; i++)
         {
@@ -467,6 +478,7 @@ export class WildcardDocument
         this.format();
         this.addButtonHandlers();
         this.setupKeybinds();
+        console.log(wildcard);
     }
 }
 

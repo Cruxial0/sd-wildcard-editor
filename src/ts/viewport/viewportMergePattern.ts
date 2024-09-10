@@ -8,7 +8,7 @@ export class ViewportMergePatternEditor extends ViewportItem
         return this.id;
     }
 
-    public display(element: HTMLElement)
+    public async display(element: HTMLElement)
     {
         console.log(element.id);
         element.innerHTML = '';

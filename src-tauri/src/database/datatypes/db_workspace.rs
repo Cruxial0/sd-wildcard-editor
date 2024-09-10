@@ -115,7 +115,7 @@ impl Workspace {
 
     pub fn from_subject(handle: &AppHandle, subject: &DatabaseSubject) -> Workspace {
         let unique_id = Uuid::nil();
-        let wildcard_ids = subject.wildcards().iter().map(|w| w.id.clone()).collect();
+        let wildcard_ids = subject.wildcards().iter().map(|w| w.uuid.clone()).collect();
         let subject_ids = subject.subjects().iter().map(|p| p.uuid.clone()).collect();
         Workspace {
             id: unique_id.to_string(),
@@ -169,7 +169,7 @@ impl DatabaseItem for Workspace {
 
     fn values<'a>(&self) -> Vec<rusqlite::types::Value> {
         let mut values: Vec<Value> = Vec::new();
-        let wildcard_ids: Vec<String> = self.wildcards.iter().map(|w| w.id.clone()).collect();
+        let wildcard_ids: Vec<String> = self.wildcards.iter().map(|w| w.uuid.clone()).collect();
         let subject_ids: Vec<String> = self.subjects.iter().map(|p| p.uuid.clone()).collect();
 
         values.push(self.id.clone().into());

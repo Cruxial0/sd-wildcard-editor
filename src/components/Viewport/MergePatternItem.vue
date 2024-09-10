@@ -41,7 +41,7 @@ export default {
 
             if (kind == 0)
             {
-                let id = AddViewportTextEditor(dataId); 
+                let id = AddViewportTextEditor(dataId, dataId); 
                 await AddViewportTab(id);
                 await DisplayViewport(id);
             }

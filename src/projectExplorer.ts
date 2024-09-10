@@ -15,7 +15,8 @@ async function addFileClickHandler(instance)
     instance.$el.addEventListener("click", async function (e: MouseEvent)
     {
         e.stopPropagation();
-        let id = AddViewportTextEditor(instance.$data.id);
+        const initial_id = instance.$data.id;
+        let id = AddViewportTextEditor(initial_id, initial_id);
         await AddViewportTab(id);
         await DisplayViewport(id, item as HTMLElement);
 
@@ -61,7 +62,7 @@ function createFileInstance(componentProperties)
 
 function createSingleWildcard(wildcard: Wildcard)
 {
-    const instance = createFileInstance({ name: wildcard.name, wildcardId: wildcard.id });
+    const instance = createFileInstance({ name: wildcard.name, wildcardId: wildcard.uuid });
     addIconToElement(FileType.WILDCARD_STD, instance.$el);
     addFileClickHandler(instance);
     return instance;

@@ -34,8 +34,8 @@ pub fn load_workspace(handle: AppHandle) -> Workspace {
 }
 
 #[tauri::command]
-pub fn load_wildcard(handle: AppHandle, id: String) -> Option<DatabaseWildcard> {
-    let wc = DatabaseWildcard::from_id(&id);
+pub fn load_wildcard(handle: AppHandle, uuid: String) -> Option<DatabaseWildcard> {
+    let wc = DatabaseWildcard::from_id(&uuid);
     wc.read_db(&handle)
 }
 
@@ -51,8 +51,8 @@ pub fn load_project(handle: AppHandle, id: String) -> Result<DatabaseSubject, St
 }
 
 #[tauri::command]
-pub fn wildcard_name_from_id(handle: AppHandle, id: String) -> String {
-    match DatabaseWildcard::from_id(&id).read_db(&handle) {
+pub fn wildcard_name_from_id(handle: AppHandle, uuid: String) -> String {
+    match DatabaseWildcard::from_id(&uuid).read_db(&handle) {
         Some(x) => x.name,
         None => String::from("NULL"),
     }

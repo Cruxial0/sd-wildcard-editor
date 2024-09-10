@@ -38,10 +38,10 @@ pub struct DatabaseSubject {
 
 impl DatabaseSubject {
     pub fn add_wildcard(&mut self, wildcard: &DatabaseWildcard) {
-        if self.wildcard_ids.contains(&wildcard.id) {
+        if self.wildcard_ids.contains(&wildcard.uuid) {
             return;
         }
-        self.wildcard_ids.push(wildcard.id.clone());
+        self.wildcard_ids.push(wildcard.uuid.clone());
         self.wildcards.push(wildcard.clone());
     }
 
