@@ -93,6 +93,10 @@
     display: flex;
 }
 
+.handle {
+    display: flex;
+}
+
 #merge-item-container {
     margin-left: 5px;
 }

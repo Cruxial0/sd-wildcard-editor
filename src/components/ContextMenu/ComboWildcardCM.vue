@@ -11,7 +11,7 @@ async function createViewport()
     let callerId = document.getElementById('cm-combo-wildcard-entry')?.getAttribute('callerId'); 
     comboWildcard.value = await invoke('load_merge_definition_from_subject', { id: callerId });
 
-    let id = await AddViewportMergePattern(callerId, comboWildcard.value); 
+    let id = AddViewportMergePattern(callerId, comboWildcard.value); 
     await AddViewportTab(id);
     await DisplayViewport(id);
 }

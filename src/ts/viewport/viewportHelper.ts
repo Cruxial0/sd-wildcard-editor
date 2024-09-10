@@ -36,8 +36,8 @@ export function AddViewportMergePattern(id, mergePatterns): number
     if (viewports.has(id)) return id;
     console.log(mergePatterns);
 
-    var viewport = createInstance(MergePatternEditor, { name: mergePatterns.name });
-    viewport.$options.methods.setData(mergePatterns);
+    var viewport = createInstance(MergePatternEditor, { name: mergePatterns.name, lines: mergePatterns });
+    // viewport.$options.methods.setData(mergePatterns);
     var item = new ViewportMergePatternEditor(viewport.$el, id, mergePatterns);
     viewports.set(id, item);
 

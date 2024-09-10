@@ -6,9 +6,10 @@ pub struct MigrationMergeDefinitions;
 impl DatabaseMigration for MigrationMergeDefinitions {
     fn get_batch_command(&self) -> String {
         "CREATE TABLE IF NOT EXISTS MergeDefinitions (
-            id VARCHAR(128), 
+            uuid VARCHAR(64),
+            name VARCHAR(64),
             definition TEXT,
-            PRIMARY KEY(id)
+            PRIMARY KEY(uuid)
         );".to_owned()
     }
 }

@@ -1,3 +1,5 @@
+use std::{fs::Metadata, os::windows::fs::MetadataExt, path::{Path, PathBuf}};
+
 use itertools::Itertools;
 use rusqlite::{types::Value, Error, Statement};
 use tauri::AppHandle;
@@ -5,24 +7,26 @@ use uuid::Uuid;
 use walkdir::DirEntry;
 
 use crate::{
-    database::operations::{db_item::DatabaseItem, db_read::load_multiple, tables::DatabaseTable},
-    logging::logger,
-    state::ServiceAccess,
+    database::operations::{db_item::DatabaseItem, db_read::load_multiple, tables::DatabaseTable}, deployment::{deploy_node::DeployNode, deployable::Deployable}, helpers::dir_utils::{self, get_public_directory}, logging::logger
 };
 
-use super::{db_merge_definition::DatabaseMergeDefinition, db_wildcard::DatabaseWildcard};
+use super::{
+    db_files::DatabaseTrackedFiles, db_merge_definition::DatabaseMergeDefinition,
+    db_wildcard::DatabaseWildcard,
+};
 
 #[derive(Clone, Hash, Eq)]
 pub struct DatabaseSubject {
-    pub id: String,
+    pub uuid: String,
     pub name: String,
+    pub path: PathBuf,
     pub description: String,
     pub wildcard_ids: Vec<String>,
     pub subject_ids: Vec<String>,
     pub merge_def_ids: Vec<String>,
     wildcards: Vec<DatabaseWildcard>,
     subjects: Vec<DatabaseSubject>,
-    merge_definitions: Vec<DatabaseMergeDefinition>
+    merge_definitions: Vec<DatabaseMergeDefinition>,
 }
 
 impl DatabaseSubject {
@@ -35,10 +39,10 @@ impl DatabaseSubject {
     }
 
     pub fn add_subject(&mut self, subject: &DatabaseSubject) {
-        if self.subject_ids.contains(&subject.id) {
+        if self.subject_ids.contains(&subject.uuid) {
             return;
         }
-        self.subject_ids.push(subject.id.clone());
+        self.subject_ids.push(subject.uuid.clone());
         self.subjects.push(subject.clone());
     }
 
@@ -55,7 +59,7 @@ impl DatabaseSubject {
 
     pub fn from_id(id: &str) -> DatabaseSubject {
         DatabaseSubject {
-            id: id.to_owned(),
+            uuid: id.to_owned(),
             ..Default::default()
         }
     }
@@ -76,10 +80,12 @@ impl DatabaseSubject {
     pub fn load_merge_definitions(&mut self, handle: &AppHandle) -> Vec<DatabaseMergeDefinition> {
         let mut defs: Vec<DatabaseMergeDefinition> = Vec::new();
         for merge_def in self.merge_def_ids.clone() {
-            let definition = DatabaseMergeDefinition::from_id(&merge_def).read(handle).expect("Should be able to read DatabaseMergeDefinition");
+            let definition = DatabaseMergeDefinition::from_id(&merge_def)
+                .read_db(handle)
+                .expect("Should be able to read DatabaseMergeDefinition");
             defs.push(definition);
-        };
-
+        }
+        self.merge_definitions = defs.clone();
         defs
     }
 
@@ -87,7 +93,7 @@ impl DatabaseSubject {
         self.wildcards = self
             .wildcard_ids
             .iter()
-            .map(|w| DatabaseWildcard::from_id(w).read(handle).unwrap())
+            .map(|w| DatabaseWildcard::from_id(w).read_db(handle).unwrap())
             .collect();
     }
 
@@ -95,7 +101,7 @@ impl DatabaseSubject {
         let mut subjects: Vec<DatabaseSubject> = self
             .subject_ids
             .iter()
-            .map(|p| DatabaseSubject::from_id(p).read(handle).unwrap())
+            .map(|p| DatabaseSubject::from_id(p).read_db(handle).unwrap())
             .collect();
         if load_children {
             subjects.iter_mut().for_each(|x| x.load(handle, true));
@@ -105,17 +111,36 @@ impl DatabaseSubject {
 
     pub fn initialize_merge_definition(&mut self, handle: &AppHandle) {
         let definition = DatabaseMergeDefinition::create_default(self.clone(), handle);
-        println!("{:?}", definition.id); 
+
         self.merge_def_ids.push(definition.clone().id);
 
-        self.write(handle, None, None)
+        self.write_db(handle, None, None)
     }
 
-    pub fn from_direntry(handle: &AppHandle, name: String) -> Option<DatabaseSubject> {
-        let unique_id = Uuid::now_v7();
+    pub fn from_direntry(handle: &AppHandle, entry: &DirEntry) -> Option<DatabaseSubject> {
+        let unique_id = DatabaseTrackedFiles::get_uuid_of_dir_entry(&entry, handle);
+        let abs_path = PathBuf::from(entry.path());
+        let rel_path = match abs_path.strip_prefix(get_public_directory()) {
+            Ok(x) => x,
+            Err(e) => { println!("{:?}", e); Path::new("") }
+        };
+        
         Some(DatabaseSubject {
-            id: unique_id.to_string(),
-            name: name,
+            uuid: unique_id.to_string(),
+            name: entry.file_name().to_str().unwrap().to_owned(),
+            path: PathBuf::from(rel_path),
+            ..Default::default()
+        })
+    }
+
+    pub fn from_parent(handle: &AppHandle, parent: &Path) -> Option<Self> {
+        let unique_id = DatabaseTrackedFiles::hash_file_data(
+            &dir_utils::get_list_of_files(parent),
+            parent.metadata().unwrap().creation_time(),
+        );
+        Some(DatabaseSubject {
+            uuid: unique_id.to_string(),
+            name: parent.file_name().unwrap().to_str().unwrap().to_owned(),
             ..Default::default()
         })
     }
@@ -124,22 +149,39 @@ impl DatabaseSubject {
 impl Default for DatabaseSubject {
     fn default() -> Self {
         DatabaseSubject {
-            id: Uuid::now_v7().to_string(),
+            uuid: Uuid::nil().to_string(),
             name: "DefaultSubject".to_owned(),
+            path: PathBuf::new(),
             description: "".to_owned(),
             wildcard_ids: Vec::new(),
             subject_ids: Vec::new(),
             wildcards: Vec::new(),
             subjects: Vec::new(),
             merge_def_ids: Vec::new(),
-            merge_definitions: Vec::new()
+            merge_definitions: Vec::new(),
         }
     }
 }
 
 impl PartialEq for DatabaseSubject {
     fn eq(&self, other: &Self) -> bool {
-        self.id == other.id
+        self.uuid == other.uuid
+    }
+}
+
+impl Deployable for DatabaseSubject {
+    fn generate_deploy_node(&self, path: impl AsRef<Path>, handle: &AppHandle) -> Option<crate::deployment::deploy_node::DeployNode> {
+
+        if self.merge_definitions.len() < 1 { return None; }
+
+        let mut children: Vec<DeployNode> = Vec::new();
+        for def in &self.merge_definitions {
+            if let Some(node) = def.generate_deploy_node(self.path.clone(), handle) {
+                children.push(node);
+            }
+        };
+
+        Some(DeployNode::new(Vec::new(), self.path.clone(), children))
     }
 }
 
@@ -150,14 +192,15 @@ impl DatabaseItem for DatabaseSubject {
         // SELECT * FROM Wildcards Where ID in (1, 2, 3, etc.)
         let data = stmt.query_row((), |row| {
             Ok(DatabaseSubject {
-                id: row.get(0)?,
+                uuid: row.get(0)?,
                 name: row.get(1)?,
-                description: row.get(2)?,
-                wildcard_ids: serde_json::from_str(&row.get::<usize, String>(3)?)
+                path: PathBuf::from(row.get::<usize, String>(2)?),
+                description: row.get(3)?,
+                wildcard_ids: serde_json::from_str(&row.get::<usize, String>(4)?)
                     .expect("JSON Deserialization should succeed"),
-                subject_ids: serde_json::from_str(&row.get::<usize, String>(4)?)
+                subject_ids: serde_json::from_str(&row.get::<usize, String>(5)?)
                     .expect("JSON Deserialization should succeed"),
-                merge_def_ids: serde_json::from_str(&row.get::<usize, String>(5)?)
+                merge_def_ids: serde_json::from_str(&row.get::<usize, String>(6)?)
                     .expect("JSON Deserialization should succeed"),
                 ..Default::default()
             })
@@ -171,19 +214,31 @@ impl DatabaseItem for DatabaseSubject {
     }
 
     fn fields(&self) -> Vec<String> {
-        vec!["id", "name", "description", "wildcards", "subjects", "mergeDefs"]
-            .iter()
-            .map(|x| String::from(*x))
-            .collect()
+        vec![
+            "uuid",
+            "name",
+            "path",
+            "description",
+            "wildcards",
+            "subjects",
+            "mergeDefs",
+        ]
+        .iter()
+        .map(|x| String::from(*x))
+        .collect()
     }
 
     fn values(&self) -> Vec<rusqlite::types::Value> {
         let mut values: Vec<Value> = Vec::new();
-        let wildcard_ids = serde_json::to_string(&self.wildcard_ids).expect("JSON serialization should succeed");
-        let subjects_ids = serde_json::to_string(&self.subject_ids).expect("JSON serialization should succeed");
-        let merge_def_ids = serde_json::to_string(&self.merge_def_ids).expect("JSON serialization should succeed");
-        values.push(self.id.clone().into());
+        let wildcard_ids =
+            serde_json::to_string(&self.wildcard_ids).expect("JSON serialization should succeed");
+        let subjects_ids =
+            serde_json::to_string(&self.subject_ids).expect("JSON serialization should succeed");
+        let merge_def_ids =
+            serde_json::to_string(&self.merge_def_ids).expect("JSON serialization should succeed");
+        values.push(self.uuid.clone().into());
         values.push(self.name.clone().into());
+        values.push(self.path.to_str().unwrap().to_owned().into());
         values.push(self.description.clone().into());
         values.push(wildcard_ids.into());
         values.push(subjects_ids.into());
@@ -192,7 +247,7 @@ impl DatabaseItem for DatabaseSubject {
     }
 
     fn id(&self) -> String {
-        self.id.clone()
+        self.uuid.clone()
     }
 }
 
@@ -204,7 +259,7 @@ impl serde::Serialize for DatabaseSubject {
         use serde::ser::SerializeStruct;
 
         let mut state = serializer.serialize_struct("Workspace", 5)?;
-        state.serialize_field("id", &self.id)?;
+        state.serialize_field("id", &self.uuid)?;
         state.serialize_field("name", &self.name)?;
         state.serialize_field("wildcards", &self.wildcards)?;
         state.serialize_field("subjects", &self.subjects)?;

@@ -1,9 +1,12 @@
+use std::path::Path;
+
 use rusqlite::types::Value;
 use tauri::AppHandle;
 use uuid::Uuid;
 
 use crate::{
     database::operations::{db_item::DatabaseItem, tables::DatabaseTable},
+    deployment::{deployable::Deployable, deployment::Deployment},
     state::ServiceAccess,
 };
 
@@ -53,11 +56,37 @@ impl Workspace {
         self.load_subjects_internal(handle, load_children);
     }
 
+    pub fn generate_deployment(&mut self,base_path: impl AsRef<Path>, handle: &AppHandle) -> Deployment {
+        println!("creating workspace deployment...");
+        let mut deployment: Deployment = Deployment::new(&base_path);
+        
+        for subject in &mut self.subjects {
+            subject.load_merge_definitions(handle);
+            let node = subject.generate_deploy_node(&base_path, handle);
+
+            match node {
+                Some(x) => deployment.add_node(x),
+                None => (),
+            }
+        }
+
+        for wildcard in &self.wildcards {
+            let node = wildcard.generate_deploy_node(&base_path, handle);
+
+            match node {
+                Some(x) => deployment.add_node(x),
+                None => (),
+            }
+        }
+
+        deployment
+    }
+
     fn load_wildcards_internal(&mut self, handle: &AppHandle) {
         self.wildcards = self
             .wildcard_ids
             .iter()
-            .map(|w| DatabaseWildcard::from_id(w).read(handle).unwrap())
+            .map(|w| DatabaseWildcard::from_id(w).read_db(handle).unwrap())
             .collect();
     }
 
@@ -65,7 +94,7 @@ impl Workspace {
         let mut subjects: Vec<DatabaseSubject> = self
             .subject_ids
             .iter()
-            .map(|p| DatabaseSubject::from_id(p).read(handle).unwrap())
+            .map(|p| DatabaseSubject::from_id(p).read_db(handle).unwrap())
             .collect();
         if load_children {
             subjects.iter_mut().for_each(|x| x.load(handle, true));
@@ -80,10 +109,14 @@ impl Workspace {
         }
     }
 
+    pub fn contains(&self, uuid: &String) -> bool {
+        self.wildcard_ids.contains(uuid) || self.subject_ids.contains(uuid)
+    }
+
     pub fn from_subject(handle: &AppHandle, subject: &DatabaseSubject) -> Workspace {
         let unique_id = Uuid::nil();
         let wildcard_ids = subject.wildcards().iter().map(|w| w.id.clone()).collect();
-        let subject_ids = subject.subjects().iter().map(|p| p.id.clone()).collect();
+        let subject_ids = subject.subjects().iter().map(|p| p.uuid.clone()).collect();
         Workspace {
             id: unique_id.to_string(),
             wildcard_ids: wildcard_ids,
@@ -128,7 +161,7 @@ impl DatabaseItem for Workspace {
     }
 
     fn fields<'a>(&self) -> Vec<String> {
-        vec!["id", "wildcards", "subjects"]
+        vec!["uuid", "wildcards", "subjects"]
             .iter()
             .map(|f| String::from(*f))
             .collect()
@@ -137,7 +170,7 @@ impl DatabaseItem for Workspace {
     fn values<'a>(&self) -> Vec<rusqlite::types::Value> {
         let mut values: Vec<Value> = Vec::new();
         let wildcard_ids: Vec<String> = self.wildcards.iter().map(|w| w.id.clone()).collect();
-        let subject_ids: Vec<String> = self.subjects.iter().map(|p| p.id.clone()).collect();
+        let subject_ids: Vec<String> = self.subjects.iter().map(|p| p.uuid.clone()).collect();
 
         values.push(self.id.clone().into());
         values.push(

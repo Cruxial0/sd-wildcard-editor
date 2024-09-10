@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { Ref, ref } from 'vue'
-import{ SortableEvent, VueDraggable, vDraggable} from 'vue-draggable-plus'
+import { SortableEvent, VueDraggable, useDraggable, vDraggable } from 'vue-draggable-plus'
+import MergePatternItem from './MergePatternItem.vue'
+import MergePatternLine from './MergePatternLine.vue'
+import FileIcon from '../Icons/FileIcon.vue';
 
 const disabled = ref(false);
 
+
 function onUpdate(event: SortableEvent)
 {
-    console.log(event);
+    console.log(lineCollection);
 }
 function onEnter(event: DragEvent)
 {
@@ -51,11 +55,12 @@ function onDragEnd(event: DragEvent)
         </div>
         <div id="merge-editor-lines">
             <div style="margin-top: 10px;">
-                <div v-for="(item, i) in lineCollection" :key="`line_${i}`" v-draggable="item" group="lines" class="merge-editor-line" :disabled="disabled" :animation="150" ghostClass="ghost" @onUpdate="onUpdate">
-                    <div class="merge-editor-line-border"/>
-                    <MergePatternItem v-for="it in item" :key="it.order" :name="it.name" :kind="it.kind" @click="toggle($event, it)">
-                    </MergePatternItem>
-                </div>
+                <VueDraggable v-model="lineCollection" group="lines" :animation="150" ghostClass="ghost" @onUpdate="onUpdate" target=".merge-editor-line" handle=".merge-item-container">
+                    <div id="lines" class="merge-editor-line" v-for="line in lineCollection">
+                        <div class="merge-editor-line-border"/>
+                        <MergePatternItem v-for="it in line" :key="it.id" :name="it.name" :kind="it.kind" @click="toggle($event, it)"/>
+                    </div>
+                </VueDraggable>
             </div>
             <div id="add-field" class="add-field" @dragenter="onEnter" @dragleave="onLeave" @dragover="onDragEnd">
                 <FileIcon></FileIcon>
@@ -65,10 +70,7 @@ function onDragEnd(event: DragEvent)
 </template>
 
 <script lang="ts">
-import MergePatternItem from './MergePatternItem.vue'
-import MergePatternLine from './MergePatternLine.vue'
-import FileIcon from '../Icons/FileIcon.vue';
-import { getUUID } from '../../ts/uuid';
+import { getNameByUUID, getUUID } from '../../ts/uuid';
 
 const items = ref();
 const mergePatterns = ref();
@@ -77,19 +79,44 @@ const lineCollection = ref();
 
 const inputDev = ref('');
 
-let order = 0;
-
 export default {
     components: {
         MergePatternItem,
         MergePatternLine,
     },
-    props: ['name'],
-    data() 
+    props: ['name', 'lines'],
+    async beforeMount()
     {
-        return {
-            drag: false
-        }
+        let newData = new Array();
+        mergePatterns.value = [];
+        lineCollection.value = [];
+        this.$props.lines.forEach(pattern => {mergePatterns.value.push(pattern.merge_pattern)});
+        mergePatterns.value.forEach(line =>
+        {   
+            
+            console.log(line.merge_pattern);
+            line.merge_pattern.forEach(async element =>
+            {
+                let lineData = new Array();
+                element.forEach(async elem =>
+                {
+                    console.log(elem);
+                    lineData.push({ name: elem.merge_pattern, kind: elem.kind, id: elem.id });
+                });
+                newData.push(lineData);
+            });
+            
+            lineCollection.value = newData;
+            
+        });
+        items.value = newData;
+    },
+    async mounted()
+    {
+        lineCollection.value.forEach(async (line) =>
+        {
+            line.forEach(async (item) => {item.name = await getNameByUUID(item.name.replaceAll('__', ''))})
+        });
     },
     methods: {
         toggle(event, debug)
@@ -110,44 +137,15 @@ export default {
         addItem()
         {
             let id = getUUID();
-            let inputName = inputDev.value == '' ? 'newItem' + '-' + order.toString() : inputDev.value;
-            let item = { name: inputName, kind: '0', id: id, order: order };
+            let inputName = inputDev.value == '' ? 'newItem' : inputDev.value;
+            let item = { name: inputName, kind: '0', id: id};
             lineCollection.value[lineCollection.value.length - 1].push(item);
             items.value.push(item);
-            order++;
         },
-        setData(data)
-        {
-
-            let newData = new Array();
-            mergePatterns.value = [];
-            lineCollection.value = [];
-            data.forEach(pattern => {mergePatterns.value.push(pattern.merge_pattern)});
-            mergePatterns.value.forEach(line =>
-            {   
-                
-                console.log(line.merge_pattern);
-                line.merge_pattern.forEach(element =>
-                {
-                    let lineData = new Array();
-                    element.forEach(elem =>
-                    {
-                        console.log(elem);
-                        lineData.push({ name: elem.merge_pattern, kind: elem.kind, id: elem.id, order: order });
-                        order++;
-                    });
-                    newData.push(lineData);
-                });
-                
-                lineCollection.value = newData;
-                
-            });
-            items.value = newData;
-            
-            this.$forceUpdate;
-        },
+        
     }
 }
+
 </script>
 <style scoped>
 .ghost {

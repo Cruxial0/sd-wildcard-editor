@@ -6,12 +6,10 @@ impl DatabaseMigration for MigrationBehaviourSettings {
     fn get_batch_command(&self) -> String {
         "
         CREATE TABLE IF NOT EXISTS AppSettings (
-            id VARCHAR(128) NOT NULL UNIQUE,
-            trackedDirectories TEXT,
+            uuid VARCHAR(64) NOT NULL UNIQUE,
             selectedStyle INTEGER,
-            PRIMARY KEY(id)
-        );
-        "
+            PRIMARY KEY(uuid)
+        );"
         .to_owned()
     }
 }

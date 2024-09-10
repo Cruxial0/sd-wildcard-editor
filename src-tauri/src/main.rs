@@ -13,6 +13,7 @@ mod state;
 mod logging;
 mod helpers;
 mod cli_arguments;
+mod deployment;
 
 use helpers::uuid_utils;
 use logging::{log_level::LogLevel, logger::LogVisibility};
@@ -31,7 +32,8 @@ fn main() {
             loader::load_project,
             loader::wildcard_name_from_id,
             loader::load_merge_definition_from_subject,
-            uuid_utils::get_uuid
+            uuid_utils::get_uuid,
+            uuid_utils::get_name_by_uuid
         ])
         .setup(|app| {
             let handle = app.handle();

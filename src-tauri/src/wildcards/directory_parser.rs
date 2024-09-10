@@ -3,11 +3,12 @@ use std::{
     collections::HashMap,
     fs::{self, FileType},
     io::Error,
-    path::PathBuf,
+    path::{Path, PathBuf},
     time::Instant,
 };
 
 use tauri::AppHandle;
+use uuid::Uuid;
 use walkdir::{DirEntry, WalkDir};
 
 use crate::{
@@ -33,8 +34,8 @@ fn get_subject_index_by_name(subjects: &Vec<DatabaseSubject>, name: String) -> O
         .copied()
 }
 
-fn get_parent(entry: &DirEntry) -> Option<&str> {
-    entry.path().parent().unwrap().file_name().unwrap().to_str()
+fn get_parent(entry: &DirEntry) -> Option<&Path> {
+    entry.path().parent()
 }
 
 fn add_subject_entry<'a>(
@@ -46,7 +47,7 @@ fn add_subject_entry<'a>(
     let parent = get_parent(entry).expect("Parent should exist").to_owned();
     let path = entry.path().to_string_lossy().to_string();
 
-    if tracked_files.file_exists(PathBuf::from(&path), true) {
+    if !tracked_files.verify_file(entry, handle) {
         return;
     }
 
@@ -54,10 +55,10 @@ fn add_subject_entry<'a>(
 
     let mut project_buffer: DatabaseSubject;
     let mut subject: &mut DatabaseSubject =
-        match get_subject_index_by_name(subjects, parent.clone()) {
+        match get_subject_index_by_name(subjects, parent.file_name().unwrap().to_string_lossy().to_string().clone()) {
             Some(idx) => subjects.get_mut(idx).unwrap(),
             None => {
-                project_buffer = DatabaseSubject::from_direntry(handle, parent.clone()).unwrap();
+                project_buffer = DatabaseSubject::from_parent(handle, &parent).unwrap();
                 subjects.push(project_buffer);
                 subjects.last_mut().unwrap()
             }
@@ -65,7 +66,7 @@ fn add_subject_entry<'a>(
 
     if entry.file_type().is_dir() {
         let p =
-            DatabaseSubject::from_direntry(handle, entry.file_name().to_str().unwrap().to_owned())
+            DatabaseSubject::from_direntry(handle, entry)
                 .unwrap();
         subject.add_subject(&p);
         subjects.push(p);
@@ -94,25 +95,18 @@ fn add_subject_entry<'a>(
 
 pub fn parse_directory_chain(handle: &AppHandle, dir: &str) {
     let mut subjects: Vec<DatabaseSubject> = Vec::new();
-    let items = WalkDir::new(dir).follow_links(true);
+    let mut items = WalkDir::new(dir).follow_links(true);
 
     let start = Instant::now();
     let mut files = 0;
     let mut directories = 0;
-    let mut tracked_files = match DatabaseTrackedFiles::default().read(&handle) {
-        Some(x) => x,
-        None => DatabaseTrackedFiles::default(),
-    };
+    let mut tracked_files = DatabaseTrackedFiles::default().read(&handle);
 
     // depth 0 = base folder, depth 1 = loose files, depth >1 = files within directories
     for item in items {
         let entry = item.expect("Entry should be valid");
-        if entry.file_type().is_dir() {
-            directories += 1;
-        }
-        if entry.file_type().is_file() {
-            files += 1;
-        }
+        if entry.file_type().is_dir() { directories += 1; }
+        if entry.file_type().is_file() { files += 1; }
 
         handle.logger(|lgr| {
             lgr.log_debug(
@@ -137,23 +131,28 @@ pub fn parse_directory_chain(handle: &AppHandle, dir: &str) {
     }
 
     // Initialize a default workspace ahead of time to ensure a workspace is always generated
-    let mut workspace: Workspace = Workspace::default();
+    let mut workspace: Workspace = match Workspace::from_id(&Uuid::nil().to_string()).read_db(handle) {
+        Some(x) => {match x.read_db(handle) {
+            Some(mut x) => {x.load(handle, true); x},
+            None => Workspace::from_subject(handle, &subjects.remove(0)),
+        }},
+        None => Workspace::from_subject(handle, &subjects.remove(0)),
+    };
 
     if subjects.len() > 0 {
-        workspace = Workspace::from_subject(handle, &subjects.remove(0));
         workspace
             .wildcards()
             .iter()
-            .for_each(|w| w.write(handle, None, None));
+            .for_each(|w| w.write_db(handle, None, None));
         workspace
             .projetcs()
             .iter()
-            .for_each(|p| p.write(handle, None, None));
+            .for_each(|p| p.write_db(handle, None, None));
 
         for mut subj in subjects {
-            subj.write(handle, None, None);
+            subj.write_db(handle, None, None);
             for wc in subj.wildcards() {
-                wc.write(handle, None, None);
+                wc.write_db(handle, None, None);
             }
             subj.initialize_merge_definition(handle);
 
@@ -168,6 +167,5 @@ pub fn parse_directory_chain(handle: &AppHandle, dir: &str) {
         handle.logger(|lgr| lgr.log_info(&msg, "ParseDirectory", LogVisibility::Backend))
     }
 
-    tracked_files.write(handle, None, None);
-    workspace.write(handle, None, None);
+    workspace.write_db(handle, None, None);
 }

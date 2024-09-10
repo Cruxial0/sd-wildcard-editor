@@ -10,7 +10,7 @@ use super::db_item::DatabaseItem;
 
 pub fn load<T: DatabaseItem>(app: &AppHandle, item: &T) -> Option<T> {
     let sql = format!(
-        "SELECT {} FROM {} WHERE id = \"{}\";",
+        "SELECT {} FROM {} WHERE uuid = \"{}\";",
         to_comma_seperated(&item.fields()),
         item.table().to_str(),
         item.id()
