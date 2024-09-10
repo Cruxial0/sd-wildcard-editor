@@ -65,7 +65,7 @@ impl DatabaseMergeDefinition {
  
     fn node_to_literal(&self, node: &MergeNode, handle: &AppHandle) -> String {
         match node {
-            MergeNode::Wildcard(x) => get_name_by_uuid(handle.clone(), x.to_owned().from_wildcard().unwrap()),
+            MergeNode::Wildcard(x) => get_name_by_uuid(handle.clone(), x.to_owned().from_wildcard().unwrap()).to_wildcard(),
             MergeNode::Text(x) => x.to_owned(),
         }
     }

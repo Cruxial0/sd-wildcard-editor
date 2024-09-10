@@ -15,9 +15,9 @@ impl DeployNode {
         }
     }
 
-    pub fn deploy_recursive(&self, deploy_dir: impl AsRef<Path>) {
+    pub fn deploy_recursive(&self, deploy_dir: &impl AsRef<Path>) {
         self.deploy(&deploy_dir);
-        self.deploy_children(&deploy_dir);
+        self.deploy_children(deploy_dir);
     }
 
     pub fn deploy(&self, deploy_dir: impl AsRef<Path>) {
@@ -37,10 +37,10 @@ impl DeployNode {
         println!("Encountered a Node that was neither a directory or a file: {}", path.to_str().unwrap());
     }
 
-    fn deploy_children(&self, deploy_dir: impl AsRef<Path>) {
+    fn deploy_children(&self, deploy_dir: &impl AsRef<Path>) {
         let dir = deploy_dir;
         for child in &self.children {
-            child.deploy(&dir);
+            child.deploy_recursive(dir);
         }
     }
 }
