@@ -1,4 +1,8 @@
-use std::{fs::Metadata, os::windows::fs::MetadataExt, path::{Path, PathBuf}};
+use std::{
+    fs::Metadata,
+    os::windows::fs::MetadataExt,
+    path::{Path, PathBuf},
+};
 
 use itertools::Itertools;
 use rusqlite::{types::Value, Error, Statement};
@@ -7,7 +11,10 @@ use uuid::Uuid;
 use walkdir::DirEntry;
 
 use crate::{
-    database::operations::{db_item::DatabaseItem, db_read::load_multiple, tables::DatabaseTable}, deployment::{deploy_node::DeployNode, deployable::Deployable}, helpers::dir_utils::{self, get_public_directory}, logging::logger
+    database::operations::{db_item::DatabaseItem, db_read::load_multiple, tables::DatabaseTable},
+    deployment::{deploy_node::DeployNode, deployable::Deployable},
+    helpers::dir_utils::{self, get_public_directory},
+    logging::logger,
 };
 
 use super::{
@@ -110,7 +117,7 @@ impl DatabaseSubject {
         self.subjects = subjects;
     }
 
-    pub fn initialize_merge_definition(&mut self, handle: &AppHandle) {
+    pub fn initialize_default_merge_definition(&mut self, handle: &AppHandle) {
         let definition = DatabaseMergeDefinition::create_default(self.clone(), handle);
 
         self.merge_def_ids.push(definition.clone().id);
@@ -123,9 +130,12 @@ impl DatabaseSubject {
         let abs_path = PathBuf::from(entry.path());
         let rel_path = match abs_path.strip_prefix(get_public_directory()) {
             Ok(x) => x,
-            Err(e) => { println!("{:?}", e); Path::new("") }
+            Err(e) => {
+                println!("{:?}", e);
+                Path::new("")
+            }
         };
-        
+
         Some(DatabaseSubject {
             uuid: unique_id.to_string(),
             name: entry.file_name().to_str().unwrap().to_owned(),
@@ -171,10 +181,13 @@ impl PartialEq for DatabaseSubject {
 }
 
 impl Deployable for DatabaseSubject {
-    fn generate_deploy_node(&self, path: impl AsRef<Path>, handle: &AppHandle) -> Option<crate::deployment::deploy_node::DeployNode> {
-
-        if self.merge_definitions.len() < 1 { 
-            return None; 
+    fn generate_deploy_node(
+        &self,
+        path: impl AsRef<Path>,
+        handle: &AppHandle,
+    ) -> Option<crate::deployment::deploy_node::DeployNode> {
+        if self.merge_definitions.len() < 1 {
+            return None;
         }
 
         let mut children: Vec<DeployNode> = Vec::new();
@@ -182,12 +195,12 @@ impl Deployable for DatabaseSubject {
             if let Some(node) = sub.generate_deploy_node(self.path.clone(), handle) {
                 children.push(node);
             }
-        };
+        }
         for def in &self.merge_definitions {
             if let Some(node) = def.generate_deploy_node(self.path.clone(), handle) {
                 children.push(node);
             }
-        };
+        }
         for wc in &self.wildcards {
             if let Some(node) = wc.generate_deploy_node(self.path.clone(), handle) {
                 children.push(node);

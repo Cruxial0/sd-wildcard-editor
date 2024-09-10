@@ -69,7 +69,7 @@ impl DatabaseTrackedFiles {
         Uuid::new_v5(&Uuid::NAMESPACE_X500, &data_hash.as_bytes()).to_string()
     }
 
-    pub fn update_row(handle: &AppHandle, sql: String) {
+    fn update_row(handle: &AppHandle, sql: String) {
         handle.db(|conn| {
             let mut stmt = conn.prepare(&sql).expect("Should be able to prepare SQL query");
             let result = stmt.execute([]);
