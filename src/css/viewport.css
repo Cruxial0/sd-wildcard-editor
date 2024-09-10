@@ -6,8 +6,7 @@
     overflow-x: auto;
     overflow-y: hidden;
     /* for firefox*/
-    scrollbar-color: white transparent;
-    scrollbar-width: thin;
+    
     clip-path: inset(0 0 0 0);
 }
 
@@ -46,4 +45,8 @@
 
 .viewport-tab:hover > .close-tab {
     visibility: visible;
+}
+
+.viewport-header::-webkit-scrollbar {
+    height: 5px;
 }

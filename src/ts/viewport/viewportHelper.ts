@@ -59,6 +59,7 @@ export function DisplayViewport(id: number, element?: HTMLElement): void
         viewport.display(elem as HTMLElement);
 
         let tab = viewportTabs.get(id);
+        tab?.$el.scrollIntoView();
         if (tab)
         {
             var selected = document.querySelector('.' + 'viewport-tab' + '.' + 'selected-tab');

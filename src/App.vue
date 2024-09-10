@@ -93,6 +93,7 @@ import ComboWildcardCM from './components/ContextMenu/ComboWildcardCM.vue'
 import MergePatternEditor from './components/Viewport/MergePatternEditor.vue'
 import {VueDraggable} from 'vue-draggable-plus'
 import { ref } from 'vue'
+import { makeHorizontalScroll } from './ts/helpers/horizontalScroll'
 
 let notificationManager = ref<typeof NotificationManager>();
 
@@ -145,6 +146,7 @@ export default {
 async function setup()
 {
   window.addEventListener('DOMContentLoaded', () => setupResize());
+  makeHorizontalScroll("viewport-header");
   
   initializeDefaultSelectionListeners();
   document.getElementById('titlebar-minimize')?.addEventListener('click', () => appWindow.minimize());
