@@ -125,23 +125,3 @@
     height: 10px;
     border-radius: 50px;
 }
-
-.editor::-webkit-scrollbar-track:hover{
-    cursor:crosshair !important;
-}
-
-.editor::-webkit-scrollbar-thumb:hover{
-    cursor:crosshair !important;
-}
-
-.editor::-webkit-scrollbar-track
-{
-	
-	background-color: var(--comp-color);
-}
-
-.editor::-webkit-scrollbar-thumb
-{
-	background-color: var(--highlight-color-alt);
-    border-radius: 5px;
-}
