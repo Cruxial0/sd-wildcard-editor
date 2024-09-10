@@ -75,6 +75,7 @@ impl DatabaseSubject {
     pub fn load(&mut self, handle: &AppHandle, load_children: bool) {
         self.load_wildcards_internal(handle);
         self.load_subjects_internal(handle, load_children);
+        self.load_merge_definitions(handle);
     }
 
     pub fn load_merge_definitions(&mut self, handle: &AppHandle) -> Vec<DatabaseMergeDefinition> {
@@ -172,14 +173,26 @@ impl PartialEq for DatabaseSubject {
 impl Deployable for DatabaseSubject {
     fn generate_deploy_node(&self, path: impl AsRef<Path>, handle: &AppHandle) -> Option<crate::deployment::deploy_node::DeployNode> {
 
-        if self.merge_definitions.len() < 1 { return None; }
+        if self.merge_definitions.len() < 1 { 
+            return None; 
+        }
 
         let mut children: Vec<DeployNode> = Vec::new();
+        for sub in &self.subjects {
+            if let Some(node) = sub.generate_deploy_node(self.path.clone(), handle) {
+                children.push(node);
+            }
+        };
         for def in &self.merge_definitions {
             if let Some(node) = def.generate_deploy_node(self.path.clone(), handle) {
                 children.push(node);
             }
         };
+        for wc in &self.wildcards {
+            if let Some(node) = wc.generate_deploy_node(self.path.clone(), handle) {
+                children.push(node);
+            }
+        }
 
         Some(DeployNode::new(Vec::new(), self.path.clone(), children))
     }

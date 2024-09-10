@@ -23,8 +23,10 @@ impl DeployNode {
     pub fn deploy(&self, deploy_dir: impl AsRef<Path>) {
         let path = deploy_dir.as_ref().join(self.rel_path.clone());
         if (!path.exists() || path.is_dir()) && self.lines.len() == 0 {
-            create_dir(path);
-            return;
+            if let None = path.extension() {
+                create_dir(path);
+                return;
+            }
         } 
         
         if let Some(ext) = path.extension() {
