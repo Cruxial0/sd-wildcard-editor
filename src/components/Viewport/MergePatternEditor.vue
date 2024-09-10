@@ -58,7 +58,7 @@ function onDragEnd(event: DragEvent)
                 <VueDraggable v-model="lineCollection" group="lines" :animation="150" ghostClass="ghost" @onUpdate="onUpdate" target=".merge-editor-line" handle=".merge-item-container">
                     <div id="lines" class="merge-editor-line" v-for="line in lineCollection">
                         <div class="merge-editor-line-border"/>
-                        <MergePatternItem v-for="it in line" :key="it.id" :name="it.name" :kind="it.kind" @click="toggle($event, it)"/>
+                        <MergePatternItem v-for="it in line" :key="it.id" :id="it.id" :name="it.name" :kind="it.kind" @click="toggle($event, it)"/>
                     </div>
                 </VueDraggable>
             </div>
@@ -71,6 +71,7 @@ function onDragEnd(event: DragEvent)
 
 <script lang="ts">
 import { getNameByUUID, getUUID } from '../../ts/uuid';
+import { Palette } from 'lucide-vue-next';
 
 const items = ref();
 const mergePatterns = ref();
@@ -84,16 +85,17 @@ export default {
         MergePatternItem,
         MergePatternLine,
     },
-    props: ['name', 'lines'],
+    props: ['name', 'mergeDefinitions'],
     async beforeMount()
     {
         let newData = new Array();
         mergePatterns.value = [];
         lineCollection.value = [];
-        this.$props.lines.forEach(pattern => {mergePatterns.value.push(pattern.merge_pattern)});
+        this.$props.mergeDefinitions.forEach(pattern => { mergePatterns.value.push(pattern.merge_definition) });
+        console.log(this.$props.mergeDefinitions);
         mergePatterns.value.forEach(line =>
         {   
-            
+            console.log(line);
             console.log(line.merge_pattern);
             line.merge_pattern.forEach(async element =>
             {
@@ -101,7 +103,7 @@ export default {
                 element.forEach(async elem =>
                 {
                     console.log(elem);
-                    lineData.push({ name: elem.merge_pattern, kind: elem.kind, id: elem.id });
+                    lineData.push({ name: elem.node, kind: elem.kind, id: elem.node.replaceAll('__', '') });
                 });
                 newData.push(lineData);
             });

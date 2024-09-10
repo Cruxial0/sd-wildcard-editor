@@ -33,10 +33,10 @@
     </div>
     <div id="nav-bar-container" style="position: absolute; left: var(--function-bar-width); right: calc(100vw - var(--function-bar-width) - var(--nav-bar-width)); bottom: 0; top: var(--title-bar-height);">
       <div id="nav-bar" class="nav-bar row color outline-r">
-        <div class="resize-ew disableSelection" style="margin-left: auto;"></div>
-        <div id="nav-bar-content" class="nav-bar-content outline-b">
+        <div class="resize-ew disableSelection" style="margin-left: auto; padding-left: 5px;"></div>
+        <div id="nav-bar-content" class="nav-bar-content outline-b" style="max-height: inherit;">
           <Suspense>
-            <ProjectExplorer style="margin-top: 5px;" />
+            <ProjectExplorer style="margin-top: 5px; max-height: inherit;" />
           </Suspense>
         </div>
       </div>
@@ -46,8 +46,7 @@
         <div id="viewport" class="column" style="flex-grow: 1;">
           <div id="viewport-scroll-container">
             <div id="viewport-header" class="viewport-header row color outline-b">
-              <ViewportTab viewportTitle="Wildcard.txt" />
-              <ViewportTab viewportTitle="Tab 2" />
+
             </div>
           </div>
           <div id="viewport-content" class="viewport-container">

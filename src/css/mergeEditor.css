@@ -41,6 +41,10 @@
     stroke: var(--text-color-hover);
 }
 
+.merge-item-container:hover #open-tab {
+    display: flex !important;
+}
+
 .merge-item.deselect {
     background-color: var(--context-menu-color-washed);
     color: var(--text-color-deselect);

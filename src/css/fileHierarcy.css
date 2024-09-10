@@ -29,6 +29,12 @@
     stroke: var(--text-color-hover);
 }
 
+.file-entry > a {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .collapsed {
     display: none;
 }
@@ -37,3 +43,23 @@
     stroke: wheat;
     background-color: aliceblue;
 }
+
+/* width */
+::-webkit-scrollbar {
+    width: 7px;
+ }
+/* Track */
+ ::-webkit-scrollbar-track {
+   background: transparent;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: var(--context-menu-color);
+}
+
+/* Handle on hover */
+ ::-webkit-scrollbar-thumb:hover {
+    background: var(--context-menu-color-hover);
+}
+
