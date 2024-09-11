@@ -51,7 +51,7 @@ pub fn write_or_insert<T: DatabaseItem>(app: &AppHandle, data: &T, fields: Optio
                 return insert(app, data);
             }
             
-            app.logger(|logger| logger.log_info(&format!("Entry exists. Proceeding to update Database Entry."), "WriteOrInsert", LogVisibility::Backend));
+            app.logger(|logger| logger.log_debug(&format!("Entry exists. Proceeding to update Database Entry."), "WriteOrInsert", LogVisibility::Backend));
             let f = &data.fields();
             let v = data.values();
             let field = match fields{
@@ -66,7 +66,7 @@ pub fn write_or_insert<T: DatabaseItem>(app: &AppHandle, data: &T, fields: Optio
             update(app, data, &field, value)
         }
         Err(e) => {
-            app.logger(|logger| logger.log_info(&format!("Encountered a potential fatal error: {:?}", e), "WriteOrInsert", LogVisibility::Backend));
+            app.logger(|logger| logger.log_warn(&format!("Encountered a potential fatal error: {:?}", e), "WriteOrInsert", LogVisibility::Backend));
         }
     }
 }
@@ -99,12 +99,12 @@ fn execute_update(stmt: &mut Statement, v: Vec<Value>, sql: String, app: &AppHan
     match result {
         Ok(_) => {
             let msg = format!("Updated database with: '{}'", sql);
-            app.logger(|logger| logger.log_debug(&msg, "DatabaseGenericUpdate", LogVisibility::Both))
+            app.logger(|logger| logger.log_debug(&msg, "DatabaseGenericUpdate", LogVisibility::Backend))
         },
         Err(e) => {
             let err = &format!("An error occured: {:?}", e);
             app.logger(|logger| logger.log_error(&err, "DatabaseGenericUpdate", LogVisibility::Backend));
-            app.logger(|logger| logger.log_error(&format!("Failed with query: {}", sql), "DatabaseGenericUpdate", LogVisibility::Backend))
+            app.logger(|logger| logger.log_debug(&format!("Failed with query: {}", sql), "DatabaseGenericUpdate", LogVisibility::Backend))
         }
     }
 }

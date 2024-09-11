@@ -235,7 +235,7 @@ impl DatabaseTrackedFiles {
                 false
                 },
             FileStatus::NotFound => { 
-                handle.logger(|lgr| lgr.log_info(&format!("Detected new file: {:?}", file.path().display()), "VerifyFile", LogVisibility::Backend));
+                handle.logger(|lgr| lgr.log_debug(&format!("Detected new file: {:?}", file.path().display()), "VerifyFile", LogVisibility::Backend));
                 self.update_entry(FileStatus::NotFound, &uuid.to_string(), &data_hash, &path, handle); 
                 
                 true

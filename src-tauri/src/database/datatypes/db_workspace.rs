@@ -56,7 +56,7 @@ impl Workspace {
     }
 
     pub fn generate_deployment(&mut self,base_path: impl AsRef<Path>, handle: &AppHandle) -> Deployment {
-        println!("creating workspace deployment...");
+        handle.logger(|lgr| lgr.log("Generating workspace deployment...", "WorkspaceDeployGen", LogVisibility::Backend, "DEPLOY"));
         let mut deployment: Deployment = Deployment::new(&base_path);
         
         for subject in &mut self.subjects {

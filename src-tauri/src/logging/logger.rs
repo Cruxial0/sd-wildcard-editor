@@ -1,8 +1,5 @@
 use std::{
-    fs::{self, OpenOptions},
-    io::Write,
-    path::PathBuf,
-    time::Instant,
+    fmt::format, fs::{self, OpenOptions}, io::Write, path::PathBuf, time::Instant
 };
 
 use chrono::{DateTime, Local};
@@ -198,17 +195,18 @@ impl Logger {
     }
 
     pub fn initialize_logger(handle: &AppHandle) -> Logger {
-        let date = chrono::offset::Local::now();
-        println!("{}", date.format("YYYY:HH:MM"));
+        let date = chrono::offset::Local::now().format("%y-%m-%d");
         let logger = Logger {
             app_handle: Some(handle.clone()),
             log_level: LogLevel::INFO,
-            log_path: PathBuf::from(get_public_directory()).join("../logs/log.txt"),
+            log_path: PathBuf::from(get_public_directory()).join(format!("../logs/{}.log", date)),
         };
         
         {
             get_or_create_dir(&logger.log_path.parent().unwrap());
-            fs::write(&logger.log_path, "");
+            if !logger.log_path.exists() {
+                fs::write(&logger.log_path, "");
+            }
         }
         
 

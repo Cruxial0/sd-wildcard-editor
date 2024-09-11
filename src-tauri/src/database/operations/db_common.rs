@@ -18,7 +18,7 @@ pub fn exists<T: DatabaseItem>(handle: &AppHandle, data: &T) -> Result<bool, Err
     match exists {
         Ok(x) => Ok(true),
         Err(rusqlite::Error::QueryReturnedNoRows) => {
-            logger.log_error(&format!("QueryReturnedNoRows for query: {}", sql), "DatabaseExists", LogVisibility::Backend);
+            logger.log_debug(&format!("QueryReturnedNoRows for query: {}", sql), "DatabaseExists", LogVisibility::Backend);
             Ok(false)
         },
         Err(e) => {
@@ -42,7 +42,7 @@ pub fn get_unique_id(handle: &AppHandle, table: &DatabaseTable) -> Result<u32, E
     match id {
         Ok(x) => Ok(x + 1),
         Err(rusqlite::Error::QueryReturnedNoRows) => {
-            logger.log_error(&format!("QueryReturnedNoRows for query: {}", sql), "DatabaseGetUniqueID", LogVisibility::Backend);
+            logger.log_debug(&format!("QueryReturnedNoRows for query: {}", sql), "DatabaseGetUniqueID", LogVisibility::Backend);
             Ok(0)
         },
         Err(e) => {

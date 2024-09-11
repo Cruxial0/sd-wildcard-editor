@@ -83,7 +83,6 @@ fn add_subject_entry<'a>(handle: &AppHandle, subjects: &'a mut Vec<DatabaseSubje
     if entry.file_type().is_dir() {
         logger.log_trace("Found directory", "AddSubjectEntry", LogVisibility::Backend);
         let p = DatabaseSubject::from_direntry(handle, entry).unwrap();
-        println!("adding {:?} to {:?}", p.name, subject.name);
         subject.add_subject(&p);
         subjects.push(p);
     } 
@@ -123,7 +122,6 @@ pub fn parse_directory_chain(handle: &AppHandle, dir: &str) {
         }
     }
     let debug: &Vec<String> = &subjects.iter().map(|x| x.name.clone()).collect();
-    println!("Subjects: {:?}", debug);
 
     // Initialize a default workspace ahead of time to ensure a workspace is always generated
     // First tries loading a workspace from the database, or creates one from the bottom-most subject if it doesn't exist
@@ -157,22 +155,18 @@ pub fn parse_directory_chain(handle: &AppHandle, dir: &str) {
         .iter()
         .for_each(|w| w.write_db(handle, None, None));
 
-    println!("{}", subjects.len());
-
     let duration_parse = start.elapsed();
     let msg_parse = format!("Parsed {} subjects and {} wildcards in {:?}", directories, files, duration_parse);
     logger.log_info(&msg_parse, "ParseDirectory", LogVisibility::Backend);
 
     // Write all items to database and initialize default merge definitions
     if subjects.len() > 0 {
-        
         workspace
             .projetcs()
             .iter()
             .for_each(|p| p.write_db(handle, None, None));
 
         for mut subj in subjects {
-            println!("{}", subj.name);
             subj.write_db(handle, None, None);
             for wc in subj.wildcards() {
                 wc.write_db(handle, None, None);

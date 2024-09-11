@@ -65,8 +65,6 @@ impl DatabaseWildcard {
         lines: Vec<String>,
     ) -> Result<(), std::io::Error> {
         let path = PathBuf::from(get_public_directory()).join(&self.path);
-        println!("lines:\n{:?}", &lines);
-        println!("writing to path: {:?}", &path);
         fs::write(path, lines.join("\n"))
     }
 }
