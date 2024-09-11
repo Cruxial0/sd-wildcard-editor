@@ -15,12 +15,12 @@ pub trait DatabaseItem: Default {
     fn values<'a>(&self) -> Vec<rusqlite::types::Value>;
 
     fn write_db(&self, handle: &AppHandle, field_filter: Option<&str>, values_filter: Option<Vec<Value>>) {
-        handle.logger(|logger| logger.log_trace("Entered function: write_db", "DatabaseItem", LogVisibility::Backend));
+        &handle.logger(|logger| logger.log_trace("Entered function: write_db", "DatabaseItem", LogVisibility::Backend));
         db_write::write_or_insert(handle, self, field_filter, values_filter)
     }
 
     fn read_db(&self, handle: &AppHandle) -> Option<Self> {
-        handle.logger(|logger| logger.log_trace("Entered function: read_db", "DatabaseItem", LogVisibility::Backend));
+        &handle.logger(|logger| logger.log_trace("Entered function: read_db", "DatabaseItem", LogVisibility::Backend));
         db_read::load(handle, self)
     }
 }

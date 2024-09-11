@@ -37,10 +37,3 @@
     display: inline-block;
     vertical-align: middle;
 }
-
-/* Example icon styles - replace with your own icons or icon font */
-.icon-edit { background: url('edit-icon.png') no-repeat center center / contain; }
-.icon-delete { background: url('delete-icon.png') no-repeat center center / contain; }
-.icon-share { background: url('share-icon.png') no-repeat center center / contain; }
-.icon-download { background: url('download-icon.png') no-repeat center center / contain; }
-.icon-info { background: url('info-icon.png') no-repeat center center / contain; }

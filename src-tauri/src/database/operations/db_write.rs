@@ -46,8 +46,12 @@ fn debug_key_value_placeholders_from_fields(fields: &str, values: &Vec<Value>) -
 /// else, modify the existing value
 pub fn write_or_insert<T: DatabaseItem>(app: &AppHandle, data: &T, fields: Option<&str>, values: Option<Vec<Value>>){
     match exists(app, data) {
-        Ok(_) => {
-            app.logger(|logger| logger.log_debug(&format!("Entry exists. Proceeding to update Database Entry."), "WriteOrInsert", LogVisibility::Backend));
+        Ok(exists) => {
+            if !exists {
+                return insert(app, data);
+            }
+            
+            app.logger(|logger| logger.log_info(&format!("Entry exists. Proceeding to update Database Entry."), "WriteOrInsert", LogVisibility::Backend));
             let f = &data.fields();
             let v = data.values();
             let field = match fields{
@@ -62,8 +66,7 @@ pub fn write_or_insert<T: DatabaseItem>(app: &AppHandle, data: &T, fields: Optio
             update(app, data, &field, value)
         }
         Err(e) => {
-            app.logger(|logger| logger.log_debug(&format!("Encountered a potential fatal error: {:?}", e), "WriteOrInsert", LogVisibility::Backend));
-            insert(app, data);
+            app.logger(|logger| logger.log_info(&format!("Encountered a potential fatal error: {:?}", e), "WriteOrInsert", LogVisibility::Backend));
         }
     }
 }
@@ -78,6 +81,7 @@ pub fn update<T: DatabaseItem>(app: &AppHandle, data: &T, fields: &str, values: 
     v.remove(0);
 
     let sql = format!("UPDATE {} SET {} WHERE uuid = \"{}\"", data.table().to_str(), key_value_placeholders_from_fields(&f), data.id());
+
     // let debug_sql = format!("UPDATE {} SET {} WHERE id = {}", data.table().to_str(), debug_key_value_placeholders_from_fields(&f, &v), data.id());
     app.db(|x| {let mut stmt = match x.prepare(&sql) {
         Ok(mut stmt) => execute_update(&mut stmt, v, sql, app),
@@ -89,7 +93,7 @@ pub fn update<T: DatabaseItem>(app: &AppHandle, data: &T, fields: &str, values: 
     });
 }
 
-fn execute_update(stmt: &mut Statement<'_>, v: Vec<Value>, sql: String, app: &AppHandle) {
+fn execute_update(stmt: &mut Statement, v: Vec<Value>, sql: String, app: &AppHandle) {
     let result = stmt.execute(params_from_iter(v));
 
     match result {
@@ -100,7 +104,7 @@ fn execute_update(stmt: &mut Statement<'_>, v: Vec<Value>, sql: String, app: &Ap
         Err(e) => {
             let err = &format!("An error occured: {:?}", e);
             app.logger(|logger| logger.log_error(&err, "DatabaseGenericUpdate", LogVisibility::Backend));
-            app.logger(|logger| logger.log_trace(&format!("Failed with query: {}", sql), "DatabaseGenericUpdate", LogVisibility::Backend))
+            app.logger(|logger| logger.log_error(&format!("Failed with query: {}", sql), "DatabaseGenericUpdate", LogVisibility::Backend))
         }
     }
 }

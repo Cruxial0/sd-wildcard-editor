@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use crate::helpers::dir_utils::{get_or_create_path, get_public_directory};
+use crate::helpers::dir_utils::{get_or_create_dir, get_public_directory};
 
 use super::deploy_node::DeployNode;
 
@@ -24,7 +24,7 @@ impl Deployment {
     pub fn deploy(&self) {
         let public_dir = get_public_directory();
 
-        let dir = get_or_create_path(self.base_path.clone()).unwrap();
+        let dir = get_or_create_dir(self.base_path.clone()).unwrap();
 
         for node in &self.nodes {
             node.deploy_recursive(&dir);

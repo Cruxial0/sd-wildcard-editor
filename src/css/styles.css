@@ -1,11 +1,14 @@
 :root {
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+  font-family: Inter;
   font-size: 12px;
   line-height: 2em;
   font-weight: 400;
 
-  color: #0f0f0f;
-  background-color: #f6f6f6;
+  /* color: #0f0f0f;
+  background-color: #f6f6f6; */
+
+  color: var(--text-color);
+  background-color: var(--background-color);
 
   text-rendering:optimizeSpeed;
   
@@ -256,11 +259,4 @@ input:focus{
 
 [contenteditable]{
   outline: 0px solid transparent;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    color: var(--text-color);
-    background-color: var(--background-color);
-  }
 }
