@@ -3,6 +3,8 @@ import TextEditor from "../../components/Viewport/TextEditor.vue";
 import { ViewportItem } from "./viewportItem";
 import { ViewportTextEditor } from "./viewportTextEditor";
 import ViewportTab from "../../components/Viewport/ViewportTab.vue";
+import MergePatternEditor from "../../components/Viewport/MergePatternEditor.vue";
+import { ViewportMergePatternEditor } from "./viewportMergePattern";
 
 const viewportElementId = 'viewport-content';
 const viewportTabElementId = 'viewport-header';
@@ -14,33 +16,51 @@ let viewportWildcards: Map<number, number> = new Map();
 var loadedViewport: number = -1;
 var maxId: number = 0;
 
-export function AddViewportTextEditor(id: number): number
+export function AddViewportTextEditor(id: number, wildcardId: string): number
 {
     console.log('INITIAL ID: ' + id);
     if (viewportWildcards.has(id)) return viewportWildcards.get(id)!;
     
-    var textEditor = createInstance(TextEditor, {})
-    var item = new ViewportTextEditor(textEditor.$el, id);
+    var textEditor = createInstance(TextEditor, {uuid: wildcardId})
+    var item = new ViewportTextEditor(textEditor.$el, id, wildcardId);
     viewports.set(maxId, item);
     viewportWildcards.set(id, maxId);
     maxId++;
     return maxId - 1;
 }
 
-export function  DisplayViewport(id: number): void;
-export function  DisplayViewport(id: number, element: HTMLElement): void;
-export function  DisplayViewport(id: number, element?: HTMLElement): void
+
+export function AddViewportMergePattern(id, mergePatterns): number
+{
+    if (viewports.has(id)) return id;
+    console.log("merge patterns");
+    console.log(mergePatterns);
+
+    var viewport = createInstance(MergePatternEditor, { name: mergePatterns[0].name, mergeDefinitions: mergePatterns });
+    // viewport.$options.methods.setData(mergePatterns);
+    var item = new ViewportMergePatternEditor(viewport.$el, id, mergePatterns[0]);
+    viewports.set(id, item);
+
+    return id;
+}
+
+export async function DisplayViewport(id: number): Promise<void>;
+export async function DisplayViewport(id: number, element: HTMLElement): Promise<void>;
+export async function DisplayViewport(id: number, element?: HTMLElement): Promise<void>
 {
     console.log(viewportTabs);
     let elem = element ? element : document.getElementById(viewportElementId)!;
     let viewport = viewports.get(id);
     if (viewport)
     {
+        console.log("Loaded viewport: " + loadedViewport);
         if (loadedViewport != -1) UnloadViewport(loadedViewport);
         loadedViewport = id;
-        viewport.display(elem);
+        await viewport.display(elem as HTMLElement);
+        
 
         let tab = viewportTabs.get(id);
+        tab?.$el.scrollIntoView();
         if (tab)
         {
             var selected = document.querySelector('.' + 'viewport-tab' + '.' + 'selected-tab');
@@ -50,8 +70,11 @@ export function  DisplayViewport(id: number, element?: HTMLElement): void
     }
 }
 
-export function  UnloadViewport(id: number)
+export function UnloadViewport(id: number)
 {
+    if (id == loadedViewport) return;
+
+    console.log("unloading id:" + id);
     let viewport = viewports.get(id);
     if (viewport) viewport.unload();
     document.getElementById(viewportElementId)!.innerHTML = '';
@@ -95,11 +118,12 @@ export async function AddViewportTab(id: number)
 
         var selected = document.querySelector('.' + 'viewport-tab' + '.' + 'selected-tab');
         if (selected) selected.classList.remove('selected-tab');
+        selected?.scrollIntoView();
         tab.$el.querySelector('.viewport-tab').classList.add('selected-tab');
     }
 }
 
-export async function  CreateViewportTab(id: number): Promise<ComponentPublicInstance | undefined>
+export async function CreateViewportTab(id: number): Promise<ComponentPublicInstance | undefined>
 {
     let item = viewports.get(id);
 

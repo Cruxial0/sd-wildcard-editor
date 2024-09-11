@@ -5,14 +5,15 @@ impl DatabaseMigration for MigrationTrackedFilesTable {
     fn get_batch_command(&self) -> String {
         "
         CREATE TABLE IF NOT EXISTS Workspace (
-            id INTEGER NOT NULL UNIQUE,
-            wildcards TEXT, 
-            projects TEXT,
-            PRIMARY KEY(id)
+            uuid VARCHAR(64) NOT NULL UNIQUE,
+            wildcards TEXT,
+            subjects TEXT,
+            PRIMARY KEY(uuid)
         );
         CREATE TABLE IF NOT EXISTS TrackedFiles (
-            id INTEGER NOT NULL UNIQUE,
-            files TEXT
+            uuid VARCHAR(64) NOT NULL UNIQUE,
+            data VARCHAR(256),
+            path TEXT
         );
         ".into()
     }

@@ -2,6 +2,7 @@ static OFFSET: i32 = 2;
 
 pub fn to_comma_seperated(input: &Vec<String>) -> String{
     if input.len() <= 0 { return "".to_owned() }
+    if input.len() == 1 { return input[0].clone();}
     let val: String = input.iter().map(|x| format!("{}, ", x)).collect();
     let index = (val.len() as i32) - OFFSET;
 

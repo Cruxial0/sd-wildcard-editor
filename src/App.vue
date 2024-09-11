@@ -1,7 +1,8 @@
 <template>
-  <div class="base_container" style="max-width: 100vw; max-height: 100vh;">
-    <div id="title-bar" data-tauri-drag-region class="titlebar row outline-b color">
-      <div class="row" style="margin-right: auto; align-items: center;">
+  <div class="base_container" style="position: absolute; top: 0; left: 0; bottom: 0; right: 0; overflow:visible;">
+    <div id="title-bar" data-tauri-drag-region class="titlebar row outline-b color"
+      style="position: absolute !important; left: 0; top:0; right: 0;">
+      <div class="row" style="margin-right: auto; align-items: center; ">
         <img src="/tauri.svg" style="padding: 7px; height: 70%;" />
         <button class="context-button" @click="showPopup = true">File</button>
         <button class="context-button" @click="showNotification">Edit</button>
@@ -20,8 +21,8 @@
       </div>
 
     </div>
-    <div class="row" style="flex-grow: 1; left: 0;">
-      <div id="function-bar" class="function-bar column color">
+    <div id="function-bar-container" class="color" style="position: absolute;left: 0px; bottom: 0px; top: var(--title-bar-height); right: calc(100% - var(--function-bar-width));">
+      <div id="function-bar" class="function-bar column">
         <FileIcon class="function-button selected" />
         <SearchIcon class="function-button" />
         <div style="margin-top: auto;">
@@ -29,36 +30,42 @@
           <SettingsIcon class="function-button" />
         </div>
       </div>
+    </div>
+    <div id="nav-bar-container" style="position: absolute; left: var(--function-bar-width); right: calc(100vw - var(--function-bar-width) - var(--nav-bar-width)); bottom: 0; top: var(--title-bar-height);">
       <div id="nav-bar" class="nav-bar row color outline-r">
-        <div class="resize-ew disableSelection" style="margin-left: auto;"></div>
-        <div id="nav-bar-content" class="nav-bar-content column outline-b">
+        <div class="resize-ew disableSelection" style="margin-left: auto; padding-left: 5px;"></div>
+        <div id="nav-bar-content" class="nav-bar-content outline-b" style="max-height: inherit;">
           <Suspense>
-            <ProjectExplorer style="margin-top: 5px;" />
+            <ProjectExplorer style="margin-top: 5px; max-height: inherit;" />
           </Suspense>
         </div>
       </div>
-      <div class="column" style="flex-grow: 1;">
-        <div class="row" style="flex-grow: 1;">
-          <div id="viewport" class="column" style="flex-grow: 1;">
+    </div>
+    <div id="viewport-container" style="position: absolute; left: calc(var(--function-bar-width) + var(--nav-bar-width)); right: 0; top: var(--title-bar-height); bottom: calc(var(--context-menu-height));">
+      <div class="row" style="flex-grow: 1;">
+        <div id="viewport" class="column" style="flex-grow: 1;">
+          <div id="viewport-scroll-container">
             <div id="viewport-header" class="viewport-header row color outline-b">
-              <ViewportTab viewportTitle="Wildcard.txt" />
-              <ViewportTab viewportTitle="Tab 2" />
-            </div>
-            <div id="viewport-content" class="viewport-container">
 
             </div>
           </div>
-        </div>
-        <div id="context-menu" class="context-menu row color outline-t" style="height: var(--context-menu-height);">
-          <div class="resize-ns disableSelection">
+          <div id="viewport-content" class="viewport-container">
 
           </div>
         </div>
       </div>
+    </div>
+    <div id="context-menu-container" class="color outline-t" style="position: absolute; left: calc(var(--function-bar-width) + var(--nav-bar-width)); right: 0; bottom: 0; top: calc(100vh - var(--context-menu-height));">
+      <div id="context-menu" class="context-menu row ">
+        <div class="resize-ns disableSelection">
 
+        </div>
+      </div>
     </div>
 
   </div>
+  <FileEntryCM></FileEntryCM>
+  <ComboWildcardCM></ComboWildcardCM>
   <GenericPopup :isVisible="showPopup" @close="showPopup = false">
     <h2>{{ popupTitle }}</h2>
     <p>{{ popupContent }}</p>
@@ -81,6 +88,14 @@ import ProjectExplorer from './components/NavBar/ProjectExplorer.vue'
 import GenericPopup from './components/Popup/GenericPopup.vue'
 import NotificationManager from './components/Notification/NotificationManager.vue'
 import GenericNotification from './components/Notification/GenericNotification.vue'
+import FileEntryCM from './components/ContextMenu/FileEntryCM.vue'
+import ComboWildcardCM from './components/ContextMenu/ComboWildcardCM.vue'
+import MergePatternEditor from './components/Viewport/MergePatternEditor.vue'
+import {VueDraggable} from 'vue-draggable-plus'
+import { ref } from 'vue'
+import { makeHorizontalScroll } from './ts/helpers/horizontalScroll'
+
+let notificationManager = ref<typeof NotificationManager>();
 
 export default {
 
@@ -95,7 +110,11 @@ export default {
     ProjectExplorer,
     GenericPopup,
     NotificationManager,
-    GenericNotification
+    GenericNotification,
+    FileEntryCM,
+    ComboWildcardCM,
+    MergePatternEditor,
+    VueDraggable
   },
   async mounted()
   {
@@ -109,24 +128,33 @@ export default {
       popupContent: 'This is dynamic content, which is substantially longer to test if the window dynamically resizes or not. Bruh why are you even reading this lol'
     }
   },
-  methods:
-  {
+  _methods: {
     showNotification()
     {
-      console.log("showing notification");
-      this.$refs.notificationManager.addNotification({
+      console.log("showing notification")
+      notificationManager.value!.$methods.addNotification({
         icon: 'CheckCircleIcon',
         header: 'Success!',
         message: 'Your action was completed successfully.',
         borderColor: '#2ecc71'
       })
     }
-  }
+  },
+  get methods()
+  {
+    return this._methods
+  },
+  set methods(value)
+  {
+    this._methods = value
+  },
 }
 
 async function setup()
 {
-  setupResize();
+  window.addEventListener('DOMContentLoaded', () => setupResize());
+  makeHorizontalScroll("viewport-header");
+  
   initializeDefaultSelectionListeners();
   document.getElementById('titlebar-minimize')?.addEventListener('click', () => appWindow.minimize());
   document.getElementById('titlebar-maximize')?.addEventListener('click', () => appWindow.toggleMaximize());

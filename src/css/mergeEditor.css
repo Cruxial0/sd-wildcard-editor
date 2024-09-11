@@ -1,0 +1,128 @@
+:root {
+    --merge-item-border-radius: 5px;
+}
+
+.merge-editor-container {
+    padding: 10px;
+    max-height: 100%;
+}
+
+#merge-editor-lines {
+    overflow-x: hidden;
+}
+
+.merge-title {
+    font-size: large;
+}
+
+.merge-item-container{
+    display: flex; 
+    flex-direction: row;
+    min-width: 50px;
+    height: 30px;
+    border-radius: var(--merge-item-border-radius);
+    overflow: hidden;
+    margin-bottom: 5px;
+    margin-top: 5px;
+}
+
+.merge-item {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--context-menu-color);
+    padding-top: 1px;
+    padding-right: 5px;
+    padding-left: 5px;
+}
+
+.merge-item-container:hover {
+    color: var(--text-color-hover);
+    stroke: var(--text-color-hover);
+}
+
+.merge-item-container:hover #open-tab {
+    display: flex !important;
+}
+
+.merge-item.deselect {
+    background-color: var(--context-menu-color-washed);
+    color: var(--text-color-deselect);
+}
+
+.merge-editor-line{
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    min-height: 30px;
+    flex-wrap: wrap;
+    padding: 2px 0px;
+    align-items: center;
+    border-left: 1px solid;
+    margin-top: 4px;
+}
+
+.merge-editor-line:hover{
+    background-color: var(--comp-color);
+}
+
+.merge-editor-line-border {
+    display: flex;
+    height: 40px;
+    width: 1px;
+    
+}
+
+.add-field{
+    margin-top: 10px;
+    height: 60px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.add-field * {
+    display: none;
+    height: 90%;
+}
+
+.add-hover {
+    border: dashed 2px;
+}
+
+.add-hover * {
+    display: flex;
+}
+
+.handle {
+    display: flex;
+}
+
+#merge-item-container {
+    margin-left: 5px;
+}
+
+select {
+    color: var(--text-color);
+    background-color: var(--context-menu-color);
+    border-width: 0px;
+    font-weight: bold;
+    padding: 2px;
+}
+
+select:hover{
+    color: var(--text-color-hover);
+}
+
+optgroup > option {
+    color: red !important;
+    border-top-color: white;
+    border-bottom-width: 1px;
+}
+
+option {
+    color: blueviolet;
+}

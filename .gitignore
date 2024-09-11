@@ -32,3 +32,5 @@ public/wildcards/*
 !public/wildcards/nested-directory/
 public/wildcards/nested-directory/*
 !public/wildcards/nested-directory/nested-file.txt
+
+public/TestDeployment/

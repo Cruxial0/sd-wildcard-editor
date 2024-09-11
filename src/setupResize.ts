@@ -2,7 +2,8 @@ const cm_variable = "--context-menu-height";
 const nb_variable = "--nav-bar-width";
 let m_pos_x: number;
 let m_pos_y: number;
-let active: HTMLElement;
+let resizeable: Map<string, number> = new Map();
+let active = '';
 
 function update_variable(variable: string, value: string)
 {
@@ -13,21 +14,34 @@ function resize_x(e){
     const dx = e.x - m_pos_x;
     m_pos_x = e.x;
     
-    var val = (parseInt(getComputedStyle(active, '').width) + dx) + "px";
+    let min = resizeable.get(active)!;
+    let item = document.getElementById(active)!;
+    let currWidth = parseInt(getComputedStyle(item, '').width);
+    
+    var val = currWidth + dx < min ? "180px" : (currWidth + dx) + "px";
     update_variable(nb_variable, val);
 }
 
-function resize_y(e){
+function resize_y( e){
     const dy = m_pos_y - e.y;
     m_pos_y = e.y;
 
-    var val = (parseInt(getComputedStyle(active, '').height) + dy) + "px";
+    let min = resizeable.get(active)!;
+    let item = document.getElementById(active)!;
+    let currHeight = parseInt(getComputedStyle(item, '').height);
+
+    var val = currHeight + dy < min ? "180px" : (currHeight + dy) + "px";
     update_variable(cm_variable, val);
 }
 
 function setupElement(element: HTMLElement, direction: string)
 {
     console.log("setting up element: " + element.className);
+    let parent = element.parentNode?.parentElement as HTMLElement;
+    if (resizeable.has(parent.id)) return;
+
+    if (direction == 'x') resizeable.set(parent.id, parseInt(getComputedStyle(parent).width, 10));
+    if (direction == 'y') resizeable.set(parent.id, parseInt(getComputedStyle(parent).height, 10));
     
     if (direction != 'x' && direction != 'y')
     {
@@ -37,7 +51,8 @@ function setupElement(element: HTMLElement, direction: string)
         
     element.addEventListener('mousedown', function (e)
     {
-        active = element.parentNode as HTMLElement;
+        active = parent.id;
+
         m_pos_x = e.x;
         m_pos_y = e.y;
         
