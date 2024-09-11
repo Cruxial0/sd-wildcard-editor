@@ -27,7 +27,8 @@ pub fn load_workspace(handle: AppHandle) -> Workspace {
     };
 
     workspace.load(&handle, true);
-    let deployment = workspace.generate_deployment("C:\\Users\\benja\\Documents\\Wildcards", &handle);
+    let deploy_path = PathBuf::from(get_public_directory()).join("..\\TestDeployment");
+    let deployment = workspace.generate_deployment(deploy_path, &handle);
     deployment.deploy();
 
     workspace
