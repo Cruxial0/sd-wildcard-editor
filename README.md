@@ -1,5 +1,7 @@
 # sd-wildcard-editor
 
+**THIS PROJECT IS IN AN EARLY ALPHA STATE. USE ON OWN ACCORD**
+
 ## To Do
 ### Main Plans
 - [ ] Wildcard Subject structure<br>
