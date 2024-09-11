@@ -11,6 +11,8 @@ use walkdir::DirEntry;
 
 use crate::{database::operations::{db_item::DatabaseItem, tables::DatabaseTable}, helpers::dir_utils, logging::logger::LogVisibility, state::ServiceAccess};
 
+const LOG_SOURCE: &str = "TrackedFilesRead";
+
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 struct TrackedFile {
     pub uuid: String,
@@ -43,23 +45,49 @@ impl Default for DatabaseTrackedFiles {
 impl DatabaseTrackedFiles {
 
     pub fn read(&mut self, handle: &AppHandle) -> Self{
+        let logger = handle.get_logger();
         let entries = handle.db(|conn| {
-            let mut stmt = conn.prepare("SELECT uuid, data, path FROM TrackedFiles").unwrap();
-            let entry_iter = stmt.query_map([], |row| {
-                Ok(TrackedFile{
-                    uuid: row.get(0)?,
-                    data: row.get(1)?,
-                    path: PathBuf::from(row.get::<usize, String>(2)?)
-                })
-            }).unwrap();
+            let mut statement = match conn.prepare("SELECT uuid, data, path FROM TrackedFiles") {
+                Ok(x) => Some(x),
+                Err(e) => {logger.log_error(&format!("{:?}", e), LOG_SOURCE, LogVisibility::Backend); None},
+            };
 
-            let file_entries: Vec<TrackedFile> = entry_iter.map(|x| x.unwrap()).collect();
-            file_entries
+            if let Some(mut stmt) = statement {
+                let entry_iter = stmt.query_map([], |row| {
+                    Ok(TrackedFile{
+                        uuid: row.get(0)?,
+                        data: row.get(1)?,
+                        path: PathBuf::from(row.get::<usize, String>(2)?)
+                    })
+                });
+    
+                match entry_iter {
+                    Ok(x) => {
+                        let file_entries: Vec<TrackedFile> = x.map(|x| x.unwrap()).collect();
+                        Some(file_entries)
+                    },
+                    Err(e) => {
+                        logger.log_error(&format!("{:?}", e), LOG_SOURCE, LogVisibility::Backend);
+                        None
+                    },
+                }
+
+                
+            }
+            else { 
+                logger.log_warn("Could not load tracked files because of previous errors.", LOG_SOURCE, LogVisibility::Backend);
+                None
+            }
         });
+
+        let files = match entries {
+            Some(x) => x,
+            None => Vec::new(),
+        };
 
         DatabaseTrackedFiles {
             uuid: Uuid::nil().to_string(),
-            files: entries
+            files: files
         }
     }
 
@@ -70,8 +98,13 @@ impl DatabaseTrackedFiles {
     }
 
     fn update_row(handle: &AppHandle, sql: String) {
+        let logger = handle.get_logger();
         handle.db(|conn| {
-            let mut stmt = conn.prepare(&sql).expect("Should be able to prepare SQL query");
+            let mut stmt = match conn.prepare(&sql) {
+                Ok(x) => x,
+                Err(e) => {logger.log_error(&format!("{:?}", e), LOG_SOURCE, LogVisibility::Backend); return;}
+            };
+
             let result = stmt.execute([]);
 
             match result {
@@ -101,15 +134,18 @@ impl DatabaseTrackedFiles {
     }
 
     fn get_file_content(file: &walkdir::DirEntry, handle: &AppHandle) -> Result<Vec<String>, Error> {
-        let mut meta = file.metadata().unwrap();
+        let logger = handle.get_logger();
+        let mut meta = file.metadata();
+        
+        let metadata = meta.unwrap();
 
-        if !meta.is_dir() {
-            if meta.is_file(){
+        if !metadata.is_dir() {
+            if metadata.is_file(){
                 if file.path().extension().unwrap() != "txt" {return Err(io::Error::new(io::ErrorKind::Unsupported, "Can't parse files with an unsupported format."))};
             } else {return Err(io::Error::new(io::ErrorKind::Unsupported, "Can't parse files with an unsupported format."))};
         }
         
-        let mut data: Vec<String> = match meta.is_dir() {
+        let mut data: Vec<String> = match metadata.is_dir() {
             true => {
                 handle.logger(|lgr| lgr.log_trace(&format!("Detected directory: {:?}", file.path().display()), "VerifyFile", LogVisibility::Backend));
                 dir_utils::get_list_of_files(file.path())
@@ -133,6 +169,7 @@ impl DatabaseTrackedFiles {
     }
 
     fn update_entry(&mut self, file_status: FileStatus, uuid: &String, data_hash: &String, path: &String, handle: &AppHandle) {
+        let logger = handle.get_logger();
         match file_status {
             FileStatus::Exists => (),
             FileStatus::ContentChanged => {
@@ -140,14 +177,18 @@ impl DatabaseTrackedFiles {
                 if let Some(first) = items.first_mut() {
                     first.set_id(uuid.to_owned());
                     DatabaseTrackedFiles::update_row(handle, format!("UPDATE TrackedFiles SET data={:?} WHERE path={:?}", data_hash, path))
+                } else {
+                    logger.log_warn("Could not update file as it was not found in the internal collection", "VerifyFile_ContentChanged", LogVisibility::Backend)
                 }
             },
             FileStatus::FileMoved => {
                 let mut items = self.files.iter_mut().filter(|x| x.data == data_hash.clone()).collect::<Vec<&mut TrackedFile>>();
                 if let Some(first) = items.first_mut() {
-                    handle.logger(|lgr| lgr.log_info(&format!("{:?} -> {:?}", &first.path, &path), "VerifyFile_Moved", LogVisibility::Backend));
+                    logger.log_info(&format!("{:?} -> {:?}", &first.path, &path), "VerifyFile_Moved", LogVisibility::Backend);
                     first.set_path(path.to_owned());
                     DatabaseTrackedFiles::update_row(handle, format!("UPDATE TrackedFiles SET path={:?} WHERE data={:?}", path, data_hash))
+                } else {
+                    logger.log_warn("Could not update file as it was not found in the internal collection", "VerifyFile_ContentChanged", LogVisibility::Backend)
                 }
             },
             FileStatus::NotFound => {

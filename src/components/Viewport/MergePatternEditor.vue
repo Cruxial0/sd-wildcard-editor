@@ -1,17 +1,15 @@
 <script setup lang="ts">
-import { Ref, ref } from 'vue'
-import { SortableEvent, VueDraggable, useDraggable, vDraggable } from 'vue-draggable-plus'
+import { ref } from 'vue'
+import { VueDraggable } from 'vue-draggable-plus'
 import MergePatternItem from './MergePatternItem.vue'
 import MergePatternLine from './MergePatternLine.vue'
 import FileIcon from '../Icons/FileIcon.vue';
 
-const disabled = ref(false);
 
-
-function onUpdate(event: SortableEvent)
-{
-    console.log(lineCollection);
-}
+// function onUpdate(event: SortableEvent)
+// {
+//     console.log(lineCollection);
+// }
 function onEnter(event: DragEvent)
 {
     console.log(event);
@@ -24,10 +22,10 @@ function onLeave(event: DragEvent)
     let t = event.target as HTMLElement;
     t.classList.remove('add-hover');
 }
-function onDragEnd(event: DragEvent)
-{
-    console.log("drag end");
-}
+// function onDragEnd(event: DragEvent)
+// {
+//     console.log("drag end");
+// }
 </script>
 
 <template>
@@ -55,14 +53,14 @@ function onDragEnd(event: DragEvent)
         </div>
         <div id="merge-editor-lines">
             <div style="margin-top: 10px;">
-                <VueDraggable v-model="lineCollection" group="lines" :animation="150" ghostClass="ghost" @onUpdate="onUpdate" target=".merge-editor-line" handle=".merge-item-container">
+                <VueDraggable v-model="lineCollection" group="lines" :animation="150" ghostClass="ghost" target=".merge-editor-line" handle=".merge-item-container">
                     <div id="lines" class="merge-editor-line" v-for="line in lineCollection">
                         <div class="merge-editor-line-border"/>
                         <MergePatternItem v-for="it in line" :key="it.id" :id="it.id" :name="it.name" :kind="it.kind" @click="toggle($event, it)"/>
                     </div>
                 </VueDraggable>
             </div>
-            <div id="add-field" class="add-field" @dragenter="onEnter" @dragleave="onLeave" @dragover="onDragEnd">
+            <div id="add-field" class="add-field" @dragenter="onEnter" @dragleave="onLeave" >
                 <FileIcon></FileIcon>
             </div>
         </div>
@@ -71,7 +69,6 @@ function onDragEnd(event: DragEvent)
 
 <script lang="ts">
 import { getNameByUUID, getUUID } from '../../ts/uuid';
-import { Palette } from 'lucide-vue-next';
 
 const items = ref();
 const mergePatterns = ref();

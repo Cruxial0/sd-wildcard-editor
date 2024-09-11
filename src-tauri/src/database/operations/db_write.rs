@@ -1,7 +1,7 @@
-use rusqlite::{params_from_iter, types::Value};
+use rusqlite::{params_from_iter, types::Value, Statement};
 use tauri::AppHandle;
 
-use crate::{helpers::vec_utils::{rusqlite_value_to_csv, to_comma_seperated}, logging::logger, state::ServiceAccess};
+use crate::{helpers::vec_utils::{rusqlite_value_to_csv, to_comma_seperated}, logging::logger::{self, LogVisibility}, state::ServiceAccess};
 
 use super::{db_common::exists, db_item::DatabaseItem};
 
@@ -45,22 +45,26 @@ fn debug_key_value_placeholders_from_fields(fields: &str, values: &Vec<Value>) -
 /// Write a new record to the database if item does not already exist
 /// else, modify the existing value
 pub fn write_or_insert<T: DatabaseItem>(app: &AppHandle, data: &T, fields: Option<&str>, values: Option<Vec<Value>>){
-    if exists(app, data).expect("Something went wrong when checking if Database entry exists") {
-        let f = &data.fields();
-        let v = data.values();
-        let field = match fields{
-            Some(x) => x.to_owned(),
-            None => to_comma_seperated(f),
-        };
-        let value: Vec<Value> = match values {
-            Some(x) => x.iter().map(|v| v.to_owned()).collect(),
-            None => v.iter().map(|x| x.to_owned()).collect(),
-        };
+    match exists(app, data) {
+        Ok(_) => {
+            app.logger(|logger| logger.log_debug(&format!("Entry exists. Proceeding to update Database Entry."), "WriteOrInsert", LogVisibility::Backend));
+            let f = &data.fields();
+            let v = data.values();
+            let field = match fields{
+                Some(x) => x.to_owned(),
+                None => to_comma_seperated(f),
+            };
+            let value: Vec<Value> = match values {
+                Some(x) => x.iter().map(|v| v.to_owned()).collect(),
+                None => v.iter().map(|x| x.to_owned()).collect(),
+            };
 
-        update(app, data, &field, value)
-    }
-    else {
-        insert(app, data);
+            update(app, data, &field, value)
+        }
+        Err(e) => {
+            app.logger(|logger| logger.log_debug(&format!("Encountered a potential fatal error: {:?}", e), "WriteOrInsert", LogVisibility::Backend));
+            insert(app, data);
+        }
     }
 }
 
@@ -75,20 +79,30 @@ pub fn update<T: DatabaseItem>(app: &AppHandle, data: &T, fields: &str, values: 
 
     let sql = format!("UPDATE {} SET {} WHERE uuid = \"{}\"", data.table().to_str(), key_value_placeholders_from_fields(&f), data.id());
     // let debug_sql = format!("UPDATE {} SET {} WHERE id = {}", data.table().to_str(), debug_key_value_placeholders_from_fields(&f, &v), data.id());
-    app.db(|x| {let mut stmt = x.prepare(&sql).expect("Should be able to prepare SQL query");
-        let result = stmt.execute(params_from_iter(v));
-
-        match result {
-            Ok(_) => {
-                let msg = format!("Updated database with: '{}'", sql);
-                app.logger(|logger| logger.log_debug(&msg, "DatabaseGenericInsert", logger::LogVisibility::Both))
-            },
-            Err(e) => {
-                let err = &format!("An error occured: {:?}", e);
-                app.logger(|logger| logger.log_error(&err, "DatabaseGenericInsert", logger::LogVisibility::Backend))
-            }
+    app.db(|x| {let mut stmt = match x.prepare(&sql) {
+        Ok(mut stmt) => execute_update(&mut stmt, v, sql, app),
+        Err(e) => {
+            app.logger(|logger| logger.log_error(&format!("Encountered error when preparing query: {:?}", e), "DatabaseGenericUpdate", LogVisibility::Backend));
+            app.logger(|logger| logger.log_debug(&format!("Failed with query: {:?}", sql), "DatabaseGenericUpdate", LogVisibility::Backend))
         }
+    };
     });
+}
+
+fn execute_update(stmt: &mut Statement<'_>, v: Vec<Value>, sql: String, app: &AppHandle) {
+    let result = stmt.execute(params_from_iter(v));
+
+    match result {
+        Ok(_) => {
+            let msg = format!("Updated database with: '{}'", sql);
+            app.logger(|logger| logger.log_debug(&msg, "DatabaseGenericUpdate", LogVisibility::Both))
+        },
+        Err(e) => {
+            let err = &format!("An error occured: {:?}", e);
+            app.logger(|logger| logger.log_error(&err, "DatabaseGenericUpdate", LogVisibility::Backend));
+            app.logger(|logger| logger.log_trace(&format!("Failed with query: {}", sql), "DatabaseGenericUpdate", LogVisibility::Backend))
+        }
+    }
 }
 
 /// Writes a new record to the database. 
@@ -98,17 +112,27 @@ pub fn insert<T: DatabaseItem>(app: &AppHandle, data: &T) {
     let sql = format!("INSERT INTO {} ({}) VALUES ({});", data.table().to_str(), fields, value_placeholders_from_fields(&fields));
     let debug_sql = format!("INSERT INTO {} ({}) VALUES ({});", data.table().to_str(), fields, rusqlite_value_to_csv(&data.values()));
     app.db(|x| {
-        let mut stmt = x.prepare(&sql).expect("Should be able to prepare SQL query");
-        let result = stmt.execute(params_from_iter(data.values()));
-
-        match result {
-            Ok(_) => {
-                app.logger(|logger| logger.log_debug(&sql, "DatabaseGenericWrite", logger::LogVisibility::Backend))
-            }
+        let mut stmt = match x.prepare(&sql) {
+            Ok(mut stmt) => execute_insert(&mut stmt, data, sql, debug_sql, app),
             Err(e) => {
-                let err = &format!("An error occured: {:?}", e);
-                app.logger(|logger| logger.log_error(&err, "DatabaseGenericWrite", logger::LogVisibility::Backend))
+                app.logger(|logger| logger.log_error(&format!("Encountered error when preparing query: {:?}", e), "DatabaseGenericUpdate", LogVisibility::Backend));
+                app.logger(|logger| logger.log_debug(&format!("Failed with query: {:?}", sql), "DatabaseGenericUpdate", LogVisibility::Backend))
             }
-        }
+        };
     });
+}
+
+fn execute_insert<T: DatabaseItem>(stmt:  &mut Statement<'_>, data: &T, sql: String, debug_sql: String, app: &AppHandle) {
+    let result = stmt.execute(params_from_iter(data.values()));
+
+    match result {
+        Ok(_) => {
+            app.logger(|logger| logger.log_debug(&sql, "DatabaseGenericInsert", LogVisibility::Backend))
+        }
+        Err(e) => {
+            let err = &format!("An error occured: {:?}", e);
+            app.logger(|logger| logger.log_error(&err, "DatabaseGenericInsert", LogVisibility::Backend));
+            app.logger(|logger| logger.log_trace(&format!("Failed with query: {}", debug_sql), "DatabaseGenericInsert", LogVisibility::Backend))
+        }
+    }
 }

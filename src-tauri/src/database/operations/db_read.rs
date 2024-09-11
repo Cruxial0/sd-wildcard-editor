@@ -47,7 +47,7 @@ pub fn load_multiple<T: DatabaseItem>(app: &AppHandle, data: &T, ids: Vec<String
         match load(app, data) {
             Some(x) => items.push(x),
             None => {
-                app.logger(|lgr| lgr.log_error("", "LoadMultiple", LogVisibility::Backend))
+                app.logger(|lgr| lgr.log_error("No items found", "LoadMultiple", LogVisibility::Backend))
             },
         }
     }

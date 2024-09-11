@@ -2,8 +2,8 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { createApp, ref } from "vue";
 import FileIndicator from './components/NavBar/FileIndicator.vue';
 import { FileType, WildcardFile } from "./fileType.ts";
-import { LoadWildcard, Wildcard } from "./ts/data/wildcard.ts";
-import { AddViewportMergePattern, AddViewportTab, AddViewportTextEditor, DisplayViewport } from "./ts/viewport/viewportHelper.ts";
+import { Wildcard } from "./ts/data/wildcard.ts";
+import { AddViewportTab, AddViewportTextEditor, DisplayViewport } from "./ts/viewport/viewportHelper.ts";
 import { AddContextMenuHandler } from "./ts/rmb-context-menu/contextMenuHandlers.ts";
 
 let item;

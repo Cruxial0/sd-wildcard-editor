@@ -1,7 +1,9 @@
+use std::{fs::{self, OpenOptions}, io::Write, path::PathBuf};
+
 use chrono::{DateTime, Local};
 use tauri::{command::CommandArg, AppHandle, Manager};
 
-use crate::logging::{logger_helpers::color_backend, logger_settings::DATETIME_COLOR};
+use crate::{helpers::dir_utils::get_public_directory, logging::{logger_helpers::color_backend, logger_settings::DATETIME_COLOR}};
 
 use super::{
     log_level::LogLevel, logger_helpers::{adjust_source_length, color_frontend, format_backend, format_frontend}, logger_settings::DATETIME_FORMAT
@@ -26,6 +28,7 @@ struct LogPackage {
 pub struct Logger {
     app_handle: Option<AppHandle>,
     pub log_level: LogLevel,
+    log_path: PathBuf
 }
 
 
@@ -61,13 +64,32 @@ impl Logger {
         }
     }
 
+    fn log_to_file(&self, content: String, date_time: String, source: String, log_level: &LogLevel) {
+        let message = format!(
+            "{} [{}] {} | {}\n",
+            date_time,
+            log_level.to_string(),
+            adjust_source_length(source, log_level),
+            content
+        );
+
+        let mut file = OpenOptions::new()
+            .write(true)
+            .append(true)
+            .open(&self.log_path)
+            .unwrap();
+
+            file.write(message.as_bytes());
+    }
+
     fn stage(&self, content: &str, source: &str, visibility: LogVisibility, log_level: LogLevel) {
+        let current_local: DateTime<Local> = Local::now();
+        let date_time = current_local.format(DATETIME_FORMAT);
+        self.log_to_file(content.to_string(), date_time.to_string(), source.to_owned(), &log_level);
 
         if log_level > self.log_level {
             return;
         }
-        let current_local: DateTime<Local> = Local::now();
-        let date_time = current_local.format(DATETIME_FORMAT);
 
         match visibility {
             LogVisibility::Backend => self.internal_log(
@@ -128,10 +150,15 @@ impl Logger {
     }
 
     pub fn initialize_logger(handle: &AppHandle) -> Logger {
-        Logger {
+        let logger = Logger {
             app_handle: Some(handle.clone()),
             log_level: LogLevel::INFO,
-        }
+            log_path: PathBuf::from(get_public_directory()).join("../log.txt")
+        };
+
+        fs::write(&logger.log_path, "");
+
+        logger
     }
 
     pub fn set_log_level(&mut self, log_level: LogLevel) {

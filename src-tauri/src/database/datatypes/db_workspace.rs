@@ -5,9 +5,7 @@ use tauri::AppHandle;
 use uuid::Uuid;
 
 use crate::{
-    database::operations::{db_item::DatabaseItem, tables::DatabaseTable},
-    deployment::{deployable::Deployable, deployment::Deployment},
-    state::ServiceAccess,
+    database::operations::{db_item::DatabaseItem, tables::DatabaseTable}, deployment::{deployable::Deployable, deployment::Deployment}, logging::logger::LogVisibility, state::ServiceAccess
 };
 
 use super::{db_subject::DatabaseSubject, db_wildcard::DatabaseWildcard};
@@ -52,6 +50,7 @@ impl Workspace {
     }
 
     pub fn load(&mut self, handle: &AppHandle, load_children: bool) {
+        handle.logger(|lgr| lgr.log_trace("Loading workspace", "WorkspaceLoad", LogVisibility::Backend));
         self.load_wildcards_internal(handle);
         self.load_subjects_internal(handle, load_children);
     }
@@ -83,6 +82,7 @@ impl Workspace {
     }
 
     fn load_wildcards_internal(&mut self, handle: &AppHandle) {
+        handle.logger(|lgr| lgr.log_trace("Loading workspace wildcards", "WorkspaceLoad_Wildcards", LogVisibility::Backend));
         self.wildcards = self
             .wildcard_ids
             .iter()
@@ -91,6 +91,7 @@ impl Workspace {
     }
 
     fn load_subjects_internal(&mut self, handle: &AppHandle, load_children: bool) {
+        handle.logger(|lgr| lgr.log_trace("Loading workspace subjects", "WorkspaceLoad_Subjects", LogVisibility::Backend));
         let mut subjects: Vec<DatabaseSubject> = self
             .subject_ids
             .iter()

@@ -5,7 +5,6 @@ import { ViewportTextEditor } from "./viewportTextEditor";
 import ViewportTab from "../../components/Viewport/ViewportTab.vue";
 import MergePatternEditor from "../../components/Viewport/MergePatternEditor.vue";
 import { ViewportMergePatternEditor } from "./viewportMergePattern";
-import { Wildcard } from "../data/wildcard";
 
 const viewportElementId = 'viewport-content';
 const viewportTabElementId = 'viewport-header';

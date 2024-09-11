@@ -128,19 +128,26 @@ export default {
       popupContent: 'This is dynamic content, which is substantially longer to test if the window dynamically resizes or not. Bruh why are you even reading this lol'
     }
   },
-  methods:
-  {
+  _methods: {
     showNotification()
     {
-      console.log("showing notification");
-      this.$refs.notificationManager.addNotification({
+      console.log("showing notification")
+      notificationManager.value!.$methods.addNotification({
         icon: 'CheckCircleIcon',
         header: 'Success!',
         message: 'Your action was completed successfully.',
         borderColor: '#2ecc71'
       })
     }
-  }
+  },
+  get methods()
+  {
+    return this._methods
+  },
+  set methods(value)
+  {
+    this._methods = value
+  },
 }
 
 async function setup()

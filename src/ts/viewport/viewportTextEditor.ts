@@ -1,5 +1,5 @@
 import { ref } from "vue";
-import { LoadWildcard, Wildcard } from "../data/wildcard";
+import { LoadWildcard } from "../data/wildcard";
 import { WildcardDocument } from "../document/wildcardDocument";
 import { ViewportItem } from "./viewportItem"
 import { invoke } from "@tauri-apps/api";

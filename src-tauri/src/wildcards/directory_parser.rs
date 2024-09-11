@@ -46,6 +46,7 @@ fn get_or_create_parent_subject<'c>(subjects: &'c mut Vec<DatabaseSubject>, pare
 }
 
 fn add_wildcard_to_subject(entry: &DirEntry, logger: Box<crate::logging::logger::Logger>, subject: &mut DatabaseSubject, handle: &AppHandle) {
+    logger.log_trace("Entered function: add_wildcard_to_subject", "AddWildcardTosubject", LogVisibility::Backend);
     match entry.path().extension() {
         Some(ext) => {
             logger.log_trace(&format!("Loading File: {:?}", entry.file_name()), "AddProjectEntry", LogVisibility::Backend);
@@ -64,11 +65,13 @@ fn add_subject_entry<'a>(handle: &AppHandle, subjects: &'a mut Vec<DatabaseSubje
     let parent = get_parent(entry).expect("Parent should exist").to_owned();
     let path = entry.path().to_string_lossy().to_string();
 
+    let logger = handle.get_logger();
+
+    logger.log_trace("Entered function: add_subject_entry", "AddSubjectEntry", LogVisibility::Backend);
+
     if !tracked_files.verify_file(entry, handle) {
         return;
     }
-
-    let logger = handle.get_logger();
 
     // Try to retrieve parent subject, or create a new one if it does not exist
     let mut subject = get_or_create_parent_subject(subjects, parent, handle);
@@ -94,6 +97,8 @@ pub fn parse_directory_chain(handle: &AppHandle, dir: &str) {
     let mut tracked_files = DatabaseTrackedFiles::default().read(&handle);
 
     let logger = handle.get_logger();
+
+    logger.log_trace("Entered function: parse_directory_chain", "ParseDirectoryChain", LogVisibility::Backend);
 
     // depth 0 = base folder, depth 1 = loose files, depth >1 = files within directories
     for item in items {
@@ -153,6 +158,8 @@ pub fn parse_directory_chain(handle: &AppHandle, dir: &str) {
 
         let msg_db = format!("Wrote {} subjects and {} wildcards to database in {:?}", directories, files, duration_db);
         logger.log_info(&msg_db, "ParseDirectory", LogVisibility::Backend);
+    } else {
+        logger.log_warn("Failed to write commit to database: No subjects were found", "ParseDirectory", LogVisibility::Backend);
     }
 
     workspace.write_db(handle, None, None);
