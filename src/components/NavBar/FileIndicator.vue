@@ -1,18 +1,18 @@
 <script lang="ts">
 export default {
-    props: ['name', 'id'],
+    props: ['name', 'wildcardId'],
     data: (instance) =>
     {
-        return { file: instance.name, id: parseInt(instance.id) }
+        return { file: instance.name, id: instance.wildcardId }
     }
 }
 </script>
 
 <template>
     <div>
-        <div id="file-entry" class="file-entry row">
+        <div id="file-entry" class="file-entry row disableSelection">
             <!--<FileIcon class="file-icon" style="height: 100%; margin-bottom: 5px;" />-->
-            <a style="margin-left: 5px; font-size: 10px;">{{ name }}</a>
+            <a style="margin-left: 5px;">{{ name }}</a>
         </div>
         <div id="children" class="column" style="padding-left: 15px;">
 

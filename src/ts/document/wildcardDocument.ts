@@ -4,7 +4,10 @@ import { DOMDirection, DocumentIndex, offsetFromText } from "./documentData";
 import { DocumentItem } from "./documentItem";
 import { DocumentLine } from "./documentLine";
 import { DocumentSpan } from "./documentSpan";
-import { ref } from "vue";
+
+const DELAY = 5000;
+var uuid = "";
+var lines: string[] = [];
 
 export class WildcardDocument
 {
@@ -13,13 +16,23 @@ export class WildcardDocument
     private margin: HTMLDivElement;
     private editor: HTMLDivElement;
     private prevIndex: DocumentIndex;
+    private saved: boolean;
+    private timer;
     
     private lines: DocumentLine[] = [];
+    private uuid: string;
 
     public render(): HTMLElement
     {
         this.renderLines();
         return this.element;
+    }
+
+    public unload()
+    {
+        this.lines = [];
+        this.margin.innerHTML = '';
+        this.editor.innerHTML = '';
     }
 
     public index(idx: DocumentIndex): string | DocumentItem | null
@@ -51,6 +64,8 @@ export class WildcardDocument
         this.setIndex(new DocumentIndex(line.getIndex(), 0, 0), true, this.lineBreak.name);
         line.updateText();
         (this.index(idx.toLine()) as DocumentLine).getLast().updateVisualText();
+
+        this.saved = false;
     }
 
     public deleteLine(idx: DocumentIndex)
@@ -87,6 +102,8 @@ export class WildcardDocument
         this.lines.splice(idx.line!, 1);
 
         this.setIndex(newIndex, true, this.deleteLine.name);
+
+        this.saved = false;
     }
 
     private addTag(idx: DocumentIndex)
@@ -152,16 +169,19 @@ export class WildcardDocument
             rootMargin: "0px",
             threshold: 1.0
         }
-        let observer = new IntersectionObserver((e) =>
-        {
-            e.forEach((entry) =>
-            {
-                console.log(entry.target);
-                
-            })
-        }, options)
+        let observer = new IntersectionObserver((_) => {}, options)
         observer.observe(this.editor);
         for (let i = 0; i < this.lines.length; i++) this.renderLine(i);
+    }
+
+    public isSaved(): boolean
+    {
+        return this.saved;
+    }
+
+    public getWildcard(): Wildcard
+    {
+        return this.wildcard;
     }
 
     private renderLine(idx: number)
@@ -215,12 +235,14 @@ export class WildcardDocument
         var charLen = currSpan.getText().length;
         var spanLen = (currSpan.getParent() as DocumentLine).count();
 
+        // Traverse span
         if ((idx.char! + modifier <= 0 || idx.char! + modifier > charLen) && (idx.span! + modifier >= 0 && idx.span! + modifier < spanLen))
         {
             idx.span! = idx.span! + modifier;
             var newSpan = (this.index(idx.toSpan()) as DocumentSpan);
-            idx.char = direction == DOMDirection.BACK ? newSpan.getText().length : 0;
+            idx.char = direction == DOMDirection.BACK ? newSpan.getText().length : 1;
         }
+        // Traverse line
         else if ((idx.char! + modifier < 0 || idx.char! + modifier > charLen) && (idx.span! + modifier <= 0 || idx.span! + modifier >= spanLen) && (idx.line! + modifier >= 0 && idx.line! + modifier <= this.lines.length - 1))
         {
             idx.line! = idx.line! + modifier;
@@ -228,6 +250,7 @@ export class WildcardDocument
             idx.span = direction == DOMDirection.BACK ? newLine.getLast().getIndex() : 0;
             idx.char = direction == DOMDirection.BACK ? newLine.getLast().getText().length : 0;
         }
+        // Traverse char
         else if (idx.char! + modifier >= 0 && idx.char! + modifier <= charLen) idx.char! = idx.char! + modifier;
 
         this.setIndex(idx, true, this.arrowKeyHorizontal.name);
@@ -307,10 +330,14 @@ export class WildcardDocument
                     e.preventDefault();              
                     span.insertText('&nbsp;', this.prevIndex.char!);
                     this.setIndex(this.prevIndex.plus([0, 0, 1]), true, "KeySpace");
+                    this.saved = false;
+                    this.resetTimer();
                     break;
                 case 'Comma':
                     e.preventDefault();
                     this.addTag(this.prevIndex);
+                    this.saved = false;
+                    this.resetTimer();
                     break;
             }
         })
@@ -322,6 +349,7 @@ export class WildcardDocument
                 case 'Enter':
                     e.preventDefault();
                     this.lineBreak(this.prevIndex);
+                    this.resetTimer();
                     break;
                 case 'Backspace':
                     if (this.prevIndex.char == 0 && this.prevIndex.span == 0)
@@ -332,11 +360,13 @@ export class WildcardDocument
                     } else if (this.prevIndex.char == 1 && this.prevIndex.span != 0)
                     {
                         jumpSpan = true;
+                        this.saved = false;
                         return;
                     }
                     var idx = this.prevIndex;
                     idx.char! -= 1;
                     this.setIndex(idx, false, "Key_Backspace (default)");
+                    this.resetTimer();
                     break;
                 case 'ArrowUp':
                     e.preventDefault();
@@ -366,7 +396,8 @@ export class WildcardDocument
             idx.char! += data.length;
             span.updateVisualText();
             this.setIndex(idx, true, "userInput");
-            
+            this.saved = false;
+            this.resetTimer();
         });
 
         this.element.addEventListener("click", (e) => {
@@ -379,6 +410,22 @@ export class WildcardDocument
             this.margin.scrollTop = this.editor.scrollTop;
             this.margin.style.overflowY = "hidden";
         });
+    }
+
+    private resetTimer()
+    {
+        uuid = this.uuid;
+        lines = this.getLines();
+
+        clearTimeout(this.timer);
+        this.timer = setTimeout(this.save, DELAY);
+    }
+
+    private async save()
+    {
+        console.log("saving document...");
+        this.saved = true;
+        await invoke('update_wildcard', { uuid: uuid, lines: lines });
     }
 
     private getLines(): string[]
@@ -396,37 +443,42 @@ export class WildcardDocument
 
     private addButtonHandlers()
     { 
-        var writeBtn = document.querySelector("#writeBtn") as HTMLDivElement;
-        console.log(writeBtn);
-        const data = ref();
+        // var writeBtn = this.element.querySelector("#writeBtn") as HTMLDivElement;
+        // const data = ref();
         
-        writeBtn.onmousedown = () =>
-        {
-            console.log("wrote text");
-            this.wildcard.content = this.getLines();
-            invoke('write_wildcard', { wildcard: this.wildcard });
-            console.log("loading from db");
-            data.value = invoke('load_wildcard_db').then((x) => console.log(x));
-        }
+        // writeBtn.onmousedown = () =>
+        // {
+        //     console.log("wrote text");
+        //     this.wildcard.content = this.getLines();
+        //     invoke('write_wildcard', { wildcard: this.wildcard });
+        //     console.log("loading from db");
+        //     data.value = invoke('load_wildcard_db').then((x) => console.log(x));
+        // }
     }
 
-    constructor(wildcard: Wildcard)
+    constructor(wildcard: Wildcard, wildcardId: string)
     {
-        this.wildcard = wildcard;
+        
         this.element = document.createElement('div');
         this.margin = document.createElement('div');
         this.editor = document.createElement('div');
         this.prevIndex = new DocumentIndex(null, null, null);
+        this.saved = true;
+
+        this.wildcard = wildcard;
+        this.uuid = wildcardId;
+
         for (let i = 0; i < wildcard.content.length; i++)
         {
             var line = new DocumentLine(i, this);
             line.insertCSV(wildcard.content[i]);
             this.lines.push(line);
         }
+
         this.format();
         this.addButtonHandlers();
         this.setupKeybinds();
-        
+        console.log(wildcard);
     }
 }
 

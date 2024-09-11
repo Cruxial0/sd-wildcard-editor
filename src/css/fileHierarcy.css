@@ -1,0 +1,65 @@
+.file-entry{
+    display: flex;
+    padding: 3px 5px 3px 15px;
+    height: 15px;
+    margin-left: 10px;
+    align-items: center;
+  }
+  
+.file-entry.selected-entry{
+    background-color: var(--comp-color-alt);
+    color: var(--text-color-hover);
+}
+  
+.file-entry:hover{
+    background-color: var(--comp-color-alt);
+    color: var(--text-color-hover);
+}
+  
+.file-icon svg{
+    stroke-width: 2px;
+    stroke: var(--text-color);
+}
+  
+.file-entry.selected-entry svg{
+    stroke: var(--text-color-hover);
+}
+  
+.file-entry:hover svg{
+    stroke: var(--text-color-hover);
+}
+
+.file-entry > a {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.collapsed {
+    display: none;
+}
+
+.collapsed:first-child  {
+    stroke: wheat;
+    background-color: aliceblue;
+}
+
+/* width */
+::-webkit-scrollbar {
+    width: 7px;
+ }
+/* Track */
+ ::-webkit-scrollbar-track {
+   background: transparent;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: var(--context-menu-color);
+}
+
+/* Handle on hover */
+ ::-webkit-scrollbar-thumb:hover {
+    background: var(--context-menu-color-hover);
+}
+

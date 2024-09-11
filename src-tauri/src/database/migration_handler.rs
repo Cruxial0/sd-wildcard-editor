@@ -6,6 +6,7 @@ use crate::logging::logger::{LogVisibility, Logger};
 use super::migrations::environment_development::MigrationEnvironmentDevelopment;
 use super::migrations::mutation_behaviour_settings::MigrationBehaviourSettings;
 use super::migrations::tracked_files_table::MigrationTrackedFilesTable;
+use crate::database::migrations::merge_definitions::MigrationMergeDefinitions;
 
 static LOG_SOURCE: &str = "DatabaseMigration";
 
@@ -16,6 +17,7 @@ lazy_static! {
         m.insert(1, to_migration(MigrationEnvironmentDevelopment));
         m.insert(2, to_migration(MigrationBehaviourSettings));
         m.insert(3, to_migration(MigrationTrackedFilesTable));
+        m.insert(4, to_migration(MigrationMergeDefinitions));
         m
     };
 }

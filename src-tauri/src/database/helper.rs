@@ -4,11 +4,11 @@ use rusqlite::Connection;
 use std::fs;
 use tauri::AppHandle;
 
-use crate::{logging::logger::{self, Logger}, state::ServiceAccess};
+use crate::{logging::logger::{self, LogVisibility, Logger}, state::ServiceAccess};
 
 use super::migration_handler;
 
-const CURRENT_DB_VERSION: u32 = 3;
+const CURRENT_DB_VERSION: u32 = 4;
 const DEBUG: bool = true;
 static LOG_SOURCE: &str = "DatabaseInitialize";
 
@@ -41,18 +41,20 @@ pub fn upgrade_database_if_needed(db: &mut Connection, existing_version: u32, lo
     if existing_version < CURRENT_DB_VERSION || DEBUG {
 
         if DEBUG {
-            db.execute_batch(
-                "PRAGMA writable_schema = 1;
+            let sql = "PRAGMA writable_schema = 1;
                 DELETE FROM sqlite_master;
                 PRAGMA writable_schema = 0;
                 VACUUM;
-                PRAGMA integrity_check;"
-            );
+                PRAGMA integrity_check;";
+            db.execute_batch(&sql);
 
             logger.log_warn("[DEBUG] Database was wiped.", "DatabaseUpgrade", logger::LogVisibility::Backend);
         }
         
-        db.pragma_update(None, "journal_mode", "WAL")?;
+        match db.pragma_update(None, "journal_mode", "WAL") {
+            Ok(_) => (),
+            Err(e) => logger.log_error(&format!("{:?}", e), "DatabaseUpgrade", LogVisibility::Backend),
+        }
 
         let mut tx = db.transaction()?;
 

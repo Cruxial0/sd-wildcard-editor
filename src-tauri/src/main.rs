@@ -8,15 +8,18 @@ extern crate lazy_static;
 
 mod database;
 mod wildcards;
+mod subjects;
 mod state;
 mod logging;
 mod helpers;
 mod cli_arguments;
+mod deployment;
 
+use helpers::uuid_utils;
 use logging::{log_level::LogLevel, logger::LogVisibility};
 use state::ServiceAccess;
 use tauri::{State, Manager};
-use wildcards::loader;
+use wildcards::{loader, update};
 use crate::state::AppState;
 
 fn main() {
@@ -25,7 +28,13 @@ fn main() {
         .manage(AppState::default())
         .invoke_handler(tauri::generate_handler![
             loader::load_workspace,
-            loader::load_wildcard
+            loader::load_wildcard,
+            loader::load_project,
+            loader::wildcard_name_from_id,
+            loader::load_merge_definition_from_subject,
+            uuid_utils::get_uuid,
+            uuid_utils::get_name_by_uuid,
+            update::update_wildcard
         ])
         .setup(|app| {
             let handle = app.handle();

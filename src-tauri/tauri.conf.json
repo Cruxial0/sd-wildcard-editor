@@ -38,14 +38,15 @@
         "height": 600,
         "minWidth": 900,
         "minHeight": 600,
-        "decorations": false
+        "decorations": false,
+        "fileDropEnabled": false
       }
     ],
     "security": {
       "csp": null
     },
     "updater": {
-      "active": true,
+      "active": false,
       "endpoints": [
         "https://github.com/Cruxial0/sd-wildcard-editor/blob/main/latest.json"
       ],
