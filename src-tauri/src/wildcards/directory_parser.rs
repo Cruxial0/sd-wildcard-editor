@@ -134,9 +134,22 @@ pub fn parse_directory_chain(handle: &AppHandle, dir: &str) {
                     x.load(handle, true);
                     x
                 }
-                None => Workspace::from_subject(handle, &subjects.remove(0)),
+                None => {
+                    if(subjects.len() > 0) {
+                        Workspace::from_subject(handle, &subjects.remove(0))
+                    } else {
+                        Workspace::default()
+                    }
+                    
+                },
             },
-            None => Workspace::from_subject(handle, &subjects.remove(0)),
+            None => {
+                if(subjects.len() > 0) {
+                    Workspace::from_subject(handle, &subjects.remove(0))
+                } else {
+                    Workspace::default()
+                }   
+            }
         };
 
     workspace
