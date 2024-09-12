@@ -2,7 +2,7 @@
     white-space-collapse:preserve;
     --editor-padding-left: 5px;
     --editor-context-height: 18px;
-    --line-height: 1.2em;
+    --line-height: 1.3em;
     --editor-width: calc(100vw - var(--nav-bar-width) - var(--function-bar-width));
     --line-padding-tb: 3px;
     --line-padding-l: 5px;
@@ -108,6 +108,18 @@
     text-wrap: nowrap;
     padding: var(--line-padding);
     align-items: center;
+}
+
+.wildcard{
+    display: flex;
+    font-weight: 500;
+    
+}
+
+.wildcard:hover {
+    border-radius: 10px;
+    background-color: var(--comp-color);
+    padding: 0px 10px;
 }
 
 .line:hover{
