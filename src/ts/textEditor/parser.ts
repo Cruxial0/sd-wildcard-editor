@@ -1,7 +1,7 @@
 import { ComponentNode, DelimiterNode, DocumentNode, TextNode } from "./nodes/baseNode";
-import { Token } from "./tokenizer";
+import { Token } from "./tokenizer/tokenizer";
 
-type componentType = 'wildcard' | 'other'
+type componentType = 'wildcard' | 'number' | 'other'
 
 export class Parser {
     parse(tokens: Token[]): DocumentNode[]
@@ -37,6 +37,10 @@ export class Parser {
                     flushTextNode();
                     nodes.push(this.createDelimiterNode(token));
                     break;
+                case "number":
+                    flushTextNode();
+                    nodes.push(this.createComponentNode(token, 'number'));
+                    break;
                 case "unknown":
                     currentTextContent += token.value;
                     break;
@@ -69,21 +73,18 @@ export class Parser {
 
     private createComponentNode(token: Token, type: componentType): ComponentNode
     {
-        if (type == 'other')
+        var props: Record<string, any> = {};
+        switch (type)
         {
-            return {
-                type: 'component',
-                componentType: type,
-                props: {content: token.value}
-            }
+            case "number": props = { content: token.value }; break;
+            case "wildcard": props = { content: token.value, color: 'red' }; break;
+            case "other": props = { content: token.value }; break;
         }
-        else
-        {
-            return {
-                type: 'component',
-                componentType: type,
-                props: {content: token.value, color: 'red'}
-            }
+
+        return {
+            type: 'component',
+            componentType: type,
+            props: props
         }
     }
 }

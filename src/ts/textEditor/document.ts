@@ -2,8 +2,8 @@ import { ref } from "vue";
 import { LoadWildcard, Wildcard } from "../data/wildcard";
 import { DocumentNode } from "./nodes/baseNode";
 import { Parser } from "./parser";
-import { Tokenizer } from "./tokenizer";
 import { Position } from "./types";
+import { Tokenizer } from "./tokenizer/tokenizer";
 
 export class DocumentModel {
 	lines: DocumentNode[][] = [];
@@ -23,7 +23,8 @@ export class DocumentModel {
 
 		wildcard.content.forEach(line =>
 		{
-			let tokens = tokenizer.tokenize(line.replace(/(\r\n|\n|\r)/gm, ""));
+			// let tokens = tokenizer.tokenize(line.replace(/(\r\n|\n|\r)/gm, ""));
+			let tokens = tokenizer.tokenize(line.trim());
 			let nodes = parser.parse(tokens);
 			this.lines.push(nodes);
 		});

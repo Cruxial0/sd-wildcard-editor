@@ -6,6 +6,7 @@
 import { defineComponent } from 'vue';
 import { ComponentNode } from '../../../ts/textEditor/nodes/baseNode';
 import WildcardNodeComponent from './WildcardNodeComponent.vue';
+import NumberNodeComponent from './NumberNodeComponent.vue';
 
 export default defineComponent({
     props: ['node'],
@@ -16,6 +17,7 @@ export default defineComponent({
             switch (node.componentType)
             {
                 case 'wildcard': return WildcardNodeComponent;
+                case 'number': return NumberNodeComponent;
                 default: break;
             }
         };
