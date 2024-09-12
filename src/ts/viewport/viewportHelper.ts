@@ -1,5 +1,5 @@
 import { Component, ComponentPublicInstance, ComputedOptions, MethodOptions, createApp } from "vue";
-import TextEditor from "../../components/Viewport/TextEditor.vue";
+import TextEditor from "../../components/TextEditor/TextEditor.vue";
 import { ViewportItem } from "./viewportItem";
 import { ViewportTextEditor } from "./viewportTextEditor";
 import ViewportTab from "../../components/Viewport/ViewportTab.vue";
